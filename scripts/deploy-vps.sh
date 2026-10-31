@@ -24,7 +24,7 @@ quote_for_remote_shell() {
   printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"
 }
 
-REMOTE_COMMAND="cd $(quote_for_remote_shell "$REMOTE_PATH") && ./scripts/deploy.sh --branch $(quote_for_remote_shell "$BRANCH")"
+REMOTE_COMMAND="cd $(quote_for_remote_shell "$REMOTE_PATH") && if [ -n \"\$(git status --porcelain --untracked-files=all)\" ]; then echo 'deploy-vps: remote checkout is not clean; review it before deploying' >&2; exit 1; fi && exec ./scripts/deploy.sh --branch $(quote_for_remote_shell "$BRANCH")"
 
 exec ssh \
   -p "$PORT" \
