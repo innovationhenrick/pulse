@@ -19,6 +19,53 @@ flowchart LR
 Contributors never push to `main`: they work on a branch, push it, and open a pull request. The repository uses
 the `git` CLI only.
 
+## Deploy to the Pulse VPS
+
+`main` on GitHub is the source of code. After the `CI` workflow finishes successfully for `main`,
+[.github/workflows/deploy-vps.yml](../.github/workflows/deploy-vps.yml) can connect to the VPS over SSH and call
+[scripts/deploy-vps.sh](../scripts/deploy-vps.sh), which in turn runs the guarded
+[scripts/deploy.sh](../scripts/deploy.sh) in `/home/altlabs/services/pulse`.
+
+The deploy script fetches the selected branch, creates a PostgreSQL dump, builds the image, waits for the container
+healthcheck and rolls back to the previous image when the new container does not become healthy. It refuses tracked
+changes and untracked files in the checkout. This is deliberate: manual work on the VPS must be reviewed and saved in
+a branch before a deploy can touch that checkout.
+
+Create a GitHub Actions environment named `production` and add these secrets to it:
+
+| Secret | Purpose |
+|---|---|
+| `PULSE_VPS_HOST` | VPS hostname or IP |
+| `PULSE_VPS_PORT` | SSH port; defaults to `41122` |
+| `PULSE_VPS_USER` | SSH user; defaults to `altlabs` |
+| `PULSE_VPS_PATH` | Checkout path; defaults to `/home/altlabs/services/pulse` |
+| `PULSE_VPS_SSH_PRIVATE_KEY` | Private key allowed to log in as the deploy user |
+| `PULSE_VPS_KNOWN_HOSTS` | The pinned `known_hosts` line for that host and port |
+
+The deploy workflow does not read the application `.env`, does not push to GitHub and never uses a force push. Keep
+the application secrets on the VPS and the SSH material in the GitHub Actions environment only. Configure an approval
+rule on `production` if deployment should require a manual gate.
+
+For a one-time host-key capture, verify the fingerprint out of band before saving the result:
+
+~~~sh
+ssh-keyscan -p 41122 76.13.234.196
+~~~
+
+## Sync a local checkout
+
+Use [scripts/sync-local.sh](../scripts/sync-local.sh) from a clean checkout. It fetches the requested branch from
+`origin`, switches branches without discarding anything and updates with `git merge --ff-only`:
+
+~~~sh
+scripts/sync-local.sh main
+scripts/sync-local.sh feat/pt-br
+~~~
+
+If it reports local changes, stop and review them first. Do not make the VPS a second source of truth: commit reviewed
+work to a branch, push that branch to the fork, and let the pull request and CI be the path to `main`.
+
+
 The maintainer (repository admin) is on the ruleset's bypass list with **Always**, so they can push to `main`
 directly as well as merge their own pull requests without a second reviewer. Everyone else goes through a PR
 with green CI and a code owner review.

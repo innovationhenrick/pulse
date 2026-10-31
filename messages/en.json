@@ -114,6 +114,15 @@
       }
     }
   },
+  "about": {
+    "title": "About",
+    "body": "This personal fork runs as a self-hosted Pulse setup. It brings Recovery, Strain, Sleep and health trends to the web, Android and iPhone. The iPhone app is a Capacitor shell that opens the server you choose; it does not read Apple Health or HealthKit yet. Portuguese (Brazil) is available in Settings › App › Language. openGym remains a separate training service while its Pulse integration is evaluated.",
+    "version": "Version",
+    "scoringVersion": "Scoring version",
+    "sourceCode": "Source code",
+    "reportBug": "Report a bug",
+    "newTab": "(opens in a new tab)"
+  },
   "home": {
     "metaTitle": "Today",
     "metaDescription": "Today’s Sleep, Recovery and Strain at a glance."

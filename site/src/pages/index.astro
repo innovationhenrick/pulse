@@ -4,10 +4,9 @@ import Faq from "../components/Faq.astro"
 import Device from "../components/Device.astro"
 import Icon from "../components/Icon.astro"
 import GitHubMark from "../components/GitHubMark.astro"
-import AndroidMark from "../components/AndroidMark.astro"
 import { METRICS, metricPath, metricByAppSlug } from "../data/metrics"
 import { COMPARISONS } from "../data/compare"
-import { REPO, SETUP_GUIDE, LICENSE_URL, CONTACT_EMAIL, MOBILE_REPO, MOBILE_DOWNLOAD } from "../config"
+import { REPO, SETUP_GUIDE, LICENSE_URL, MOBILE_REPO, MOBILE_DOWNLOAD } from "../config"
 import { faqPage, softwareApp } from "../lib/schema"
 import type { Shot } from "../data/metrics"
 import type { Part } from "../lib/screens"
@@ -108,8 +107,8 @@ const faq = [
     a: `A wearable that syncs to the Google Health app (Pulse is built and tested on the Fitbit Air), a Google Cloud project for the OAuth client, and any machine that runs Docker: a home server, a NAS or a small cloud VM. To reach it from your phone, give it an HTTPS address with a tunnel or reverse proxy. The <a href="${SETUP_GUIDE}">setup guide</a> covers each step.`,
   },
   {
-    q: "Is there an Android app that needs no server?",
-    a: `Yes: <a href="${MOBILE_REPO}">Pulse Mobile</a>, a separate Android app. It reads your Fitbit data from Health Connect and scores and stores it on the phone, with no server, no Google Cloud project and no account. It imports what Health Connect holds, up to the last 180 days, and does not share a Pulse server’s history. <a href="${MOBILE_DOWNLOAD}">Download the APK</a>.`,
+    q: "Can I use this fork on Android or iPhone?",
+    a: `Yes. The fork includes <a href="${MOBILE_REPO}">Capacitor shells for Android and iPhone</a>. They open the self-hosted Pulse server selected on the device, so the web app, scores and account remain on your server. The iPhone shell uses the bundle id <code>io.github.innovationhenrick.pulse</code> and does not read Apple Health or HealthKit yet. <a href="${MOBILE_DOWNLOAD}">Read the mobile build guide</a>.`,
   },
   {
     q: "Can I try it before connecting my Google account?",
@@ -149,12 +148,12 @@ const schema = [softwareApp(Astro.site!, description), faqPage(faq)]
   <section class="hero" aria-labelledby="hero-h">
     <div class="wrap hero-copy">
       <h1 id="hero-h">Recovery, strain and sleep from your Google&nbsp;Health data.</h1>
-      <p class="sub">Pulse turns what your Fitbit or Pixel Watch syncs to Google Health into daily scores, on a server you own or right on your Android phone. Built on Fitbit Air. Free.</p>
+      <p class="sub">This fork turns what your Fitbit or Pixel Watch syncs to Google Health into daily scores on your own server, with Android and iPhone shells for the same Pulse instance. Built for a personal self-hosted setup.</p>
       <div class="actions">
         <a class="button button-primary" href={SETUP_GUIDE}><Icon name="server" stroke={2} />Self-host Pulse</a>
-        <a class="button button-light" href={MOBILE_DOWNLOAD}><AndroidMark />Get the Android app</a>
+        <a class="button button-light" href={MOBILE_DOWNLOAD}><Icon name="smartphone" stroke={2} />Build the mobile shell</a>
       </div>
-      <p class="hero-note">The Android app needs no server or account: it scores your Fitbit data on the phone, from Health Connect. <a href={MOBILE_REPO}>Pulse Mobile on GitHub</a></p>
+      <p class="hero-note">The mobile shells connect to your self-hosted server and remember its address on the device. <a href={MOBILE_REPO}>Build the Android or iPhone shell</a></p>
     </div>
     <div class="stage">
       <div class="glow" aria-hidden="true"></div>
@@ -353,7 +352,7 @@ const schema = [softwareApp(Astro.site!, description), faqPage(faq)]
           <span class="term-title"><Icon name="laptop" class="t-icon" stroke={2} />Try the demo</span>
           <button class="copy" type="button" data-copy aria-label="Copy the demo commands"><Icon name="copy" class="i-copy" /><Icon name="check" class="i-done" stroke={2} /></button>
         </div>
-        <pre translate="no"><code><span class="p">$</span> git clone https://github.com/adityaongit/pulse.git
+        <pre translate="no"><code><span class="p">$</span> git clone https://github.com/innovationhenrick/pulse.git
 <span class="p">$</span> cd pulse && pnpm install
 <span class="p">$</span> cp .env.example .env
 <span class="p">$</span> docker compose -f compose.dev.yaml up -d
@@ -373,7 +372,7 @@ const schema = [softwareApp(Astro.site!, description), faqPage(faq)]
     </div>
     <div class="start-links">
       <a class="more-link" href={SETUP_GUIDE}>Read the setup guide<Icon name="arrow-right" class="ml-icon" stroke={2} /></a>
-      <a class="more-link" href={MOBILE_REPO}>No server? Get Pulse Mobile for Android<Icon name="arrow-right" class="ml-icon" stroke={2} /></a>
+      <a class="more-link" href={MOBILE_DOWNLOAD}>Build the Android or iPhone shell<Icon name="arrow-right" class="ml-icon" stroke={2} /></a>
     </div>
   </section>
 
@@ -385,14 +384,14 @@ const schema = [softwareApp(Astro.site!, description), faqPage(faq)]
   <section class="wrap sec" aria-labelledby="about-h">
     <div class="about">
       <div class="about-text">
-        <h2 id="about-h">Made by one developer, for the community.</h2>
+        <h2 id="about-h">A personal self-hosted Pulse, adapted for my server and iPhone.</h2>
         <p>
-          There is no company behind Pulse, and no intention of competing with WHOOP or anyone else. It uses no WHOOP device, data, code or assets: every score is
-          computed from your own Google Health data, with methods published in full. The interface takes design inspiration from apps the developer admires.
+          This fork is maintained by innovationhenrick for a personal server at <a href="https://pulse.labsalt.com">pulse.labsalt.com</a>. It keeps the Pulse
+          interface and scoring model, adds Português (Brasil), and packages the same self-hosted experience for Android and iPhone through Capacitor.
         </p>
         <p>
-          WHOOP and the other names on this site are trademarks of their owners, and Pulse is not affiliated with or endorsed by them. If you represent a company and have
-          a concern, please email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> and it will be changed or taken down.
+          The iPhone shell opens the server configured on the device and does not read Apple Health or HealthKit yet. openGym is already running as a separate service
+          on the same VPS; its training data will be connected through an adapter rather than by copying its UI, database or media into Pulse.
         </p>
       </div>
       <div class="credits">
@@ -425,7 +424,7 @@ const schema = [softwareApp(Astro.site!, description), faqPage(faq)]
       <p class="lede">Free for personal use. Your server or your phone, your data.</p>
       <div class="actions">
         <a class="button button-primary" href={SETUP_GUIDE}><Icon name="server" stroke={2} />Self-host Pulse</a>
-        <a class="button button-light" href={MOBILE_DOWNLOAD}><AndroidMark />Get the Android app</a>
+        <a class="button button-light" href={MOBILE_DOWNLOAD}><Icon name="smartphone" stroke={2} />Build the mobile shell</a>
         <a class="button button-quiet" href={REPO}><GitHubMark class="b-icon" />View source</a>
       </div>
     </div>

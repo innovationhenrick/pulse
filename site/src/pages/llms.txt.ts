@@ -28,7 +28,7 @@ export const GET: APIRoute = async ({ site }) => {
     section("Optional", [
       link("Everything in one file", "/llms-full.txt", "Every page above as Markdown, concatenated."),
       link("Source code", REPO, "Implementation, tests and license."),
-      link("Pulse Mobile", MOBILE_REPO, "The separate Android app: scores Health Connect data on the phone, no server."),
+      link("Mobile shells", MOBILE_REPO, "Capacitor Android and iPhone shells that connect to the self-hosted Pulse server selected on the device."),
       link("Privacy policy", "/privacy/", "Public website and self-hosted app data handling."),
       link("Terms", "/terms/", "License and use of Pulse."),
     ]),

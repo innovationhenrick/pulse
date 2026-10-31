@@ -42,8 +42,9 @@ step "Pre-flight"
 [ -f "$COMPOSE_FILE" ] || die "$COMPOSE_FILE not found (set COMPOSE_FILE)"
 [ -f .env ] || die ".env not found"
 docker info >/dev/null 2>&1 || die "Docker is not reachable"
-# Untracked files (a local compose file) are fine; edits to tracked files would be lost by the reset.
+# Refuse both tracked edits and untracked files: a deploy must never hide or leave behind manual VPS work.
 git diff --quiet HEAD || [ "$FORCE" = 1 ] || die "tracked files have local changes; commit them or pass --force"
+[ -z "$(git ls-files --others --exclude-standard)" ] || die "untracked files exist; review and commit or move them before deploying"
 ok "compose $COMPOSE_FILE, docker $(docker version -f '{{.Server.Version}}')"
 
 step "Fetching origin/$BRANCH"

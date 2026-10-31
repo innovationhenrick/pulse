@@ -80,3 +80,35 @@ jobs:
         run: gh release create "${{ github.ref_name }}" pulse-*.apk --repo "${{ github.repository }}" --title "Pulse for Android ${{ github.ref_name }}" --notes "Sideload this APK on Android; see docs/mobile.md."
         env:
           GH_TOKEN: ${{ github.token }}
+
+  ios:
+    name: ios
+    runs-on: macos-15
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: mobile/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: mobile/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec cap sync ios
+      - name: Build for the iOS simulator
+        run: >-
+          xcodebuild
+          -project ios/App/App.xcodeproj
+          -scheme App
+          -sdk iphonesimulator
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
+          CODE_SIGNING_REQUIRED=NO
+          build

@@ -114,6 +114,15 @@
       }
     }
   },
+  "about": {
+    "title": "Sobre",
+    "body": "Este fork pessoal roda em uma instalação self-hosted do Pulse. Ele reúne Recuperação, Esforço, Sono e tendências de saúde na web, no Android e no iPhone. O app do iPhone é um shell Capacitor que abre o servidor escolhido por você; ele ainda não lê Apple Health nem HealthKit. Português (Brasil) está disponível em Ajustes › App › Idioma. O openGym continua como serviço separado enquanto avaliamos sua integração ao Pulse.",
+    "version": "Versão",
+    "scoringVersion": "Versão dos scores",
+    "sourceCode": "Código-fonte",
+    "reportBug": "Relatar um problema",
+    "newTab": "(abre em uma nova aba)"
+  },
   "home": {
     "metaTitle": "Hoje",
     "metaDescription": "Sono, Recuperação e Esforço de hoje num relance."
