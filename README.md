@@ -4,7 +4,7 @@
 
 # Pulse
 
-**Recovery, strain and sleep from your Google Health data.**
+**Recovery, strain and sleep from your Google Health data — on the web, Android and iPhone.**
 
 Daily scores from what your Fitbit or Pixel Watch syncs to Google Health. Built on Fitbit Air, free for personal use.
 
@@ -28,12 +28,13 @@ Daily scores from what your Fitbit or Pixel Watch syncs to Google Health. Built 
 **Self-host:** one Docker container with Postgres behind HTTPS, for you and the people you invite. The [setup guide](docs/setup.md)
 walks through Google Cloud, Docker and Tailscale.
 
-**Android:** [Pulse Mobile](https://github.com/adityaongit/pulse-mobile) needs no server or account and scores everything on your
-phone, from Health Connect.
+**Android (Health Connect):** [Pulse Mobile](https://github.com/adityaongit/pulse-mobile) needs no server or account and
+scores everything on your phone, from Health Connect.
 
-**iPhone:** this fork includes an iOS shell in [`mobile/`](docs/mobile.md). It connects to your self-hosted Pulse server
-over HTTPS and remembers the server address on the phone. It does not read Apple Health/HealthKit yet; the scores still
-come from the Pulse server's Google Health data pipeline.
+**Android + iPhone (self-hosted shell):** this fork includes Capacitor shells in [`mobile/`](docs/mobile.md). They connect
+to your self-hosted Pulse server over HTTPS and remember the server address on the device. The iPhone shell uses the
+bundle ID `io.github.innovationhenrick.pulse`; it does not read Apple Health/HealthKit yet, so scores still come from the
+Pulse server's Google Health data pipeline.
 
 </div>
 
@@ -45,6 +46,17 @@ come from the Pulse server's Google Health data pipeline.
 
 Every score is explained on the [metrics pages](https://pulse.portlabs.in/metrics/) and in [docs/algorithms](docs/algorithms).
 More screens: [docs/screenshots.md](docs/screenshots.md).
+
+## Mobile apps
+
+The [`mobile/`](docs/mobile.md) directory contains native Capacitor shells for Android and iPhone. Both open the same
+self-hosted Pulse server in a native WebView; enter its HTTPS address the first time the app starts.
+
+- **Android:** run `pnpm install` and `pnpm apk:debug` to build a debug APK, or `pnpm android` to open the project.
+- **iPhone:** run `pnpm install`, `pnpm exec cap sync ios` and `pnpm ios`, then select your Apple Developer Team in
+  Xcode and run the `App` scheme on your iPhone.
+- **Health data:** the iPhone shell does not read Apple Health/HealthKit yet. The server's Google Health data pipeline
+  remains the source of the scores.
 
 ## Try the demo
 
