@@ -9,6 +9,7 @@ import { syncNow } from "@/lib/sync-activity"
 import { haptic } from "@/lib/haptics"
 import { useOnline } from "@/hooks/use-online"
 import { Button } from "@/components/ui/button"
+import { tr } from "@/lib/locale-context"
 
 /**
  * "Sync now": runs a sync past the worker's 5-minute gate and waits for it, then refreshes the screen.
@@ -39,7 +40,7 @@ export function SyncNowButton({ className, size = "touch" }: { className?: strin
       className={cn(size === "sm" && "h-9 gap-2 rounded-full px-4 text-[13px] font-semibold", className)}
     >
       <RefreshCw aria-hidden strokeWidth={2} className={cn("transition-transform", pending && "animate-spin motion-reduce:animate-none")} />
-      {pending ? "Syncing…" : online ? "Sync now" : "Offline"}
+      {pending ? tr("Syncing…", "Sincronizando…") : online ? tr("Sync now", "Sincronizar agora") : tr("Offline", "Sem conexão")}
     </Button>
   )
 }

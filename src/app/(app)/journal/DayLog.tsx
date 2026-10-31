@@ -4,7 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { ChevronRight, Plus, type LucideIcon } from "lucide-react"
 import { toast } from "sonner"
-import { dayLabel } from "@/lib/format"
+import { dayLabel, locale } from "@/lib/format"
 import { useClock } from "@/components/shells/ShellStatus"
 import { LOG_DAYS, MEALS, RECONNECT, type LogData, type LogKind } from "@/lib/log"
 import { cn } from "@/lib/utils"
@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ICON } from "./Log"
 
-const n = (v: number) => v.toLocaleString("en-US")
+const n = (v: number) => v.toLocaleString(locale())
 const ROW =
   "-mx-2 flex min-h-13 w-[calc(100%+1rem)] items-center gap-3 rounded-lg px-2 py-2 text-left outline-none transition-[background-color] duration-150 ease-standard hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-accent"
 const TIME = "shrink-0 font-numeric text-[13px] leading-4 font-medium text-muted-foreground tabular-nums"

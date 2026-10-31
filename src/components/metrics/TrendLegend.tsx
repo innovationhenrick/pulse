@@ -1,6 +1,7 @@
 import { partColor } from "@/lib/bands"
 import { cn } from "@/lib/utils"
 import { LABEL } from "./primitives"
+import { tr } from "@/lib/locale-context"
 
 /**
  * The legend over a Trend View chart, top right as the reference app sets it: the typical-range swatch on vitals,
@@ -9,7 +10,7 @@ import { LABEL } from "./primitives"
 export function TrendLegend({ chart, series, typical, className }: { chart: string; series?: readonly { key: string; label: string }[]; typical?: boolean; className?: string }) {
   const items =
     typical
-      ? [{ key: "typical", label: "Typical range", swatch: <span className="size-2.5 rounded-[2px] bg-chart-band ring-1 ring-foreground/15" /> }]
+      ? [{ key: "typical", label: tr("Typical range", "Faixa típica"), swatch: <span className="size-2.5 rounded-[2px] bg-chart-band ring-1 ring-foreground/15" /> }]
       : series && chart === "stack"
         ? [...series].reverse().map((s) => ({ key: s.key, label: s.label, swatch: <span className="size-2.5 rounded-[2px]" style={{ background: partColor(s.key) }} /> }))
         : series && chart === "pair"

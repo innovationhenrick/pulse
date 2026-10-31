@@ -4,26 +4,27 @@ import type { GoodDirection } from "./bands"
 import { EXTRA_METRICS, type ExtraKey } from "./extraMetrics"
 import type { FormatKey } from "./format"
 import { metricHref } from "./url"
+import { tr } from "./locale-context"
 
 export const DASHBOARD_GROUPS = [
-  { key: "recovery", label: "Recovery & sleep" },
-  { key: "activity", label: "Activity" },
-  { key: "body", label: "Body" },
-  { key: "nutrition", label: "Nutrition" },
-  { key: "vitals", label: "Vitals" },
+  { key: "recovery", get label() { return tr("Recovery & sleep", "Recuperação e sono") } },
+  { key: "activity", get label() { return tr("Activity", "Atividade") } },
+  { key: "body", get label() { return tr("Body", "Corpo") } },
+  { key: "nutrition", get label() { return tr("Nutrition", "Nutrição") } },
+  { key: "vitals", get label() { return tr("Vitals", "Sinais vitais") } },
 ] as const
 export type DashboardGroup = (typeof DASHBOARD_GROUPS)[number]["key"]
 
 /** The eight v1 rows; their units and reasons live in the Home query (`keyStats`). */
 const CORE = [
-  { key: "hrv", label: "Heart rate variability", group: "recovery" },
-  { key: "rhr", label: "Resting heart rate", group: "recovery" },
-  { key: "resp", label: "Respiratory rate", group: "vitals" },
-  { key: "sleep", label: "Sleep performance", group: "recovery" },
-  { key: "calories", label: "Calories", group: "activity" },
-  { key: "steps", label: "Steps", group: "activity" },
-  { key: "spo2", label: "Blood oxygen", group: "vitals" },
-  { key: "skin", label: "Skin temperature", group: "vitals" },
+  { key: "hrv", get label() { return tr("Heart rate variability", "Variabilidade da frequência cardíaca") }, group: "recovery" },
+  { key: "rhr", get label() { return tr("Resting heart rate", "Frequência cardíaca de repouso") }, group: "recovery" },
+  { key: "resp", get label() { return tr("Respiratory rate", "Frequência respiratória") }, group: "vitals" },
+  { key: "sleep", get label() { return tr("Sleep performance", "Desempenho do sono") }, group: "recovery" },
+  { key: "calories", get label() { return tr("Calories", "Calorias") }, group: "activity" },
+  { key: "steps", get label() { return tr("Steps", "Passos") }, group: "activity" },
+  { key: "spo2", get label() { return tr("Blood oxygen", "Oxigênio no sangue") }, group: "vitals" },
+  { key: "skin", get label() { return tr("Skin temperature", "Temperatura da pele") }, group: "vitals" },
 ] as const
 
 /**
@@ -31,29 +32,29 @@ const CORE = [
  * "(weekly)" rows total the 7 days ending on the day and compare with the same 7-day total over the prior 30 days.
  */
 const SCORED = [
-  { key: "recovery", label: "Recovery", group: "recovery" },
-  { key: "consistency", label: "Sleep consistency", group: "recovery" },
-  { key: "hours", label: "Hours of sleep", group: "recovery" },
-  { key: "restorative_pct", label: "Restorative sleep (%)", group: "recovery" },
-  { key: "restorative", label: "Restorative sleep (hours)", group: "recovery" },
-  { key: "debt", label: "Sleep debt", group: "recovery" },
-  { key: "strain", label: "Day strain", group: "activity" },
-  { key: "zones13", label: "HR zones 1-3 (weekly)", group: "activity" },
-  { key: "zones45", label: "HR zones 4-5 (weekly)", group: "activity" },
-  { key: "zones_all", label: "HR zones all (weekly)", group: "activity" },
-  { key: "strength", label: "Strength activity time (weekly)", group: "activity" },
-  { key: "vo2max", label: "VO2 max", group: "body" },
-  { key: "lean_mass", label: "Lean body mass", group: "body" },
+  { key: "recovery", get label() { return tr("Recovery", "Recuperação") }, group: "recovery" },
+  { key: "consistency", get label() { return tr("Sleep consistency", "Consistência do sono") }, group: "recovery" },
+  { key: "hours", get label() { return tr("Hours of sleep", "Horas de sono") }, group: "recovery" },
+  { key: "restorative_pct", get label() { return tr("Restorative sleep (%)", "Sono restaurador (%)") }, group: "recovery" },
+  { key: "restorative", get label() { return tr("Restorative sleep (hours)", "Sono restaurador (horas)") }, group: "recovery" },
+  { key: "debt", get label() { return tr("Sleep debt", "Dívida de sono") }, group: "recovery" },
+  { key: "strain", get label() { return tr("Day strain", "Esforço do dia") }, group: "activity" },
+  { key: "zones13", get label() { return tr("HR zones 1-3 (weekly)", "Zonas de FC 1-3 (semanal)") }, group: "activity" },
+  { key: "zones45", get label() { return tr("HR zones 4-5 (weekly)", "Zonas de FC 4-5 (semanal)") }, group: "activity" },
+  { key: "zones_all", get label() { return tr("HR zones all (weekly)", "Todas as zonas de FC (semanal)") }, group: "activity" },
+  { key: "strength", get label() { return tr("Strength activity time (weekly)", "Tempo de treino de força (semanal)") }, group: "activity" },
+  { key: "vo2max", get label() { return tr("VO2 max", "VO2 máx.") }, group: "body" },
+  { key: "lean_mass", get label() { return tr("Lean body mass", "Massa magra") }, group: "body" },
 ] as const
 export type ScoredKey = (typeof SCORED)[number]["key"]
 
 /** Stress Monitor: a chart tile rather than a row (the day's stress line), placed and reordered like any metric. */
-const STRESS = { key: "stress", label: "Stress Monitor", group: "recovery" } as const
+const STRESS = { key: "stress", get label() { return tr("Stress Monitor", "Monitor de estresse") }, group: "recovery" } as const
 
 /** Google's weight and body-fat readings (daily_metrics); each opens its detail screen. */
 export const BODY_METRICS = [
-  { key: "weight", label: "Weight", unit: "kg", format: "decimal1", direction: "neutral", href: metricHref("weight") },
-  { key: "body_fat", label: "Body fat", unit: "%", format: "decimal1", direction: "neutral", href: metricHref("body_fat") },
+  { key: "weight", get label() { return tr("Weight", "Peso") }, unit: "kg", format: "decimal1", direction: "neutral", href: metricHref("weight") },
+  { key: "body_fat", get label() { return tr("Body fat", "Gordura corporal") }, unit: "%", format: "decimal1", direction: "neutral", href: metricHref("body_fat") },
 ] as const satisfies readonly { key: string; label: string; unit: string; format: FormatKey; direction: GoodDirection; href: string }[]
 export type BodyKey = (typeof BODY_METRICS)[number]["key"]
 

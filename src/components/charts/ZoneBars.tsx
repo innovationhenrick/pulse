@@ -7,6 +7,7 @@ import { Skeleton, SkeletonText } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/shells/EmptyState"
 import { MetricState } from "@/components/shells/MetricState"
 import { LABEL } from "@/components/metrics/primitives"
+import { tr } from "@/lib/locale-context"
 
 /** `zone` 0-5 orders the rows (0 is time under Zone 1: `min` 0, `max` the bpm below Zone 1); `label` names it ("Zone 1"). */
 export type ZoneRow = {
@@ -83,7 +84,7 @@ function Rows({ zones, note, noteLink }: { zones: ZoneRow[]; note?: string; note
         {sorted.map((z) => {
           const below = z.zone === 0
           const range = below ? `<${z.max! + 1}\u00a0bpm` : z.max === null ? `${z.min}+\u00a0bpm` : `${z.min}-${z.max}\u00a0bpm`
-          const spoken = below ? `under ${z.max! + 1} bpm` : range.replace("-", " to ").replace("+", " and above")
+          const spoken = below ? tr(`under ${z.max! + 1} bpm`, `abaixo de ${z.max! + 1} bpm`) : tr(range.replace("-", " to ").replace("+", " and above"), range.replace("-", " a ").replace("+", " ou mais"))
           const sh = share(z.seconds, total)
           const t = Math.round(z.seconds)
           const minutes = Math.floor(t / 60)
@@ -173,7 +174,7 @@ function Stacked({ segments, unit }: { segments: StackedSegment[]; unit: "days" 
 
 /** DOM meters, not a chart (spec §5.8, D5): time in zones as rows, or a stacked breakdown bar. */
 export function ZoneBars(p: ZoneBarsProps) {
-  const empty = <EmptyState body={p.emptyCopy ?? (p.variant === "rows" ? "No heart-rate zones yet today." : "No days with Recovery in this period.")} />
+  const empty = <EmptyState body={p.emptyCopy ?? (p.variant === "rows" ? tr("No heart-rate zones yet today.", "Ainda sem zonas de frequência cardíaca hoje.") : tr("No days with Recovery in this period.", "Nenhum dia com Recuperação neste período."))} />
   if (p.variant === "rows")
     return (
       <MetricState metric={p.data} skeleton={<ZoneBarsSkeleton variant="rows" />} empty={empty}>

@@ -8,8 +8,12 @@ import { DetailShell } from "@/components/shells/DetailShell"
 import { SectionShell } from "@/components/shells/SectionShell"
 import { mapMetric } from "../_lib/view"
 import { MetricPicker, PERIOD, TRENDS_GRID } from "./parts"
+import { tr } from "@/lib/locale-context"
+import { getTranslations } from "next-intl/server"
 
-export const metadata = { title: "Trends" }
+export async function generateMetadata() {
+  return { title: (await getTranslations("meta.trends"))("title") }
+}
 
 /** Trends `/trends?metric=&r=` (More, U21): one daily metric over up to a year, each range against the one before. */
 export default async function TrendsPage({ searchParams }: PageProps<"/trends">) {
@@ -26,12 +30,12 @@ export default async function TrendsPage({ searchParams }: PageProps<"/trends">)
 
   return (
     <DetailShell
-      title="Trends"
+      title={tr("Trends", "Tendências")}
       primary={
         <div className="flex flex-col gap-4 xl:gap-6">
           <MetricPicker current={m.key} r={r} />
           <div className={TRENDS_GRID}>
-            <SectionShell variant="card" level={2} title={m.label} action={{ label: "Details", href: m.href }}>
+            <SectionShell variant="card" level={2} title={m.label} action={{ label: tr("Details", "Detalhes"), href: m.href }}>
               <TrendChart
                 key={m.key}
                 label={m.label}
@@ -44,14 +48,14 @@ export default async function TrendsPage({ searchParams }: PageProps<"/trends">)
                 ranges={RANGES}
               />
             </SectionShell>
-            <SectionShell variant="card" level={2} title="Averages">
+            <SectionShell variant="card" level={2} title={tr("Averages", "Médias")}>
               <div className="divide-y divide-border">
                 {vm.periods.map((p) => (
                   <KeyStatRow
                     key={p.range}
                     variant="row"
                     label={PERIOD[p.range].label}
-                    caption={`vs. ${PERIOD[p.range].prior}`}
+                    caption={tr(`vs. ${PERIOD[p.range].prior}`, `vs. ${PERIOD[p.range].prior}`)}
                     metric={p.average}
                     unit={m.unit}
                     format={m.format}

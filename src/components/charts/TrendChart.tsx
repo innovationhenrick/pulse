@@ -16,6 +16,7 @@ import { MetricState } from "@/components/shells/MetricState"
 import { useOptionalShellCalendar } from "@/components/shells/ShellStatus"
 import { SEGMENT_ITEM, SEGMENT_TRACK, StatusChip, ValueUnit } from "@/components/metrics/primitives"
 import { AXIS, BAR_CURSOR, BandGradient, bandPaint, ChartFigure, FadeGradient, GlowDot, GRID, gutterLabel, LABEL_HALO, labelGutter, LINE_CURSOR, useSeriesAnimation, wholeTick, type Band } from "./ChartFrame"
+import { lazy, tr } from "@/lib/locale-context"
 
 export type TrendPoint = {
   date: string
@@ -60,7 +61,7 @@ export type TrendChartProps = {
 
 const RANGE_ARIA: Record<TrendRange, string> = { w: "1 week", m: "1 month", "6m": "6 months", "1y": "1 year" }
 const RANGE_PRIOR: Record<TrendRange, string> = { w: "vs. prior week", m: "vs. prior month", "6m": "vs. prior 6 months", "1y": "vs. prior year" }
-const RANGE_WORD: Record<TrendRange, string> = { w: "week", m: "month", "6m": "6 months", "1y": "year" }
+const RANGE_WORD: Record<TrendRange, string> = lazy(() => ({ w: tr("week", "semana"), m: tr("month", "mês"), "6m": tr("6 months", "6 meses"), "1y": tr("year", "ano") }))
 const RANGE_LABEL: Record<TrendRange, string> = { w: "W", m: "M", "6m": "6M", "1y": "1Y" }
 const DEFAULT_RANGES: readonly TrendRange[] = ["w", "m", "6m"]
 // An outline distinguishes a missing breakdown from a coloured part or faded running total.
@@ -184,10 +185,15 @@ function Trend({ points, p }: { points: TrendPoint[]; p: TrendChartProps }) {
     return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null
   }
   const summary = values.length
-    ? `${p.label} over the last ${RANGE_WORD[range]}: average ${spoken(formatValue(p.format, avg), p.unit)}, range ${formatValue(p.format, Math.min(...values))} to ${formatValue(p.format, Math.max(...values))}${rows.length - values.length ? `, ${rows.length - values.length} ${rows.length - values.length === 1 ? "day" : "days"} missing` : ""}.${
-        p.stack ? ` Average split: ${p.stack.map((s) => `${s.label} ${formatValue(p.format, partAvg(s.key))}`).join(", ")}.` : ""
-      }`
-    : `No ${p.label} data in the last ${RANGE_WORD[range]}.`
+    ? tr(
+        `${p.label} over the last ${RANGE_WORD[range]}: average ${spoken(formatValue(p.format, avg), p.unit)}, range ${formatValue(p.format, Math.min(...values))} to ${formatValue(p.format, Math.max(...values))}${rows.length - values.length ? `, ${rows.length - values.length} ${rows.length - values.length === 1 ? "day" : "days"} missing` : ""}.${
+          p.stack ? ` Average split: ${p.stack.map((s) => `${s.label} ${formatValue(p.format, partAvg(s.key))}`).join(", ")}.` : ""
+        }`,
+        `${p.label} no último(a) ${RANGE_WORD[range]}: média ${spoken(formatValue(p.format, avg), p.unit)}, faixa de ${formatValue(p.format, Math.min(...values))} a ${formatValue(p.format, Math.max(...values))}${rows.length - values.length ? `, ${rows.length - values.length} ${rows.length - values.length === 1 ? "dia" : "dias"} sem dados` : ""}.${
+          p.stack ? ` Divisão da média: ${p.stack.map((s) => `${s.label} ${formatValue(p.format, partAvg(s.key))}`).join(", ")}.` : ""
+        }`,
+      )
+    : tr(`No ${p.label} data in the last ${RANGE_WORD[range]}.`, `Sem dados de ${p.label} no último(a) ${RANGE_WORD[range]}.`)
 
   const changeRange = (v: string) => {
     if (!v) return
@@ -201,7 +207,7 @@ function Trend({ points, p }: { points: TrendPoint[]; p: TrendChartProps }) {
       <div className={headerClass(ranges)}>
         <div className="min-w-0" aria-live="polite">
           <p className="text-xs leading-4 font-bold tracking-[0.1em] text-muted-foreground uppercase tabular-nums">
-            {scrubbed || byDay ? dayLabel(shown?.date ?? today, today) : "Average"}
+            {scrubbed || byDay ? dayLabel(shown?.date ?? today, today) : tr("Average", "Média")}
           </p>
           <ValueUnit
             value={formatValue(p.format, scrubbed || byDay ? (shown?.value ?? null) : avg)}
@@ -215,7 +221,7 @@ function Trend({ points, p }: { points: TrendPoint[]; p: TrendChartProps }) {
               format={p.format}
             />
           )}
-          {shown?.provisional && <p className="mt-1 text-xs font-medium text-muted-foreground">{p.stack ? "So far" : "Provisional"}</p>}
+          {shown?.provisional && <p className="mt-1 text-xs font-medium text-muted-foreground">{p.stack ? tr("So far", "Até agora") : tr("Provisional", "Provisório")}</p>}
           {!scrubbed && !byDay && delta !== null && (
             <StatusChip
               tone={tone === "good" ? "optimal" : tone === "bad" ? "warning" : "neutral"}
@@ -228,7 +234,7 @@ function Trend({ points, p }: { points: TrendPoint[]; p: TrendChartProps }) {
           )}
         </div>
         {!p.fixedRange && (
-          <ToggleGroup type="single" value={range} onValueChange={changeRange} spacing={0} className={cn(SEGMENT_TRACK, ranges.length > 3 && "w-full")} aria-label="Range">
+          <ToggleGroup type="single" value={range} onValueChange={changeRange} spacing={0} className={cn(SEGMENT_TRACK, ranges.length > 3 && "w-full")} aria-label={tr("Range", "Período")}>
             {ranges.map((r) => (
               <ToggleGroupItem
                 key={r}
@@ -373,7 +379,7 @@ function Trend({ points, p }: { points: TrendPoint[]; p: TrendChartProps }) {
       )}
       {(p.baseline || p.target || p.smooth) && values.length > 0 && (
         <p className={cn("mt-2 text-xs leading-4 font-medium text-muted-foreground")}>
-          {p.target ? "Shaded: your Strain Target" : p.baseline ? "Shaded: your normal range" : `Line: ${p.smooth}-day average`}
+          {p.target ? tr("Shaded: your Strain Target", "Sombreado: sua meta de Esforço") : p.baseline ? tr("Shaded: your normal range", "Sombreado: sua faixa normal") : tr(`Line: ${p.smooth}-day average`, `Linha: média de ${p.smooth} dias`)}
         </p>
       )}
     </div>
@@ -428,7 +434,7 @@ export function TrendChartSkeleton({
           {day ? (
             <SkeletonText className="w-[6ch] text-xs leading-4" />
           ) : (
-            <p className="text-xs leading-4 font-bold tracking-[0.1em] text-muted-foreground uppercase">Average</p>
+            <p className="text-xs leading-4 font-bold tracking-[0.1em] text-muted-foreground uppercase">{tr("Average", "Média")}</p>
           )}
           <SkeletonText className="w-[4ch] font-numeric text-[28px] leading-8 font-bold" />
           {legend && <SkeletonText className="mt-1.5 w-40 text-xs leading-4" />}

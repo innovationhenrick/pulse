@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { agoShort, clock, DAY, dayLabel, pillLabel, dialAriaLabel, durationWords, formatDay, formatValue, rangeLabel } from "./format";
+import { afterEach, describe, expect, it } from "vitest";
+import { setFormatLocale } from "./locale-context";
+import { ago, agoShort, clock, DAY, dayLabel, pillLabel, dialAriaLabel, durationWords, formatDay, formatValue, rangeLabel } from "./format";
 
 describe("format", () => {
   it("shortens sync ages for the header", () => {
@@ -56,5 +57,49 @@ describe("format", () => {
     expect(dialAriaLabel({ variant: "recovery", label: "Recovery", value: null, reasonText: "Calibrating: 4 nights left" })).toBe(
       "Recovery unavailable: calibrating, 4 nights left",
     );
+  });
+});
+
+describe("format in Brazilian Portuguese", () => {
+  afterEach(() => setFormatLocale("en-US"));
+  const pt = () => setFormatLocale("pt-BR");
+  it("prints dates the Brazilian way", () => {
+    pt();
+    expect(formatDay("2026-09-28", DAY.short)).toBe("seg., 28 de set.");
+    expect(formatDay("2026-09-28", DAY.long)).toBe("segunda-feira, 28 de setembro");
+    expect(pillLabel("2026-09-28", "2026-10-02")).toBe("seg., 28 de set.");
+    expect(dayLabel("2026-10-02", "2026-10-02")).toBe("Hoje");
+    expect(dayLabel("2026-10-01", "2026-10-02")).toBe("Ontem");
+    expect(pillLabel("2026-10-01", "2026-10-02")).toBe("Ontem");
+    expect(rangeLabel("2026-09-22", "2026-09-28")).toBe("22 de set. - 28 de set.");
+  });
+  it("uses a decimal comma and a thousands dot", () => {
+    pt();
+    expect(formatValue("decimal1", 7.5)).toBe("7,5");
+    expect(formatValue("decimal2", -0.001)).toBe("0,00");
+    expect(formatValue("signed1", 2.34)).toBe("+2,3");
+    expect(formatValue("grouped", 12459)).toBe("12.459");
+    expect(formatValue("int", 72)).toBe("72");
+  });
+  it("speaks durations and ages in Portuguese", () => {
+    pt();
+    const now = Date.parse("2026-10-02T12:00:00Z");
+    expect(durationWords(72)).toBe("1\u00a0hora 12\u00a0minutos");
+    expect(durationWords(38)).toBe("38\u00a0minutos");
+    expect(ago(now - 20_000, now)).toBe("agora mesmo");
+    expect(ago(now - 12 * 60_000, now)).toBe("há 12\u00a0minutos");
+    expect(ago(now - 3 * 3600_000, now)).toBe("há 3\u00a0horas");
+    expect(agoShort(now - 20_000, now)).toBe("Agora");
+  });
+  it("reads dials aloud in Portuguese", () => {
+    pt();
+    expect(dialAriaLabel({ variant: "recovery", label: "Recuperação", value: 72, valueText: "72", unit: "%", bandWord: "Verde" })).toBe("Recuperação 72 por cento, verde");
+    expect(dialAriaLabel({ variant: "strain", label: "Esforço", value: 9.4, valueText: "9,4", soFar: true, target: [12, 15] })).toBe("Esforço 9,4 de 21 até agora, meta de 12,0 a 15,0");
+  });
+  it("goes back to English when the language is English again", () => {
+    pt();
+    setFormatLocale("en-US");
+    expect(dayLabel("2026-10-02", "2026-10-02")).toBe("Today");
+    expect(formatValue("decimal1", 7.5)).toBe("7.5");
   });
 });

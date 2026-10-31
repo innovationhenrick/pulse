@@ -7,6 +7,7 @@ import type { Metric } from "@/lib/reasons"
 import { SkeletonText } from "@/components/ui/skeleton"
 import { MetricState, type MetricMeta } from "@/components/shells/MetricState"
 import { CAPTION, LABEL, MetricTags, ValueUnit } from "./primitives"
+import { tr } from "@/lib/locale-context"
 
 type Common = {
   icon?: React.ReactNode
@@ -67,7 +68,7 @@ function RecoveryRow({ p, value, meta }: { p: Extract<ContributorRowProps, { var
   const unitSpoken = (v: number) => spoken(formatValue(p.format, v), p.unit)
   const sentence =
     value === null
-      ? `${p.label}: ${p.reasonCopy ?? "Not measured: left out of today’s score"}`
+      ? `${p.label}: ${p.reasonCopy ?? tr("Not measured: left out of today’s score", "Não medido: fora do score de hoje")}`
       : `${p.label} ${unitSpoken(value)}, ${value > mean + sd ? "above" : value < mean - sd ? "below" : "within"} your normal range of ${formatValue(p.format, mean - sd)} to ${formatValue(p.format, mean + sd)}${pts === null ? "" : pts === 0 ? ", no change" : `, ${pts > 0 ? "added" : "took off"} ${Math.abs(Math.round(pts))} points`}`
   const body = (
     <div className="space-y-2">
@@ -98,8 +99,8 @@ function RecoveryRow({ p, value, meta }: { p: Extract<ContributorRowProps, { var
         </div>
         <p className={cn(CAPTION, "flex flex-wrap items-center gap-2")}>
           {value === null
-            ? (p.reasonCopy ?? "Not measured: left out of today’s score")
-            : `Baseline ${formatValue(p.format, mean)} ± ${formatValue(p.format, sd).replace(/^\+/, "")}${p.unit ? (isSymbolUnit(p.unit) ? p.unit : `\u00a0${p.unit}`) : ""}`}
+            ? (p.reasonCopy ?? tr("Not measured: left out of today’s score", "Não medido: fora do score de hoje"))
+            : `${tr("Baseline", "Base")} ${formatValue(p.format, mean)} ± ${formatValue(p.format, sd).replace(/^\+/, "")}${p.unit ? (isSymbolUnit(p.unit) ? p.unit : `\u00a0${p.unit}`) : ""}`}
           {meta && value !== null && <MetricTags provisional={meta.provisional} tags={meta.tags} />}
         </p>
       </div>
@@ -144,7 +145,7 @@ function HealthspanRow({ p, value, meta }: { p: Extract<ContributorRowProps, { v
   const recent = value === null ? null : p.recent
   const sentence =
     value === null
-      ? `${p.label}: ${p.reasonCopy ?? "No data"}`
+      ? `${p.label}: ${p.reasonCopy ?? tr("No data", "Sem dados")}`
       : `${p.label}: 6-month average ${spoken(formatValue(p.format, value), p.unit)}${recent === null ? "" : `, 30-day average ${spoken(formatValue(p.format, recent), p.unit)}`}${years === null ? "" : years === 0 ? ", no change in years" : `, ${formatValue("decimal1", Math.abs(years))} years ${years < 0 ? "younger" : "older"}`}`
   return (
     <div className={cn("py-3", p.className)}>
@@ -194,7 +195,7 @@ function HealthspanRow({ p, value, meta }: { p: Extract<ContributorRowProps, { v
           </span>
         </div>
         {/* Reason copy can be a sentence; it gets its own line. */}
-        {value === null && <span className="block text-xs leading-4 font-medium text-pretty text-muted-foreground">{p.reasonCopy ?? "No data"}</span>}
+        {value === null && <span className="block text-xs leading-4 font-medium text-pretty text-muted-foreground">{p.reasonCopy ?? tr("No data", "Sem dados")}</span>}
       </div>
     </div>
   )

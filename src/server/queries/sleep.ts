@@ -1,4 +1,5 @@
 import { FEATURES } from "@/lib/features";
+import { formatDay } from "@/lib/format";
 import { metricHref, trendHref } from "@/lib/url";
 import { and, eq } from "drizzle-orm";
 import { sleepSegments, sleepSessions } from "../db/schema";
@@ -21,13 +22,14 @@ import {
   vitalReason,
 } from "./common";
 import type { KeyStat, Metric, SleepStatus, SleepVM, TimePoint } from "./types";
+import { tr } from "@/lib/locale-context"
 
 type Stage = "awake" | "rem" | "light" | "deep";
 const STAGE_ROWS: { stage: Stage; label: string; typical: [number, number] }[] = [
-  { stage: "awake", label: "Awake", typical: [5, 10] },
+  { stage: "awake", get label() { return tr("Awake", "Acordado") }, typical: [5, 10] },
   { stage: "rem", label: "REM", typical: [20, 25] },
-  { stage: "light", label: "Light", typical: [45, 55] },
-  { stage: "deep", label: "Deep", typical: [13, 23] },
+  { stage: "light", get label() { return tr("Light", "Leve") }, typical: [45, 55] },
+  { stage: "deep", get label() { return tr("Deep", "Profundo") }, typical: [13, 23] },
 ];
 
 const status = (v: number | null | undefined, optimal: number, sufficient: number): SleepStatus | undefined =>
@@ -58,11 +60,11 @@ export async function getSleep(day: string, ctx: QueryCtx): Promise<SleepVM> {
   };
   // The reference app's four rows, each opening its Trend View; restorative sleep sits under the stages instead.
   const summary = [
-    { ...stat("hours", "Hours vs. needed", hoursPct, "%", (v) => status(v, 85, 70)), href: trendHref("hours_need") },
-    { ...stat("consistency", "Sleep consistency", (r) => r.sleep?.consistency, "%", (v) => status(v, 80, 70), main ? "calibrating" : reason), href: trendHref("consistency") },
-    { ...stat("efficiency", "Sleep efficiency", efficiencyPct, "%", (v) => status(v, 85, 75)), href: trendHref("efficiency") },
+    { ...stat("hours", tr("Hours vs. needed", "Horas vs. necessárias"), hoursPct, "%", (v) => status(v, 85, 70)), href: trendHref("hours_need") },
+    { ...stat("consistency", tr("Sleep consistency", "Consistência do sono"), (r) => r.sleep?.consistency, "%", (v) => status(v, 80, 70), main ? "calibrating" : reason), href: trendHref("consistency") },
+    { ...stat("efficiency", tr("Sleep efficiency", "Eficiência do sono"), efficiencyPct, "%", (v) => status(v, 85, 75)), href: trendHref("efficiency") },
     // Built, off until Pulse scores stress during sleep (the stress model leaves sleep minutes out).
-    ...(FEATURES.sleepStress ? [{ ...stat("sleepStress", "High sleep stress", () => null, "%", undefined, "no_data"), href: trendHref("sleep_stress") }] : []),
+    ...(FEATURES.sleepStress ? [{ ...stat("sleepStress", tr("High sleep stress", "Estresse alto durante o sono"), () => null, "%", undefined, "no_data"), href: trendHref("sleep_stress") }] : []),
   ];
 
   // Last night's need is the plan made the evening before.
@@ -82,10 +84,10 @@ export async function getSleep(day: string, ctx: QueryCtx): Promise<SleepVM> {
   const consistency: SleepVM["consistency"] = main ? consistencyOf(rows, day, ctx.timeZone, "calibrating", priorStats(rows, day, (r) => r.sleep?.consistency).mean) : fromReason(noNight, isToday);
 
   const details = [
-    { ...stat("timeInBed", "Time in bed", (r) => r.sleep?.main?.inBedMin, "min"), direction: "neutral" as const },
-    { ...stat("wakeEvents", "Wake events", (r) => r.sleep?.main?.wakeEvents, undefined), direction: "down" as const },
-    { ...stat("resp", "Respiratory rate", (r) => r.metrics?.respBpm, "rpm", undefined, vitalReason(row, isToday)), direction: "down" as const, href: metricHref("resp") },
-    { ...stat("debt", "Sleep debt", (r) => (r.sleep?.main ? r.sleep.debtMin : null), "min"), direction: "down" as const },
+    { ...stat("timeInBed", tr("Time in bed", "Tempo na cama"), (r) => r.sleep?.main?.inBedMin, "min"), direction: "neutral" as const },
+    { ...stat("wakeEvents", tr("Wake events", "Despertares"), (r) => r.sleep?.main?.wakeEvents, undefined), direction: "down" as const },
+    { ...stat("resp", tr("Respiratory rate", "Frequência respiratória"), (r) => r.metrics?.respBpm, "rpm", undefined, vitalReason(row, isToday)), direction: "down" as const, href: metricHref("resp") },
+    { ...stat("debt", tr("Sleep debt", "Dívida de sono"), (r) => (r.sleep?.main ? r.sleep.debtMin : null), "min"), direction: "down" as const },
   ];
 
   const restorativeMin = (r: DayRow) => (r.sleep?.main?.deepMin != null && r.sleep.main.remMin != null ? r.sleep.main.deepMin + r.sleep.main.remMin : null);
@@ -205,7 +207,11 @@ const bedMin = (start: number, tz: string) => {
 };
 
 const median = (xs: number[]) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] : null);
-const WEEKDAY = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "UTC" });
+/** "Mon." / "seg.": the short weekday with its period, whichever language already prints one. */
+const weekdayShort = (d: string) => {
+  const w = formatDay(d, { weekday: "short" });
+  return w.endsWith(".") ? w : `${w}.`;
+};
 
 /** Five nights ending on `day`: bed and wake as minutes from local midnight, each with the median of the 14 nights before it. */
 export function consistencyOf(rows: Map<string, DayRow>, day: string, tz: string, noScore: SleepVM["performance"]["reason"], average: number | null): SleepVM["consistency"] {
@@ -213,7 +219,7 @@ export function consistencyOf(rows: Map<string, DayRow>, day: string, tz: string
   if (!finite(pct)) return none(noScore ?? "calibrating");
   const night = (d: string) => {
     const m = rows.get(d)?.sleep?.main;
-    return m ? { day: d, label: `${WEEKDAY.format(new Date(`${d}T12:00:00Z`))}.`, bed: bedMin(m.start, tz), wake: localMinutes(m.end, tz) } : null;
+    return m ? { day: d, label: weekdayShort(d), bed: bedMin(m.start, tz), wake: localMinutes(m.end, tz) } : null;
   };
   const withTypical = (d: string) => {
     const n = night(d);
@@ -229,7 +235,7 @@ export function insightOf(rows: Map<string, DayRow>, day: string, tz: string): s
   const perf = row?.sleep?.performance;
   const main = row?.sleep?.main;
   if (!finite(perf) || !main) return null;
-  const word = perf >= 85 ? "optimal" : perf >= 70 ? "sufficient" : "poor";
+  const word = perf >= 85 ? tr("optimal", "ótimo") : perf >= 70 ? tr("sufficient", "suficiente") : tr("poor", "ruim");
   const prior: number[] = [];
   for (let k = 1; k <= 14; k++) {
     const m = rows.get(addDays(day, -k))?.sleep?.main;
@@ -240,10 +246,13 @@ export function insightOf(rows: Map<string, DayRow>, day: string, tz: string): s
   const shift = usual == null ? 0 : bedMin(main.start, tz) - usual;
   const consistency = row?.sleep?.consistency;
   if (Math.abs(shift) >= 45) {
-    return `Your sleep was ${word}. Consistency is the easiest win: you went to bed ${Math.abs(Math.round(shift))} minutes ${shift > 0 ? "later" : "earlier"} than usual.`;
+    return tr(
+      `Your sleep was ${word}. Consistency is the easiest win: you went to bed ${Math.abs(Math.round(shift))} minutes ${shift > 0 ? "later" : "earlier"} than usual.`,
+      `Seu sono foi ${word}. A consistência é a vitória mais fácil: você foi dormir ${Math.abs(Math.round(shift))} minutos ${shift > 0 ? "mais tarde" : "mais cedo"} que o habitual.`,
+    );
   }
-  if (finite(consistency) && consistency < 70) return `Your sleep was ${word}. Keeping a steadier bedtime and wake time would lift your consistency.`;
+  if (finite(consistency) && consistency < 70) return tr(`Your sleep was ${word}. Keeping a steadier bedtime and wake time would lift your consistency.`, `Seu sono foi ${word}. Manter horários de dormir e acordar mais estáveis aumentaria sua consistência.`);
   const need = row?.sleep ? row.sleep.needHours * 60 : null;
-  if (need && main.asleepMin < need * 0.85) return `Your sleep was ${word}. You slept ${Math.round(need - main.asleepMin)} minutes less than you needed; an earlier night helps.`;
-  return `Your sleep was ${word}. You kept to your usual schedule and slept close to your need.`;
+  if (need && main.asleepMin < need * 0.85) return tr(`Your sleep was ${word}. You slept ${Math.round(need - main.asleepMin)} minutes less than you needed; an earlier night helps.`, `Seu sono foi ${word}. Você dormiu ${Math.round(need - main.asleepMin)} minutos a menos do que precisava; uma noite mais cedo ajuda.`);
+  return tr(`Your sleep was ${word}. You kept to your usual schedule and slept close to your need.`, `Seu sono foi ${word}. Você manteve sua rotina habitual e dormiu perto do que precisava.`);
 }

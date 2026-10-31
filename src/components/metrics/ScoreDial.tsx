@@ -14,6 +14,7 @@ import { ChartContainer } from "@/components/ui/chart"
 import { SkeletonText } from "@/components/ui/skeleton"
 import { Wordmark } from "@/components/brand/Wordmark"
 import { MetricTags, type TagKind, CAP_TRIM } from "./primitives"
+import { tr } from "@/lib/locale-context"
 
 export type DialSize = "sm" | "md" | "lg"
 export type DialVariant = "recovery" | "strain" | "sleep" | "stat" | "gauge"
@@ -82,7 +83,7 @@ function resolve(p: ScoreDialProps): Resolved {
       const band = p.value === null ? null : recoveryBand(p.value)
       const c = p.value === null ? DATA_COLORS.muted : DATA_COLORS[dialColor("recovery", p.value)]
       return {
-        label: p.label ?? "Recovery",
+        label: p.label ?? tr("Recovery", "Recuperação"),
         max: 100,
         color: c.css,
         unit: "%",
@@ -92,13 +93,13 @@ function resolve(p: ScoreDialProps): Resolved {
       }
     }
     case "strain":
-      return { label: p.label ?? "Strain", max: 21, color: DATA_COLORS[dialColor("strain", p.value ?? 0)].css, text: formatValue("decimal1", p.value) }
+      return { label: p.label ?? tr("Strain", "Esforço"), max: 21, color: DATA_COLORS[dialColor("strain", p.value ?? 0)].css, text: formatValue("decimal1", p.value) }
     case "sleep":
-      return { label: p.label ?? (lg ? "Sleep performance" : "Sleep"), max: 100, color: DATA_COLORS[dialColor("sleep", p.value ?? 0)].css, unit: "%", text: formatValue("int", p.value) }
+      return { label: p.label ?? (lg ? tr("Sleep performance", "Desempenho do sono") : tr("Sleep", "Sono")), max: 100, color: DATA_COLORS[dialColor("sleep", p.value ?? 0)].css, unit: "%", text: formatValue("int", p.value) }
     case "gauge": {
       const level = p.value === null ? null : stressLevel(p.value)
       return {
-        label: p.label ?? "Stress",
+        label: p.label ?? tr("Stress", "Estresse"),
         max: 3,
         color: "transparent",
         text: formatValue("decimal1", p.value),

@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+// No locale in the URL: the language is the account's setting (src/i18n/request.ts).
+const withNextIntl = createNextIntlPlugin();
 
 // Baked into the client at build time: the service worker is registered as /sw.js?v=<this>, so each build installs
 // a fresh worker and the open app can offer "New version available".
@@ -38,4 +42,4 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

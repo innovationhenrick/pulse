@@ -45,6 +45,7 @@ import { cn } from "@/lib/utils"
 import type { FormatKey } from "@/lib/format"
 import { dayHref, RANGE_DAYS, type TrendRange } from "@/lib/url"
 import type { EnergyBankVM, HrChart, KeyStat, Metric, StressDayChart, Trend } from "@/server/queries/types"
+import { tr } from "@/lib/locale-context"
 
 export { CAPTION, LABEL } from "@/components/metrics/primitives"
 /** The inset legend strip under a summary card (spec §7.2, §7.3, §7.5). */
@@ -59,7 +60,7 @@ export function TodayVsLegend({ period }: { period: string }) {
         <DeltaMark dir="down" tone="bad" />
       </span>
       <span>
-        <span className="font-semibold text-foreground">Today</span> vs. {period}
+        <span className="font-semibold text-foreground">{tr("Today", "Hoje")}</span> {tr("vs.", "vs.")} {period}
       </span>
     </p>
   )

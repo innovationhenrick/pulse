@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { Eye, EyeOff, LoaderCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { authClient } from "@/lib/auth-client"
@@ -29,6 +30,7 @@ export function AuthField({ label, hint, error, aside, id, type, ...props }: Fie
   const auto = React.useId()
   const fieldId = id ?? auto
   const noteId = error || hint ? `${fieldId}-note` : undefined
+  const t = useTranslations("auth.form")
   const [shown, setShown] = React.useState(false)
   const password = type === "password"
   return (
@@ -52,7 +54,7 @@ export function AuthField({ label, hint, error, aside, id, type, ...props }: Fie
           <button
             type="button"
             onClick={() => setShown((s) => !s)}
-            aria-label={shown ? "Hide password" : "Show password"}
+            aria-label={shown ? t("hidePassword") : t("showPassword")}
             aria-pressed={shown}
             className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-xl text-muted-foreground outline-none transition-[color] duration-150 ease-standard hover:text-foreground focus-visible:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
           >
@@ -80,14 +82,12 @@ export function AuthSubmit({ pending, label, pendingLabel, className }: { pendin
 }
 
 type AuthError = { status?: number; code?: string } | null | undefined
-const RATE_LIMITED = "Too many tries. Wait a few minutes, then try again."
-const OFFLINE = "Couldn’t reach Pulse. Check your connection and try again."
-
 /** better-auth client calls resolve to `{ error }`; a dropped connection rejects instead. */
 const settle = (p: Promise<{ error: AuthError }>) => p.then((r) => r.error ?? null, () => ({ status: 0 }) as AuthError)
 
 /** Sign in with an email or a username (an "@" decides which) and a password. Never says which of the two was wrong. */
 export function LoginForm() {
+  const t = useTranslations("auth.form")
   const router = useRouter()
   const password = React.useRef<HTMLInputElement>(null)
   const [pending, setPending] = React.useState(false)
@@ -108,46 +108,46 @@ export function LoginForm() {
       return
     }
     setPending(false)
-    setError(err.status === 429 ? RATE_LIMITED : err.status === 0 ? OFFLINE : "Email/username or password is incorrect.")
+    setError(err.status === 429 ? t("rateLimited") : err.status === 0 ? t("offline") : t("badCredentials"))
     password.current?.select()
     password.current?.focus()
   }
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
       {error && <AuthAlert>{error}</AuthAlert>}
-      <AuthField label="Email or username" name="identifier" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} required autoFocus />
+      <AuthField label={t("emailOrUsername")} name="identifier" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} required autoFocus />
       <AuthField
         ref={password}
-        label="Password"
+        label={t("password")}
         name="password"
         type="password"
         autoComplete="current-password"
         required
-        aria-invalid={error && error !== OFFLINE && error !== RATE_LIMITED ? true : undefined}
+        aria-invalid={error && error !== t("offline") && error !== t("rateLimited") ? true : undefined}
         aside={
           <Link href="/forgot" className={AUTH_LINK}>
-            Forgot password?
+            {t("forgot")}
           </Link>
         }
       />
-      <AuthSubmit pending={pending} label="Sign in" pendingLabel="Signing in…" className="mt-3" />
+      <AuthSubmit pending={pending} label={t("signIn")} pendingLabel={t("signingIn")} className="mt-3" />
     </form>
   )
 }
 
 type SignupField = "name" | "username" | "email" | "password"
 
-/** better-auth's sign-up error codes, mapped to the field they are about. */
+/** better-auth's sign-up error codes, mapped to the field they are about and to the message key (auth.form.signupErrors). */
 const SIGNUP_ERRORS: Record<string, [SignupField, string]> = {
-  USERNAME_IS_ALREADY_TAKEN: ["username", "That username is taken. Try another."],
-  INVALID_USERNAME: ["username", "Use 3–30 letters, numbers, _ or ."],
-  USERNAME_TOO_SHORT: ["username", "Use at least 3 characters."],
-  USERNAME_TOO_LONG: ["username", "Use at most 30 characters."],
-  USER_ALREADY_EXISTS: ["email", "An account with this email already exists. Sign in instead."],
-  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: ["email", "An account with this email already exists. Sign in instead."],
-  INVALID_EMAIL: ["email", "Enter a valid email address."],
-  PASSWORD_TOO_SHORT: ["password", "Use at least 10 characters."],
-  PASSWORD_TOO_LONG: ["password", "Use at most 128 characters."],
+  USERNAME_IS_ALREADY_TAKEN: ["username", "usernameTaken"],
+  INVALID_USERNAME: ["username", "usernameInvalid"],
+  USERNAME_TOO_SHORT: ["username", "usernameShort"],
+  USERNAME_TOO_LONG: ["username", "usernameLong"],
+  USER_ALREADY_EXISTS: ["email", "emailTaken"],
+  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: ["email", "emailTaken"],
+  INVALID_EMAIL: ["email", "emailInvalid"],
+  PASSWORD_TOO_SHORT: ["password", "passwordShort"],
+  PASSWORD_TOO_LONG: ["password", "passwordLong"],
 }
 
 /**
@@ -155,6 +155,7 @@ const SIGNUP_ERRORS: Record<string, [SignupField, string]> = {
  * `invite` is the token from an invite link; it travels as a header (auth.ts INVITE_HEADER).
  */
 export function SignupForm({ invite }: { invite?: string }) {
+  const t = useTranslations("auth.form")
   const router = useRouter()
   const formRef = React.useRef<HTMLFormElement>(null)
   const [pending, setPending] = React.useState(false)
@@ -181,32 +182,32 @@ export function SignupForm({ invite }: { invite?: string }) {
     setPending(false)
     const field = err.code ? SIGNUP_ERRORS[err.code] : undefined
     if (field) {
-      setFields({ [field[0]]: field[1] })
+      setFields({ [field[0]]: t(`signupErrors.${field[1]}`) })
       formRef.current?.querySelector<HTMLInputElement>(`[name="${field[0]}"]`)?.focus()
     } else {
       setError(
         err.status === 429
-          ? RATE_LIMITED
+          ? t("rateLimited")
           : err.status === 0
-            ? OFFLINE
+            ? t("offline")
             : err.code === "EMAIL_PASSWORD_SIGN_UP_DISABLED"
-              ? "Sign-up is closed on this server."
+              ? t("signupClosed")
               : err.code === "OWNER_EMAIL_RESERVED"
-                ? "This email is reserved for this server’s admin. Use another email."
+                ? t("ownerReserved")
                 : err.code === "INVITE_INVALID"
                 ? invite
-                  ? "This invite link was just used, has expired or was revoked. Ask for a new one."
-                  : "Sign-up here needs an invite link. Ask whoever runs this server for one."
-                : "Couldn’t create the account. Try again.",
+                  ? t("inviteUsed")
+                  : t("inviteNeeded")
+                : t("signupFailed"),
       )
     }
   }
   return (
     <form ref={formRef} onSubmit={submit} className="flex flex-col gap-4">
       {error && <AuthAlert>{error}</AuthAlert>}
-      <AuthField label="Name" name="name" autoComplete="name" enterKeyHint="next" required maxLength={100} autoFocus error={fields.name} />
+      <AuthField label={t("name")} name="name" autoComplete="name" enterKeyHint="next" required maxLength={100} autoFocus error={fields.name} />
       <AuthField
-        label="Username"
+        label={t("username")}
         name="username"
         autoComplete="username"
         autoCapitalize="none"
@@ -216,14 +217,14 @@ export function SignupForm({ invite }: { invite?: string }) {
         minLength={3}
         maxLength={30}
         pattern="[A-Za-z0-9_.]{3,30}"
-        title="3–30 letters, numbers, _ or ."
+        title={t("usernameTitle")}
         enterKeyHint="next"
-        hint="Letters, numbers, _ and . (3–30)"
+        hint={t("usernameHint")}
         error={fields.username}
       />
-      <AuthField label="Email" name="email" type="email" autoComplete="email" enterKeyHint="next" autoCapitalize="none" spellCheck={false} required error={fields.email} />
+      <AuthField label={t("email")} name="email" type="email" autoComplete="email" enterKeyHint="next" autoCapitalize="none" spellCheck={false} required error={fields.email} />
       <AuthField
-        label="Password"
+        label={t("password")}
         name="password"
         type="password"
         autoComplete="new-password"
@@ -231,10 +232,10 @@ export function SignupForm({ invite }: { invite?: string }) {
         minLength={10}
         maxLength={128}
         enterKeyHint="go"
-        hint="At least 10 characters."
+        hint={t("passwordHint")}
         error={fields.password}
       />
-      <AuthSubmit pending={pending} label="Create account" pendingLabel="Creating account…" className="mt-2" />
+      <AuthSubmit pending={pending} label={t("createAccount")} pendingLabel={t("creatingAccount")} className="mt-2" />
     </form>
   )
 }

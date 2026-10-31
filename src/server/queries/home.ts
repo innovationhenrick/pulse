@@ -41,14 +41,16 @@ import {
   toStrain,
 } from "./common";
 import type { ActivityKind, EnergyBankVM, HomeVM, KeyStat, Metric, VitalKey } from "./types";
+import { lazy, tr } from "@/lib/locale-context"
+import { BAND_WORD } from "@/lib/bands"
 
-export const VITAL_LABEL: Record<VitalKey, string> = {
-  resp: "Respiratory rate",
-  spo2: "Blood oxygen",
-  restingHr: "Resting heart rate",
-  hrv: "Heart rate variability",
-  skinTempDev: "Skin temperature",
-};
+export const VITAL_LABEL: Record<VitalKey, string> = lazy(() => ({
+  resp: tr("Respiratory rate", "Frequência respiratória"),
+  spo2: tr("Blood oxygen", "Oxigênio no sangue"),
+  restingHr: tr("Resting heart rate", "Frequência cardíaca de repouso"),
+  hrv: tr("Heart rate variability", "Variabilidade da frequência cardíaca"),
+  skinTempDev: tr("Skin temperature", "Temperatura da pele"),
+}));
 
 export async function getHome(day: string, ctx: QueryCtx): Promise<HomeVM> {
   const today = todayOf(ctx);
@@ -97,7 +99,7 @@ export async function getHome(day: string, ctx: QueryCtx): Promise<HomeVM> {
     stress: stressNow(row, isToday),
     plan: null,
     stressChart: keys.includes("stress") ? stressChartOf(ctx, row, day, isToday, stressSeries, exs) : null,
-    activities: { title: isToday ? "Today’s activities" : "Activities", items: timelineOf(row, day, exs) },
+    activities: { title: isToday ? tr("Today’s activities", "Atividades de hoje") : tr("Activities", "Atividades"), items: timelineOf(row, day, exs) },
     energyBank: energyBankVM(ctx, row, day, isToday, ebSeries),
     tonight: planVM(ctx, row, isToday),
     keyStats: keyStats(rows, day, isToday, keys, strength),
@@ -130,23 +132,23 @@ export function outlookOf(ctx: QueryCtx, row: DayRow | undefined, s: DayScores, 
   const target = s.target ? `${f1(s.target[0])} - ${f1(s.target[1])}` : null;
   const parts: string[] = [];
   if (!review) {
-    if (rec != null) parts.push(`Your Recovery is ${Math.round(rec)}%, ${recoveryBand(rec)}.`);
-    if (target) parts.push(`Today’s Strain Target is ${target}.`);
+    if (rec != null) parts.push(tr(`Your Recovery is ${Math.round(rec)}%, ${recoveryBand(rec)}.`, `Sua Recuperação é ${Math.round(rec)}%, ${BAND_WORD[recoveryBand(rec)].toLowerCase()}.`));
+    if (target) parts.push(tr(`Today’s Strain Target is ${target}.`, `A meta de Esforço de hoje é ${target}.`));
     const main = row?.sleep?.main;
-    if (main && row?.sleep?.needHours) parts.push(`You slept ${hmm(main.asleepMin)} of the ${hmm(row.sleep.needHours * 60)} you needed.`);
+    if (main && row?.sleep?.needHours) parts.push(tr(`You slept ${hmm(main.asleepMin)} of the ${hmm(row.sleep.needHours * 60)} you needed.`, `Você dormiu ${hmm(main.asleepMin)} das ${hmm(row.sleep.needHours * 60)} de que precisava.`));
   } else {
     const n = row?.activities.length ?? 0;
-    const acts = n ? `, with ${n} ${n === 1 ? "activity" : "activities"}` : "";
-    if (s.strain.value != null) parts.push(`Day Strain ${isToday ? "is" : "was"} ${f1(s.strain.value)}${target ? ` against a target of ${target}` : ""}${acts}.`);
-    if (rec != null) parts.push(`Recovery ${isToday ? "is" : "was"} ${Math.round(rec)}%.`);
+    const acts = n ? tr(`, with ${n} ${n === 1 ? "activity" : "activities"}`, `, com ${n} ${n === 1 ? "atividade" : "atividades"}`) : "";
+    if (s.strain.value != null) parts.push(tr(`Day Strain ${isToday ? "is" : "was"} ${f1(s.strain.value)}${target ? ` against a target of ${target}` : ""}${acts}.`, `O Esforço do dia ${isToday ? "é" : "foi"} ${f1(s.strain.value)}${target ? ` para uma meta de ${target}` : ""}${acts}.`));
+    if (rec != null) parts.push(tr(`Recovery ${isToday ? "is" : "was"} ${Math.round(rec)}%.`, `A Recuperação ${isToday ? "é" : "foi"} ${Math.round(rec)}%.`));
     const st = row?.stress;
-    if (st && st.average != null) parts.push(`You spent ${hmm(st.highMin)} in high stress.`);
+    if (st && st.average != null) parts.push(tr(`You spent ${hmm(st.highMin)} in high stress.`, `Você passou ${hmm(st.highMin)} em estresse alto.`));
   }
   if (!parts.length) return null;
-  return { kind: review ? "review" : "outlook", title: review ? "Your day in review" : "Your daily outlook", body: parts.join(" ") };
+  return { kind: review ? "review" : "outlook", title: review ? tr("Your day in review", "Seu dia em revisão") : tr("Your daily outlook", "Sua perspectiva do dia"), body: parts.join(" ") };
 }
 
-const RECOVERY_TITLE = { green: "Ready for strain", yellow: "A steady day", red: "Time to recover" } as const;
+const RECOVERY_TITLE = () => ({ green: tr("Ready for strain", "Pronto para o esforço"), yellow: tr("A steady day", "Um dia estável"), red: tr("Time to recover", "Hora de se recuperar") }) as const;
 
 function insightsOf(ctx: QueryCtx, rows: Map<string, DayRow>, row: DayRow | undefined, day: string, s: Pick<DayScores, "strain" | "target">): HomeVM["insights"] {
   const out: HomeVM["insights"] = [];
@@ -155,13 +157,13 @@ function insightsOf(ctx: QueryCtx, rows: Map<string, DayRow>, row: DayRow | unde
   if (c && target && s.strain.value != null) {
     const v = s.strain.value;
     const red = row?.recovery?.value != null && row.recovery.value < 34;
-    const title = red ? "Keep strain light" : v < target.low ? "Room for more strain" : v <= target.high ? "Reaching optimal strain" : "Past your target";
+    const title = red ? tr("Keep strain light", "Mantenha o esforço leve") : v < target.low ? tr("Room for more strain", "Espaço para mais esforço") : v <= target.high ? tr("Reaching optimal strain", "Chegando ao esforço ideal") : tr("Past your target", "Além da sua meta");
     out.push({ key: "strain", title, body: c, href: "/strain" });
   }
   const r = row?.recovery;
-  if (r?.value != null) out.push({ key: "recovery", title: RECOVERY_TITLE[recoveryBand(r.value)], body: recoveryInsight(r.drivers), href: "/recovery" });
+  if (r?.value != null) out.push({ key: "recovery", title: RECOVERY_TITLE()[recoveryBand(r.value)], body: recoveryInsight(r.drivers), href: "/recovery" });
   const sl = sleepInsight(rows, day, ctx.timeZone);
-  if (sl) out.push({ key: "sleep", title: "Last night’s sleep", body: sl, href: "/sleep" });
+  if (sl) out.push({ key: "sleep", title: tr("Last night’s sleep", "Sono da noite passada"), body: sl, href: "/sleep" });
   return out;
 }
 

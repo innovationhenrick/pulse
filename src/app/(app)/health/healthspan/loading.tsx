@@ -1,4 +1,4 @@
-import { AGE_LABEL } from "@/lib/format"
+import { ageLabel } from "@/lib/format"
 import { TrendChartSkeleton } from "@/components/charts/TrendChart"
 import { ContributorRowSkeleton } from "@/components/metrics/ContributorRow"
 import { InsightCardSkeleton } from "@/components/metrics/InsightCard"
@@ -52,7 +52,7 @@ export default function Loading() {
       }
       insight={<InsightCardSkeleton title />}
       primary={
-        <SectionShell variant="card" title={`${AGE_LABEL} history`}>
+        <SectionShell variant="card" title={`${ageLabel()} history`}>
           <TrendChartSkeleton />
         </SectionShell>
       }

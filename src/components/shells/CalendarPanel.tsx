@@ -25,6 +25,7 @@ import { DATA_COLORS } from "@/lib/bands"
 import { loadCalendarMonth } from "@/server/actions/calendar"
 import type { CalendarDayVM } from "@/server/queries/types"
 import { useShellCalendar } from "./ShellStatus"
+import { lazy, tr } from "@/lib/locale-context"
 
 export type CalendarPanelProps = {
   /** The selected day (`?d=`, default today); it carries the circle (CAL5). */
@@ -184,7 +185,7 @@ function MonthPanel({
         {(selected !== today || month !== monthOf(today)) && (
           <button
             type="button"
-            aria-label="Back to today"
+            aria-label={tr("Back to today", "Voltar para hoje")}
             onClick={() => onSelect(today)}
             className="relative h-8 touch-manipulation rounded-full bg-foreground/[0.08] px-3.5 text-[11px] leading-4 font-bold tracking-[0.1em] uppercase transition-[background-color,scale] duration-150 ease-standard outline-none after:absolute after:inset-x-0 after:-inset-y-1.5 hover:bg-foreground/[0.12] focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.96]"
           >
@@ -202,7 +203,7 @@ function ChevronButton({ dir, disabled, onClick }: { dir: "prev" | "next"; disab
   return (
     <button
       type="button"
-      aria-label={dir === "prev" ? "Previous month" : "Next month"}
+      aria-label={dir === "prev" ? tr("Previous month", "Mês anterior") : tr("Next month", "Próximo mês")}
       disabled={disabled}
       onClick={onClick}
       className="grid size-11 touch-manipulation place-items-center rounded-full text-foreground transition-[background-color,color,scale] duration-150 ease-standard outline-none enabled:hover:bg-foreground/8 focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.96] disabled:text-foreground/50"
@@ -213,9 +214,9 @@ function ChevronButton({ dir, disabled, onClick }: { dir: "prev" | "next"; disab
 }
 
 const VALUE_TEXT: Record<CalendarContext, (v: number) => string> = {
-  recovery: (v) => `Recovery ${Math.round(v)}%`,
-  strain: (v) => `Strain ${formatValue("decimal1", v)}`,
-  sleep: (v) => `Sleep ${Math.round(v)}%`,
+  recovery: (v) => tr(`Recovery ${Math.round(v)}%`, `Recuperação ${Math.round(v)}%`),
+  strain: (v) => tr(`Strain ${formatValue("decimal1", v)}`, `Esforço ${formatValue("decimal1", v)}`),
+  sleep: (v) => tr(`Sleep ${Math.round(v)}%`, `Sono ${Math.round(v)}%`),
 }
 
 function Day({
@@ -246,7 +247,7 @@ function Day({
         data-day={day}
         tabIndex={tabStop ? 0 : -1}
         disabled={disabled}
-        aria-label={`${today ? "Today, " : ""}${formatDay(day, DAY.long)}${value !== null && !disabled ? `, ${VALUE_TEXT[context](value)}` : ""}`}
+        aria-label={`${today ? tr("Today, ", "Hoje, ") : ""}${formatDay(day, DAY.long)}${value !== null && !disabled ? `, ${VALUE_TEXT[context](value)}` : ""}`}
         onClick={() => onSelect(day)}
         className="group grid h-12 w-full touch-manipulation place-items-center outline-none [-webkit-tap-highlight-color:transparent]"
       >
@@ -267,15 +268,15 @@ function Day({
   )
 }
 
-const LEGEND: Record<CalendarContext, { label: string; color: keyof typeof DATA_COLORS }[]> = {
+const LEGEND: Record<CalendarContext, { label: string; color: keyof typeof DATA_COLORS }[]> = lazy(() => ({
   recovery: [
     { label: "<34%", color: "recovery-red" },
     { label: "34% - 66%", color: "recovery-yellow" },
     { label: ">66%", color: "recovery-green" },
   ],
-  strain: [{ label: `Day Strain ${STRAIN_DOT}+`, color: "strain" }],
-  sleep: [{ label: `Sleep ${SLEEP_DOT}%+`, color: "sleep" }],
-}
+  strain: [{ label: tr(`Day Strain ${STRAIN_DOT}+`, `Esforço do dia ${STRAIN_DOT}+`), color: "strain" }],
+  sleep: [{ label: tr(`Sleep ${SLEEP_DOT}%+`, `Sono ${SLEEP_DOT}%+`), color: "sleep" }],
+}))
 
 function Legend({ context }: { context: CalendarContext }) {
   return (

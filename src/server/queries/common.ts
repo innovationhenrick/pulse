@@ -27,6 +27,7 @@ import { toStrainScale } from "@/core/scoring/strain";
 import { stressLevel } from "@/lib/bands";
 import { addDays, localDay, localMidnight } from "../time";
 import type { ActivityKind, DayPoint, Metric, MetricTag, ReasonCode, SleepPlanVM, Span, StressDayChart, TimelineItem, TimePoint } from "./types";
+import { lazy, tr } from "@/lib/locale-context"
 
 export type QueryCtx = {
   db: Db;
@@ -287,13 +288,13 @@ export function activityKind(type: string): ActivityKind {
   return "workout";
 }
 
-export const ACTIVITY_NAME: Record<ActivityKind, string> = {
-  run: "Running",
-  ride: "Cycling",
-  walk: "Walking",
-  strength: "Strength training",
-  workout: "Workout",
-};
+export const ACTIVITY_NAME: Record<ActivityKind, string> = lazy(() => ({
+  run: tr("Running", "Corrida"),
+  ride: tr("Cycling", "Ciclismo"),
+  walk: tr("Walking", "Caminhada"),
+  strength: tr("Strength training", "Treino de força"),
+  workout: tr("Workout", "Treino"),
+}));
 
 export type ExerciseRow = { id: string; day: string; startTs: number; endTs: number; type: string; name: string | null; calories: number | null; distanceM: number | null };
 
@@ -346,17 +347,18 @@ export async function daySpans(ctx: QueryCtx, row: DayRow | undefined, day: stri
 export function daySpansOf(row: DayRow | undefined, dayStart: number, exs: ExerciseRow[]): Span[] {
   const spans: Span[] = [];
   const s = row?.sleep;
-  if (s?.main) spans.push({ kind: "sleep", label: "Sleep", start: ms(Math.max(s.main.start, dayStart)), end: ms(s.main.end) });
-  for (const n of s?.naps ?? []) spans.push({ kind: "nap", label: "Nap", start: ms(n.start), end: ms(n.end) });
+  if (s?.main) spans.push({ kind: "sleep", label: tr("Sleep", "Sono"), start: ms(Math.max(s.main.start, dayStart)), end: ms(s.main.end) });
+  for (const n of s?.naps ?? []) spans.push({ kind: "nap", label: tr("Nap", "Cochilo"), start: ms(n.start), end: ms(n.end) });
   for (const e of exs) spans.push({ kind: "workout", label: SPAN_LABEL[activityKind(e.type)], start: ms(e.startTs), end: ms(e.endTs) });
   return spans;
 }
 
-const PLAN_LABELS = [
-  ["peak", "Peak"],
-  ["perform", "Perform"],
-  ["get_by", "Get by"],
-] as const;
+const planLabels = () =>
+  [
+    ["peak", tr("Peak", "Pico")],
+    ["perform", tr("Perform", "Desempenho")],
+    ["get_by", tr("Get by", "Básico")],
+  ] as const;
 
 export function planVM(ctx: QueryCtx, row: DayRow | undefined, isToday: boolean): Metric<SleepPlanVM> {
   const p = row?.sleepPlanner;
@@ -370,8 +372,8 @@ export function planVM(ctx: QueryCtx, row: DayRow | undefined, isToday: boolean)
     wakeAt: ms(wakeMidnight + Math.round(p.wakeMin * 60)),
     weekend: p.weekend,
     plans: p.plans.map((x, i) => ({
-      key: PLAN_LABELS[i][0],
-      label: PLAN_LABELS[i][1],
+      key: planLabels()[i][0],
+      label: planLabels()[i][1],
       share: x.share,
       sleepMin: x.sleepMin,
       bedtimeAt: ms(wakeMidnight + Math.round(x.bedtimeMin * 60)),

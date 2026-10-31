@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { connection } from "next/server"
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import { inviteValid, signupMode, userCount } from "@/server/admin"
 import { currentUser } from "@/server/auth"
 import { getConfig } from "@/server/config"
@@ -11,7 +12,9 @@ import { AUTH_FOOTNOTE, AUTH_LINK } from "@/components/auth/AuthHero"
 import { AuthShell } from "@/components/shells/AuthShell"
 
 // The invite token is in this page's URL: never send it on as a Referer.
-export const metadata: Metadata = { title: "Create account", referrer: "no-referrer" }
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getTranslations("auth.signup"))("metaTitle"), referrer: "no-referrer" }
+}
 
 /**
  * Create an account `/signup`. Closed on a demo instance. Otherwise by the sign-up mode (admin panel, else SIGNUP):
@@ -22,6 +25,7 @@ export const metadata: Metadata = { title: "Create account", referrer: "no-refer
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ invite?: string }> }) {
   await connection()
   if (await currentUser()) redirect("/")
+  const t = await getTranslations("auth.signup")
   const { dataSource, adminEmails } = getConfig()
   if (dataSource !== "google") redirect("/login")
   const db = getDb()
@@ -30,9 +34,9 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
 
   const signIn = (
     <p className={AUTH_FOOTNOTE}>
-      Already have an account?{" "}
+      {t("haveAccount")}{" "}
       <Link href="/login" className={AUTH_LINK}>
-        Sign in
+        {t("signIn")}
       </Link>
     </p>
   )
@@ -51,18 +55,18 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
   )
 
   if (first && mode !== "open" && adminEmails.length === 0)
-    return notice("Set up an admin first", "Add your email to ADMIN_EMAILS in this server’s .env and restart it, then create your account here.")
+    return notice(t("needAdminTitle"), t("needAdminBody"))
   if (!first && mode === "closed") redirect("/login")
   if (!first && mode === "invite" && !valid)
     return invite
-      ? notice("This invite has expired", "The link was already used, has expired or was revoked. Ask whoever runs this server for a new one.")
-      : notice("Pulse here is invite-only", "Ask whoever runs this server for an invite link.")
+      ? notice(t("inviteExpiredTitle"), t("inviteExpiredBody"))
+      : notice(t("inviteOnlyTitle"), t("inviteOnlyBody"))
 
   return (
     <AuthShell align="top">
       {heading(
-        "Create your account",
-        first && mode !== "open" ? "This server has no accounts yet. Use the admin email set in ADMIN_EMAILS." : "Your data stays on this server, visible only to you.",
+        t("title"),
+        first && mode !== "open" ? t("firstBody") : t("body"),
       )}
       <div className="mt-7 space-y-5 pb-[max(env(safe-area-inset-bottom),24px)]">
         <SignupForm invite={valid ? invite : undefined} />

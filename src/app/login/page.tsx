@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { connection } from "next/server"
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import { signupMode, userCount } from "@/server/admin"
 import { currentUser } from "@/server/auth"
 import { getConfig } from "@/server/config"
@@ -11,7 +12,9 @@ import { LoginForm } from "@/components/auth/AuthForm"
 import { AUTH_FOOTNOTE, AUTH_LINK, AuthHero } from "@/components/auth/AuthHero"
 import { AuthShell } from "@/components/shells/AuthShell"
 
-export const metadata: Metadata = { title: "Sign in" }
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getTranslations("auth.login"))("metaTitle") }
+}
 
 /**
  * Sign in `/login`. A real instance signs in with an email or username and a password (Google only feeds the data,
@@ -21,6 +24,7 @@ export const metadata: Metadata = { title: "Sign in" }
 export default async function LoginPage() {
   await connection()
   if (await currentUser()) redirect("/")
+  const t = await getTranslations("auth.login")
   const { dataSource } = getConfig()
 
   if (dataSource !== "google") {
@@ -30,12 +34,12 @@ export default async function LoginPage() {
           <>
             <DemoSignIn />
             <p className={AUTH_FOOTNOTE}>
-              This server runs on generated data. To use your own, set up a Google OAuth client (see <span translate="no">docs/setup.md</span>).
+              {t.rich("demoNote", { path: (c) => <span translate="no">{c}</span> })}
             </p>
           </>
         }
       >
-        <AuthHero title="Know when to push, and when to rest" body="Recovery, Strain and Sleep from your Fitbit Air, scored on your own server." />
+        <AuthHero title={t("demoTitle")} body={t("demoBody")} />
       </AuthShell>
     )
   }
@@ -45,19 +49,19 @@ export default async function LoginPage() {
   const [mode, first] = await Promise.all([signupMode(db), userCount(db).then((n) => n === 0)])
   return (
     <AuthShell>
-      <AuthHero compact title="Welcome back" body="Sign in to see today’s Recovery, Strain and Sleep." />
+      <AuthHero compact title={t("title")} body={t("body")} />
       <div className="mt-8 space-y-5">
         <LoginForm />
         <p className={AUTH_FOOTNOTE}>
           {mode === "closed" && !first ? (
-            "Your data stays on this server."
+            t("closed")
           ) : mode === "invite" && !first ? (
-            "New to Pulse? Open the invite link you were sent."
+            t("invite")
           ) : (
             <>
-              New to Pulse?{" "}
+              {t("newHere")}{" "}
               <Link href="/signup" className={AUTH_LINK}>
-                Create account
+                {t("createAccount")}
               </Link>
             </>
           )}

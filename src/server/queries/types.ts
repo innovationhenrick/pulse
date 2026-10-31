@@ -93,7 +93,7 @@ export type SleepPlanVM = {
   /** Tomorrow's typical wake, epoch ms. */
   wakeAt: number;
   weekend: boolean;
-  plans: { key: "peak" | "perform" | "get_by"; label: "Peak" | "Perform" | "Get by"; share: number; sleepMin: number; bedtimeAt: number }[];
+  plans: { key: "peak" | "perform" | "get_by"; label: string; share: number; sleepMin: number; bedtimeAt: number }[];
 };
 
 export type EnergyBankVM = {
@@ -132,7 +132,7 @@ export type HomeVM = {
   monitorAlert: { kind: "flagged" | "illness"; count: number; names: string[] } | null;
   monitor: Metric<{ inRange: number; total: number; flagged: number }>;
   stress: Metric<{ value: number; level: StressLevel; at: number | null; dayAverage: boolean }>;
-  activities: { title: "Today’s activities" | "Activities"; items: TimelineItem[] };
+  activities: { title: string; items: TimelineItem[] };
   energyBank: Metric<EnergyBankVM>;
   tonight: Metric<SleepPlanVM>;
   keyStats: KeyStat[];

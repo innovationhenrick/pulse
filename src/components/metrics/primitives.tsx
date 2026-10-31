@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { CHIP_TONE_CLASS, type ChipTone, type DeltaDir, type Tone } from "@/lib/bands"
 import { isSymbolUnit } from "@/lib/format"
 import { TAG_COPY, type MetricTag } from "@/lib/reasons"
+import { tr } from "@/lib/locale-context"
 
 // Small shared marks used by every kit component (spec §5.0). One look per meaning.
 
@@ -25,15 +26,15 @@ export const SEGMENT_ITEM =
   "grid h-10 min-w-11 place-items-center rounded-md px-3 font-numeric text-[13px] font-bold text-muted-foreground transition-[background-color,color] duration-150 ease-standard outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 data-[state=on]:bg-secondary data-[state=on]:text-foreground aria-[current=page]:bg-secondary aria-[current=page]:text-foreground"
 
 export type TagKind = keyof typeof TAG_COPY | "so_far" | "partial_week" | "partial_month" | "estimate" | "beta"
-const EXTRA_TAGS: Record<Exclude<TagKind, keyof typeof TAG_COPY>, string> = {
-  so_far: "So far",
-  partial_week: "Partial week",
-  partial_month: "Partial month",
-  estimate: "Estimate",
+const extraTags = (): Record<Exclude<TagKind, keyof typeof TAG_COPY>, string> => ({
+  so_far: tr("So far", "Até agora"),
+  partial_week: tr("Partial week", "Semana parcial"),
+  partial_month: tr("Partial month", "Mês parcial"),
+  estimate: tr("Estimate", "Estimativa"),
   beta: "Beta",
-}
+})
 export const tagLabel = (kind: TagKind) =>
-  kind in TAG_COPY ? TAG_COPY[kind as keyof typeof TAG_COPY].label : EXTRA_TAGS[kind as keyof typeof EXTRA_TAGS]
+  kind in TAG_COPY ? TAG_COPY[kind as keyof typeof TAG_COPY].label : extraTags()[kind as keyof ReturnType<typeof extraTags>]
 
 /** Status tag ("Provisional", "So far"…). Never coloured: colour is for data. */
 export function Tag({ kind, className }: { kind: TagKind; className?: string }) {

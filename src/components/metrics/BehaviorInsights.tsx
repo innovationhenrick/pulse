@@ -2,6 +2,7 @@ import { Lightbulb } from "lucide-react"
 import type { BehaviorChip } from "@/core/algorithms/behaviorChips"
 import { SectionShell } from "@/components/shells/SectionShell"
 import { StatusChip } from "./primitives"
+import { tr } from "@/lib/locale-context"
 
 const TONE = { up: "optimal", down: "warning", neutral: "neutral" } as const
 const DIR = { up: "up", down: "down", neutral: "flat" } as const
@@ -14,8 +15,8 @@ const DIR = { up: "up", down: "down", neutral: "flat" } as const
 export function BehaviorInsights({ chips, href }: { chips: BehaviorChip[]; href: string }) {
   if (!chips.length) return null
   return (
-    <SectionShell variant="card" level={2} title="Behavior insights" info={false} href={href} icon={<Lightbulb />}>
-      <p className="text-[15px] leading-[22px] text-pretty text-foreground-secondary">Some of your behaviors from yesterday may have affected your Recovery score today.</p>
+    <SectionShell variant="card" level={2} title={tr("Behavior insights", "Insights de comportamento")} info={false} href={href} icon={<Lightbulb />}>
+      <p className="text-[15px] leading-[22px] text-pretty text-foreground-secondary">{tr("Some of your behaviors from yesterday may have affected your Recovery score today.", "Alguns dos seus comportamentos de ontem podem ter afetado seu score de Recuperação de hoje.")}</p>
       <ul className="mt-3 flex flex-wrap gap-2">
         {chips.map((c) => (
           <li key={c.key}>

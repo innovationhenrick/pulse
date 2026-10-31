@@ -12,6 +12,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useShellCalendar } from "@/components/shells/ShellStatus"
+import { tr } from "@/lib/locale-context"
 
 export type DayStripDay = {
   /** YYYY-MM-DD. */
@@ -76,7 +77,7 @@ function Strip({ indicator, days, variant = "tile", value: controlled, onSelect 
           setValue(v)
           router.replace(`${pathname}${withParam(params.toString(), "d", v === today ? null : v)}`, { scroll: false })
         }}
-        aria-label="Choose a day"
+        aria-label={tr("Choose a day", "Escolha um dia")}
         spacing={1}
         className={cn("w-max gap-1 px-4 py-1", variant === "pill" ? "gap-2 md:px-6" : "md:px-1")}
       >
@@ -84,7 +85,7 @@ function Strip({ indicator, days, variant = "tile", value: controlled, onSelect 
                     const r = day.recovery ?? null
           const label =
             indicator === "recovery"
-              ? `${formatDay(day.date, DAY.long)}, ${r === null ? "no Recovery" : `Recovery ${Math.round(r)} percent, ${BAND_WORD[recoveryBand(r)].toLowerCase()}`}`
+              ? `${formatDay(day.date, DAY.long)}, ${r === null ? tr("no Recovery", "sem Recuperação") : tr(`Recovery ${Math.round(r)} percent, ${BAND_WORD[recoveryBand(r)].toLowerCase()}`, `Recuperação ${Math.round(r)} por cento, ${BAND_WORD[recoveryBand(r)].toLowerCase()}`)}`
               : `${formatDay(day.date, DAY.long)}, ${day.done ? "checked in" : "not checked in"}`
           const on = day.date === value
           return (

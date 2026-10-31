@@ -5,6 +5,7 @@ import { Check, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { CARD_LINK } from "@/components/shells/SectionShell"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, MENU_ITEM, MENU_PANEL } from "@/components/ui/dropdown-menu"
+import { tr } from "@/lib/locale-context"
 
 export type TrendMetricOption = { key: string; label: string; href: string; icon?: React.ReactNode }
 
@@ -23,7 +24,7 @@ export function TrendMetricMenu({ current, options }: { current: string; options
           {on.icon}
         </span>
         <span className="min-w-0 flex-1 truncate text-[15px] leading-5 font-bold tracking-[0.08em] uppercase">{on.label}</span>
-        <span className="sr-only">Change metric</span>
+        <span className="sr-only">{tr("Change metric", "Mudar a métrica")}</span>
         <ChevronDown aria-hidden strokeWidth={2.25} className="size-5 shrink-0 transition-[rotate] duration-200 ease-standard group-data-[state=open]/menu:rotate-180" />
       </DropdownMenuTrigger>
       <DropdownMenuContent

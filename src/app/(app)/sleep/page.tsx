@@ -19,14 +19,20 @@ import { HashScroll } from "../_lib/HashScroll"
 import { SLEEP_INFO, TONIGHT_INFO } from "../_lib/info"
 import { CAPTION, LABEL, LEGEND, statProps } from "../_lib/view"
 import { HoursVsNeed, SleepConsistency, SleepEfficiency, SleepStress } from "./SleepCards"
+import { getTranslations } from "next-intl/server"
+import { tr } from "@/lib/locale-context"
 
-export const metadata = { title: "Sleep", description: "Sleep performance, stages, need and debt, plus tonight’s bedtime plan." }
+export async function generateMetadata() {
+  const t = await getTranslations("meta.sleep")
+  return { title: t("title"), description: t("description") }
+}
 
-const STATUS_LEGEND = [
-  ["bg-warning", "Poor"],
-  ["bg-foreground-secondary", "Sufficient"],
-  ["bg-optimal", "Optimal"],
-] as const
+const statusLegend = () =>
+  [
+    ["bg-warning", tr("Poor", "Ruim")],
+    ["bg-foreground-secondary", tr("Sufficient", "Suficiente")],
+    ["bg-optimal", tr("Optimal", "Ótimo")],
+  ] as const
 
 /** Weekly Trends, in the reference app's order (sleep-weekly-trends-*). */
 const WEEKLY: readonly TrendViewKey[] = ["sleep", "hours", "hours_need", "restorative", "consistency", "time_in_bed", "efficiency"]
@@ -38,7 +44,7 @@ export default async function SleepPage({ searchParams }: PageProps<"/sleep">) {
 
   return (
     <DetailShell
-      title="Sleep"
+      title={tr("Sleep", "Sono")}
       info={SLEEP_INFO}
       dateSwitcher={{ mode: "day", placement: "header", steppers: false }}
       notch
@@ -62,7 +68,7 @@ export default async function SleepPage({ searchParams }: PageProps<"/sleep">) {
             ))}
           </div>
           <p className={cn(LEGEND, "flex flex-wrap items-center gap-x-4 gap-y-1")}>
-            {STATUS_LEGEND.map(([swatch, word]) => (
+            {statusLegend().map(([swatch, word]) => (
               <span key={word} className="inline-flex items-center gap-1.5">
                 <span aria-hidden className={cn("h-1 w-4 rounded-sm", swatch)} />
                 {word}
@@ -71,28 +77,28 @@ export default async function SleepPage({ searchParams }: PageProps<"/sleep">) {
           </p>
         </Card>
       }
-      insight={vm.insight && <InsightCard body={vm.insight} action={{ label: "Explore your sleep insights", href: trendHref("sleep", { d, today }) }} />}
+      insight={vm.insight && <InsightCard body={vm.insight} action={{ label: tr("Explore your sleep insights", "Explore seus insights de sono"), href: trendHref("sleep", { d, today }) }} />}
       primary={
-        <SectionShell variant="card" title="Last night’s sleep" aside="vs. prior 30 days" level={2}>
+        <SectionShell variant="card" title={tr("Last night’s sleep", "Sono da noite passada")} aside={tr("vs. prior 30 days", "vs. 30 dias anteriores")} level={2}>
           <SleepStages hours={vm.hours} hr={vm.nightHr} data={vm.stages} restorative={vm.restorative} />
         </SectionShell>
       }
       secondary={[
-        <SectionShell key="need" variant="card" title="Hours vs. needed" level={2}>
+        <SectionShell key="need" variant="card" title={tr("Hours vs. needed", "Horas vs. necessárias")} level={2}>
           <HoursVsNeed vm={vm} />
         </SectionShell>,
-        <SectionShell key="consistency" variant="card" title="Sleep consistency" level={2}>
+        <SectionShell key="consistency" variant="card" title={tr("Sleep consistency", "Consistência do sono")} level={2}>
           <SleepConsistency vm={vm} />
         </SectionShell>,
-        <SectionShell key="efficiency" variant="card" title="Sleep efficiency" level={2}>
+        <SectionShell key="efficiency" variant="card" title={tr("Sleep efficiency", "Eficiência do sono")} level={2}>
           <SleepEfficiency vm={vm} />
         </SectionShell>,
         FEATURES.sleepStress && (
-          <SectionShell key="stress" variant="card" title="Sleep stress" level={2}>
+          <SectionShell key="stress" variant="card" title={tr("Sleep stress", "Estresse durante o sono")} level={2}>
             <SleepStress vm={vm} />
           </SectionShell>
         ),
-        <SectionShell key="planner" variant="card" title="Tonight’s sleep" id="planner" info={TONIGHT_INFO} level={2}>
+        <SectionShell key="planner" variant="card" title={tr("Tonight’s sleep", "Sono desta noite")} id="planner" info={TONIGHT_INFO} level={2}>
           <Planner vm={vm} timeZone={timeZone} timeFormat={timeFormat} />
           <HashScroll />
         </SectionShell>,
@@ -110,7 +116,7 @@ function Planner({ vm, timeZone, timeFormat }: { vm: SleepVM; timeZone: string; 
         reason={m.reason}
         nightsLeft={m.nightsLeft}
         size="md"
-        copy={m.reason === "calibrating" ? "Sleep Planner needs 7 nights to learn your wake time." : undefined}
+        copy={m.reason === "calibrating" ? tr("Sleep Planner needs 7 nights to learn your wake time.", "O Planejador de Sono precisa de 7 noites para aprender seu horário de acordar.") : undefined}
       />
     )
   const plan = m.value
@@ -126,11 +132,11 @@ function Planner({ vm, timeZone, timeFormat }: { vm: SleepVM; timeZone: string; 
   return (
     <div className="space-y-2">
       <div className="divide-y divide-border">
-        {plan.plans.map((p) => row(p.label, `${Math.round(p.share * 100)}% of need`, clock(p.bedtimeAt, timeZone, timeFormat)))}
-        {row("Typical wake", plan.weekdayWake ? "Weekday wake time" : "Weekend wake time", clock(plan.wakeAt, timeZone, timeFormat))}
+        {plan.plans.map((p) => row(p.label, tr(`${Math.round(p.share * 100)}% of need`, `${Math.round(p.share * 100)}% da necessidade`), clock(p.bedtimeAt, timeZone, timeFormat)))}
+        {row(tr("Typical wake", "Despertar típico"), plan.weekdayWake ? tr("Weekday wake time", "Horário de acordar em dias úteis") : tr("Weekend wake time", "Horário de acordar no fim de semana"), clock(plan.wakeAt, timeZone, timeFormat))}
       </div>
       <p className={CAPTION}>
-        Need tonight: <span className="font-numeric tabular-nums">{hmm(plan.needMin)}</span>
+        {tr("Need tonight:", "Necessidade desta noite:")} <span className="font-numeric tabular-nums">{hmm(plan.needMin)}</span>
       </p>
     </div>
   )

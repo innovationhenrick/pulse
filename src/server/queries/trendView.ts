@@ -18,6 +18,8 @@ import {
 } from "@/lib/trend";
 import { addDays, localMinutes } from "../time";
 import { activityKind, exercisesBetween, finite, firstDay, loadDays, meanSd, todayOf, toStrain, type DayRow, type ExerciseRow, type QueryCtx } from "./common";
+import { tr } from "@/lib/locale-context"
+import { localizeView } from "./trendViewPt"
 
 // The Trend View `/trend/[key]` (spec §11 R29): one metric over a W / M / 6M window that steps back through time,
 // against the window before it, with a verdict, a breakdown and an explainer.
@@ -292,7 +294,7 @@ export const TREND_VIEW = {
 
 export type TrendViewKey = keyof typeof TREND_VIEW;
 export const isTrendViewKey = (k: string): k is TrendViewKey => k in TREND_VIEW && !flagOff(k as TrendViewKey);
-const def = (k: TrendViewKey): Def => TREND_VIEW[k];
+const def = (k: TrendViewKey): Def => localizeView(k, TREND_VIEW[k]);
 const flagOff = (k: TrendViewKey) => {
   const f = def(k).flag;
   return f !== undefined && !FEATURES[f];
@@ -344,7 +346,7 @@ const wholeMonths = (segs: MonthSegment[]) => {
 };
 
 const PRIOR_WORD: Record<TrendViewRange, string> = { w: "week", m: "month", "6m": "6 months" };
-export const priorLabel = (r: TrendViewRange) => `vs. prior ${PRIOR_WORD[r]}`;
+export const priorLabel = (r: TrendViewRange) => tr(`vs. prior ${PRIOR_WORD[r]}`, `vs. ${r === "6m" ? "6 meses anteriores" : r === "m" ? "mês anterior" : "semana anterior"}`);
 
 const typeName = (e: ExerciseRow) => e.name ?? e.type.toLowerCase().replace(/(^|_)(\w)/g, (_, s: string, c: string) => `${s ? " " : ""}${c.toUpperCase()}`);
 
@@ -427,13 +429,13 @@ export async function getTrendView(key: TrendViewKey, end: string, range: TrendV
     ? { title: b.title, unit: "days", items: bandCounts(values, b.list).map((c) => ({ key: c.key, label: c.label, detail: c.detail, value: c.count })) }
     : m.partBreakdown === "series" && m.series
       ? {
-          title: `HR zones breakdown (${range === "w" ? "weekly total" : "avg. weekly total"})`,
+          title: tr(`HR zones breakdown (${range === "w" ? "weekly total" : "avg. weekly total"})`, `Zonas de FC (${range === "w" ? "total semanal" : "total semanal médio"})`),
           unit: "duration",
           items: [...m.series].reverse().map((s) => ({ key: s.key, label: s.label, value: perWeek(settled(cur).reduce((a, p) => a + (p.parts?.[s.key] ?? 0), 0)) })),
         }
       : m.partBreakdown === "strength"
         ? {
-            title: `Strength activity breakdown (${range === "w" ? "weekly total" : "avg. weekly total"})`,
+            title: tr(`Strength activity breakdown (${range === "w" ? "weekly total" : "avg. weekly total"})`, `Treino de força (${range === "w" ? "total semanal" : "total semanal médio"})`),
             unit: "duration",
             items: Object.entries(
               cur.reduce<Record<string, number>>((acc, p) => {
@@ -446,7 +448,7 @@ export async function getTrendView(key: TrendViewKey, end: string, range: TrendV
           }
         : null;
 
-  const todayNote = m.partialToday && m.agg === "daily" && win.to >= today && win.from <= today ? `Average does not include today (${formatDay(today, { month: "short", day: "numeric" })}).` : null;
+  const todayNote = m.partialToday && m.agg === "daily" && win.to >= today && win.from <= today ? tr(`Average does not include today (${formatDay(today, { month: "short", day: "numeric" })}).`, `A média não inclui hoje (${formatDay(today, { month: "short", day: "numeric" })}).`) : null;
 
   return {
     key,
@@ -467,7 +469,7 @@ export async function getTrendView(key: TrendViewKey, end: string, range: TrendV
     to: win.to,
     period: periodLabel(win.from, win.to),
     canPrev: first !== null && first < win.from,
-    caption: m.agg === "weekly" ? (range === "w" ? "Weekly total" : "Avg. weekly total") : "Average",
+    caption: m.agg === "weekly" ? (range === "w" ? tr("Weekly total", "Total semanal") : tr("Avg. weekly total", "Total semanal médio")) : tr("Average", "Média"),
     value,
     prior: priorValue,
     change,

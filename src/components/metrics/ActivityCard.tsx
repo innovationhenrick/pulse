@@ -8,6 +8,7 @@ import type { Metric } from "@/lib/reasons"
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton"
 import { ACTIVITY_ICON, type ActivityKind } from "./activityIcon"
 import { CAP_TRIM } from "./primitives"
+import { tr } from "@/lib/locale-context"
 
 export type { ActivityKind }
 
@@ -92,7 +93,7 @@ export function ActivityCard({ name, kind, strain, start, end, href, timeZone, d
   const distance = distanceText(distanceKm, paceS)
   const noStrain = strain.value === null
   // The full reason when it is the only caption; beside a distance, the short form keeps the row on one line.
-  const caption = distance ? (noStrain ? `${distance} · No strain` : distance) : noStrain ? "No strain: not enough heart-rate data" : undefined
+  const caption = distance ? (noStrain ? `${distance} · ${tr("No strain", "Sem esforço")}` : distance) : noStrain ? tr("No strain: not enough heart-rate data", "Sem esforço: dados de frequência cardíaca insuficientes") : undefined
   const spokenDistance = distanceKm == null ? "" : `, ${spoken(formatValue("decimal2", distanceKm), "km")}${paceS == null ? "" : ` at ${spoken(formatValue("pace", paceS), "/km")}`}`
   return (
     <TimelineRow
@@ -109,7 +110,7 @@ export function ActivityCard({ name, kind, strain, start, end, href, timeZone, d
       caption={caption}
       start={s}
       end={e}
-      label={`${name}${spokenDistance}, ${noStrain ? "no strain" : `strain ${value}`}, ${s} to ${e}`}
+      label={`${name}${spokenDistance}, ${noStrain ? tr("no strain", "sem esforço") : tr(`strain ${value}`, `esforço ${value}`)}, ${s} to ${e}`}
     />
   )
 }

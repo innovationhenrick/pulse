@@ -5,6 +5,7 @@ import { recoveryBand } from "@/lib/bands"
 import { DAY, formatDay, formatValue } from "@/lib/format"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AXIS, ChartFigure, GRID, LABEL_HALO, useSeriesAnimation } from "./ChartFrame"
+import { tr } from "@/lib/locale-context"
 
 export type StrainRecoveryPoint = { day: string; strain: number | null; recovery: number | null }
 
@@ -112,12 +113,17 @@ export function StrainRecoveryChart({ points, today, grow }: { points: StrainRec
   }))
   const strains = points.map((p) => p.strain).filter((v): v is number => v !== null)
   const recs = points.map((p) => p.recovery).filter((v): v is number => v !== null)
-  const summary = `Strain and Recovery over the last ${points.length} days: Strain ${
-    strains.length ? `from ${formatValue("decimal1", Math.min(...strains))} to ${formatValue("decimal1", Math.max(...strains))}` : "not recorded"
-  }, Recovery ${recs.length ? `from ${Math.round(Math.min(...recs))} to ${Math.round(Math.max(...recs))} percent` : "not recorded"}.`
+  const summary = tr(
+    `Strain and Recovery over the last ${points.length} days: Strain ${
+      strains.length ? `from ${formatValue("decimal1", Math.min(...strains))} to ${formatValue("decimal1", Math.max(...strains))}` : "not recorded"
+    }, Recovery ${recs.length ? `from ${Math.round(Math.min(...recs))} to ${Math.round(Math.max(...recs))} percent` : "not recorded"}.`,
+    `Esforço e Recuperação nos últimos ${points.length} dias: Esforço ${
+      strains.length ? `de ${formatValue("decimal1", Math.min(...strains))} a ${formatValue("decimal1", Math.max(...strains))}` : "sem registro"
+    }, Recuperação ${recs.length ? `de ${Math.round(Math.min(...recs))} a ${Math.round(Math.max(...recs))} por cento` : "sem registro"}.`,
+  )
 
   return (
-    <ChartFigure summary={summary} config={{ strain: { label: "Strain" }, recovery: { label: "Recovery" } }} className={grow ? "h-[232px] xl:h-auto xl:min-h-[232px]" : "h-[232px]"} grow={grow}>
+    <ChartFigure summary={summary} config={{ strain: { label: tr("Strain", "Esforço") }, recovery: { label: tr("Recovery", "Recuperação") } }} className={grow ? "h-[232px] xl:h-auto xl:min-h-[232px]" : "h-[232px]"} grow={grow}>
       <ComposedChart data={rows} accessibilityLayer margin={{ top: 20, right: 4, bottom: TODAY_TAIL - 40 + 2, left: 4 }} barCategoryGap="18%">
         <CartesianGrid {...GRID} yAxisId="s" />
         <XAxis dataKey="day" interval={0} height={40} tick={<XTick rows={rows} />} {...AXIS} tickMargin={4} />

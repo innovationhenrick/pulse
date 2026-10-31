@@ -4,6 +4,7 @@ import { TrendViewChart } from "@/components/charts/TrendViewChart"
 import { SectionShell } from "@/components/shells/SectionShell"
 import type { TrendViewVM } from "@/server/queries/trendView"
 import { TrendLegend } from "./TrendLegend"
+import { tr } from "@/lib/locale-context"
 
 /**
  * Weekly Trends (spec §11 R32): the closing stack of a score screen, one card per metric over the 7 days ending on
@@ -12,7 +13,7 @@ import { TrendLegend } from "./TrendLegend"
 export function WeeklyTrends({ cards, d, today }: { cards: TrendViewVM[]; d: string; today: string }) {
   if (!cards.length) return null
   return (
-    <SectionShell variant="section" title="Weekly Trends" id="weekly-trends">
+    <SectionShell variant="section" title={tr("Weekly Trends", "Tendências semanais")} id="weekly-trends">
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 xl:gap-4">
         {cards.map((vm) => (
           <SectionShell key={vm.key} variant="card" level={3} title={vm.card} info={false} href={trendHref(vm.key, { d, today, r: "w" })}>
@@ -44,7 +45,7 @@ export function WeeklyTrends({ cards, d, today }: { cards: TrendViewVM[]; d: str
 /** The loading shape: the heading and one card per title, each a legend row over the chart's height. */
 export function WeeklyTrendsSkeleton({ titles }: { titles: string[] }) {
   return (
-    <SectionShell variant="section" title="Weekly Trends">
+    <SectionShell variant="section" title={tr("Weekly Trends", "Tendências semanais")}>
       <div aria-hidden className="grid grid-cols-1 gap-3 xl:grid-cols-2 xl:gap-4">
         {titles.map((t) => (
           <SectionShell key={t} variant="card" level={3} title={t} info={false}>

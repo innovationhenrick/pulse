@@ -1,0 +1,157 @@
+{
+  "nav": {
+    "primary": "Primary",
+    "home": "Pulse home",
+    "settings": "Settings",
+    "coach": "Coach",
+    "openCoach": "Open Coach",
+    "checkIn": "Check in",
+    "checkInFor": "Check in for {day}",
+    "tabs": {
+      "home": "Home",
+      "health": "Health",
+      "journal": "Journal",
+      "more": "More"
+    }
+  },
+  "settings": {
+    "sections": {
+      "account": "Account",
+      "source": "Data source",
+      "app": "App",
+      "coach": "Coach"
+    },
+    "language": {
+      "title": "Language",
+      "legend": "Language",
+      "hint": "Applies to every device signed in to your account.",
+      "error": "Couldn’t change the language. Try again."
+    },
+    "appearance": {
+      "title": "Appearance",
+      "hint": "System follows this device’s light or dark setting."
+    }
+  },
+  "auth": {
+    "login": {
+      "metaTitle": "Sign in",
+      "title": "Welcome back",
+      "body": "Sign in to see today’s Recovery, Strain and Sleep.",
+      "demoTitle": "Know when to push, and when to rest",
+      "demoBody": "Recovery, Strain and Sleep from your Fitbit Air, scored on your own server.",
+      "demoNote": "This server runs on generated data. To use your own, set up a Google OAuth client (see <path>docs/setup.md</path>).",
+      "demoContinue": "Continue with demo data",
+      "demoLoading": "Loading demo…",
+      "closed": "Your data stays on this server.",
+      "invite": "New to Pulse? Open the invite link you were sent.",
+      "newHere": "New to Pulse?",
+      "createAccount": "Create account"
+    },
+    "signup": {
+      "metaTitle": "Create account",
+      "title": "Create your account",
+      "body": "Your data stays on this server, visible only to you.",
+      "firstBody": "This server has no accounts yet. Use the admin email set in ADMIN_EMAILS.",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "needAdminTitle": "Set up an admin first",
+      "needAdminBody": "Add your email to ADMIN_EMAILS in this server’s .env and restart it, then create your account here.",
+      "inviteExpiredTitle": "This invite has expired",
+      "inviteExpiredBody": "The link was already used, has expired or was revoked. Ask whoever runs this server for a new one.",
+      "inviteOnlyTitle": "Pulse here is invite-only",
+      "inviteOnlyBody": "Ask whoever runs this server for an invite link."
+    },
+    "forgot": {
+      "metaTitle": "Forgot password",
+      "title": "Forgot your password?",
+      "body": "Pulse doesn’t send email, so the person who runs it resets your password for you.",
+      "stepsLabel": "How to reset your password",
+      "step1Email": "Email the admin your username or the email you signed up with.",
+      "step1Ask": "Ask the person who runs this Pulse to reset your password. Tell them your username or email.",
+      "step2": "They send you a temporary password, and every device you were signed in on is signed out.",
+      "step3": "Sign in with it, then choose a new password in Settings › Account.",
+      "emailAdmin": "Email the admin",
+      "mailSubject": "Pulse password reset",
+      "mailBody": "Hi,\n\nPlease reset the password for my Pulse account.\n\nMy username or email: \n\nThanks!",
+      "backToSignIn": "Back to sign in",
+      "selfHosted": "Running your own Pulse?",
+      "resetFromServer": "Reset a password from the server",
+      "newTab": "(opens in a new tab)"
+    },
+    "form": {
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "rateLimited": "Too many tries. Wait a few minutes, then try again.",
+      "offline": "Couldn’t reach Pulse. Check your connection and try again.",
+      "emailOrUsername": "Email or username",
+      "password": "Password",
+      "forgot": "Forgot password?",
+      "signIn": "Sign in",
+      "signingIn": "Signing in…",
+      "badCredentials": "Email/username or password is incorrect.",
+      "name": "Name",
+      "username": "Username",
+      "usernameTitle": "3–30 letters, numbers, _ or .",
+      "usernameHint": "Letters, numbers, _ and . (3–30)",
+      "email": "Email",
+      "passwordHint": "At least 10 characters.",
+      "createAccount": "Create account",
+      "creatingAccount": "Creating account…",
+      "signupClosed": "Sign-up is closed on this server.",
+      "ownerReserved": "This email is reserved for this server’s admin. Use another email.",
+      "inviteUsed": "This invite link was just used, has expired or was revoked. Ask for a new one.",
+      "inviteNeeded": "Sign-up here needs an invite link. Ask whoever runs this server for one.",
+      "signupFailed": "Couldn’t create the account. Try again.",
+      "signupErrors": {
+        "usernameTaken": "That username is taken. Try another.",
+        "usernameInvalid": "Use 3–30 letters, numbers, _ or .",
+        "usernameShort": "Use at least 3 characters.",
+        "usernameLong": "Use at most 30 characters.",
+        "emailTaken": "An account with this email already exists. Sign in instead.",
+        "emailInvalid": "Enter a valid email address.",
+        "passwordShort": "Use at least 10 characters.",
+        "passwordLong": "Use at most 128 characters."
+      }
+    }
+  },
+  "home": {
+    "metaTitle": "Today",
+    "metaDescription": "Today’s Sleep, Recovery and Strain at a glance."
+  },
+  "meta": {
+    "recovery": {
+      "title": "Recovery",
+      "description": "Your Recovery and what shaped it: HRV, resting heart rate, breathing and sleep against the last 30 days."
+    },
+    "strain": {
+      "title": "Strain",
+      "description": "Day Strain, your Strain Target, heart-rate zones, activities, calories burned and workout time."
+    },
+    "sleep": {
+      "title": "Sleep",
+      "description": "Sleep performance, stages, need and debt, plus tonight’s bedtime plan."
+    },
+    "health": {
+      "title": "Health"
+    },
+    "healthspan": {
+      "title": "Healthspan"
+    },
+    "healthMonitor": {
+      "title": "Health Monitor"
+    },
+    "fitness": {
+      "title": "Fitness"
+    },
+    "stress": {
+      "title": "Stress Monitor"
+    },
+    "heartRate": {
+      "title": "Heart rate",
+      "description": "Your latest heart rate, today’s minute-by-minute chart and time in heart-rate zones."
+    },
+    "trends": {
+      "title": "Trends"
+    }
+  }
+}

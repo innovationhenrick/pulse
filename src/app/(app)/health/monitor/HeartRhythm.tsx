@@ -9,10 +9,11 @@ import type { EcgReading, HeartRhythm as HeartRhythmVM } from "@/server/queries/
 import { CAPTION, LABEL, StatusChip, ValueUnit } from "@/components/metrics/primitives"
 import { ResponsiveSheet } from "@/components/shells/ResponsiveSheet"
 import { CARD_MATERIAL } from "@/components/ui/card"
+import { tr } from "@/lib/locale-context"
 
 /** Fitbit's and the reference app's notes both say "not a diagnosis" and name what ECG can't detect (docs/research/heart-rhythm-ui.md). */
-export const RHYTHM_DISCLAIMER =
-  "Not a diagnosis. ECG and irregular rhythm notifications can’t detect a heart attack, blood clots or stroke. Talk to your doctor about any result."
+export const rhythmDisclaimer = () =>
+  tr("Not a diagnosis. ECG and irregular rhythm notifications can’t detect a heart attack, blood clots or stroke. Talk to your doctor about any result.", "Isto não é um diagnóstico. O ECG e os avisos de ritmo irregular não detectam infarto, coágulos ou AVC. Converse com seu médico sobre qualquer resultado.")
 
 const ROW = "flex min-h-14 items-center gap-3 px-4 py-2"
 const ICON = "size-5 shrink-0 text-muted-foreground"
@@ -41,8 +42,8 @@ export function HeartRhythm({ rhythm }: { rhythm: HeartRhythmVM }) {
       <div className={cn(CARD_MATERIAL, ROW)}>
         <HeartPulse aria-hidden className={ICON} strokeWidth={1.5} />
         <p className="min-w-0 flex-1">
-          <span className="block text-[15px] leading-5 text-foreground-secondary">No heart rhythm readings yet</span>
-          <span className={cn(CAPTION, "mt-0.5 block text-pretty")}>ECG readings and irregular rhythm notifications from the Google Health app show up here after they sync.</span>
+          <span className="block text-[15px] leading-5 text-foreground-secondary">{tr("No heart rhythm readings yet", "Ainda sem medições de ritmo cardíaco")}</span>
+          <span className={cn(CAPTION, "mt-0.5 block text-pretty")}>{tr("ECG readings and irregular rhythm notifications from the Google Health app show up here after they sync.", "As medições de ECG e os avisos de ritmo irregular do app Google Health aparecem aqui depois de sincronizar.")}</span>
         </p>
       </div>
     )
@@ -53,17 +54,17 @@ export function HeartRhythm({ rhythm }: { rhythm: HeartRhythmVM }) {
       <div className={cn(CARD_MATERIAL, "overflow-hidden")}>
         {latest ? (
           <button type="button" onClick={() => select(latest)} className={cn(PRESS, "flex w-full flex-col gap-3 p-4 text-left hover:bg-accent active:bg-accent")}>
-            <span className="sr-only">{`Latest ECG, ${when(latest)}: ${latest.label}, average ${bpm(latest)} bpm`}</span>
+            <span className="sr-only">{tr(`Latest ECG, ${when(latest)}: ${latest.label}, average ${bpm(latest)} bpm`, `Último ECG, ${when(latest)}: ${latest.label}, média de ${bpm(latest)} bpm`)}</span>
             <span aria-hidden className="flex w-full items-center gap-2.5">
               <Activity className={ICON} strokeWidth={1.5} />
-              <span className={cn(LABEL, "flex-1 text-foreground-secondary")}>Latest ECG</span>
+              <span className={cn(LABEL, "flex-1 text-foreground-secondary")}>{tr("Latest ECG", "Último ECG")}</span>
               <span className={cn(CAPTION, "tabular-nums")}>{when(latest)}</span>
               <ChevronRight className="-mr-1 size-4 shrink-0 text-muted-foreground" strokeWidth={1.75} />
             </span>
             <span aria-hidden className="flex flex-col items-start gap-2">
               <ValueUnit
                 value={bpm(latest)}
-                unit="bpm avg"
+                unit={tr("bpm avg", "bpm méd.")}
                 className="font-numeric text-[30px] leading-9 font-bold tracking-[-0.01em]"
                 unitClassName="text-sm leading-5 font-medium text-foreground"
               />
@@ -73,12 +74,12 @@ export function HeartRhythm({ rhythm }: { rhythm: HeartRhythmVM }) {
         ) : (
           <div className={ROW}>
             <Activity aria-hidden className={ICON} strokeWidth={1.5} />
-            <p className="flex-1 text-[15px] leading-5 text-foreground-secondary">No ECG readings yet</p>
+            <p className="flex-1 text-[15px] leading-5 text-foreground-secondary">{tr("No ECG readings yet", "Ainda sem medições de ECG")}</p>
           </div>
         )}
         {older.length > 0 && (
           // ponytail: every reading listed; page it if someone ever has hundreds.
-          <ul aria-label="Earlier ECG readings" className="divide-y divide-border border-t border-border">
+          <ul aria-label={tr("Earlier ECG readings", "Medições de ECG anteriores")} className="divide-y divide-border border-t border-border">
             {older.map((e) => (
               <li key={e.id}>
                 <button type="button" onClick={() => select(e)} className={cn(PRESS, ROW, "w-full text-left hover:bg-accent active:bg-accent")}>
@@ -98,28 +99,28 @@ export function HeartRhythm({ rhythm }: { rhythm: HeartRhythmVM }) {
       <div className={cn(CARD_MATERIAL, ROW)}>
         <HeartPulse aria-hidden className={ICON} strokeWidth={1.5} />
         <p className="min-w-0 flex-1">
-          <span className={cn(LABEL, "block text-balance")}>Irregular rhythm notifications</span>
+          <span className={cn(LABEL, "block text-balance")}>{tr("Irregular rhythm notifications", "Avisos de ritmo irregular")}</span>
           <span className={cn(CAPTION, "mt-0.5 block text-pretty")}>
             {irn.latestDay
-              ? `Latest ${formatDay(irn.latestDay, DAY.short)}`
-              : "None. The check runs from time to time while you’re still, so no alert doesn’t rule out AFib."}
+              ? tr(`Latest ${formatDay(irn.latestDay, DAY.short)}`, `Último: ${formatDay(irn.latestDay, DAY.short)}`)
+              : tr("None. The check runs from time to time while you’re still, so no alert doesn’t rule out AFib.", "Nenhum. A verificação roda de tempos em tempos enquanto você está parado, então a ausência de alerta não descarta FA.")}
           </span>
         </p>
         <span className="font-numeric text-xl leading-6 font-bold tabular-nums">{irn.count}</span>
       </div>
 
-      <p className={cn(CAPTION, "px-1 text-pretty")}>{RHYTHM_DISCLAIMER}</p>
+      <p className={cn(CAPTION, "px-1 text-pretty")}>{rhythmDisclaimer()}</p>
 
-      <ResponsiveSheet open={!!current} onOpenChange={(o) => !o && setOpen(null)} title="ECG reading">
+      <ResponsiveSheet open={!!current} onOpenChange={(o) => !o && setOpen(null)} title={tr("ECG reading", "Medição de ECG")}>
         {shown && (
           <div className="space-y-4">
             <div className="space-y-2">
-              <ValueUnit value={bpm(shown)} unit="bpm avg" className="block font-numeric text-4xl leading-10 font-bold tracking-[-0.01em]" />
+              <ValueUnit value={bpm(shown)} unit={tr("bpm avg", "bpm méd.")} className="block font-numeric text-4xl leading-10 font-bold tracking-[-0.01em]" />
               <StatusChip tone={shown.tone}>{shown.label}</StatusChip>
             </div>
-            <p className="text-[15px] leading-[22px] text-pretty text-foreground-secondary tabular-nums">{formatDay(shown.day, DAY.long)} at {shown.time}</p>
+            <p className="text-[15px] leading-[22px] text-pretty text-foreground-secondary tabular-nums">{formatDay(shown.day, DAY.long)} {tr("at", "às")} {shown.time}</p>
             <p className="text-[15px] leading-[22px] text-pretty">{shown.explanation}</p>
-            <p className={cn(CAPTION, "text-pretty")}>{RHYTHM_DISCLAIMER}</p>
+            <p className={cn(CAPTION, "text-pretty")}>{rhythmDisclaimer()}</p>
           </div>
         )}
       </ResponsiveSheet>

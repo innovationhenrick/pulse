@@ -6,6 +6,7 @@ import { DATA_COLORS, deltaTone, partColor, recoveryColor, type GoodDirection } 
 import { formatDay, formatValue, hmm, type FormatKey } from "@/lib/format"
 import type { MonthSegment, TrendViewBar, TrendViewRange } from "@/lib/trend"
 import { AXIS, ChartFigure, GRID, LABEL_HALO, Pill, useSeriesAnimation, wholeTick } from "./ChartFrame"
+import { tr } from "@/lib/locale-context"
 
 export type TrendViewChartProps = {
   label: string
@@ -197,7 +198,7 @@ export function TrendViewChart(p: TrendViewChartProps) {
   const faint = six && p.chart !== "range"
   const summary = values.length
     ? `${p.label}: ${values.length} ${weekly ? "weeks" : "days"} with data, from ${fmt(Math.min(...values))} to ${fmt(Math.max(...values))}.`
-    : `No ${p.label} data in this period.`
+    : tr(`No ${p.label} data in this period.`, `Sem dados de ${p.label} neste período.`)
   const height = p.compact ? "h-[150px]" : "h-[240px]"
   const last = rows.findLastIndex((r) => r.value !== null)
 

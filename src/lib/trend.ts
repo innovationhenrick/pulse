@@ -1,5 +1,6 @@
 import { formatDay } from "./format";
 import { addDays } from "./url";
+import { isPt } from "./locale-context"
 
 // The Trend View's arithmetic (spec §11 R29): period windows, the relative change, 6M month segments, weekly
 // totals, the breakdown counts and the verdict sentence. Pure, so the query and the tests share it.
@@ -113,7 +114,7 @@ const WEEKS_PRIOR: Record<TrendViewRange, string> = { w: "previous 7-day total",
  * The one-sentence verdict. `typical` (the normal range) wins for vitals on W, as the reference app words RHR;
  * otherwise the change against the prior period decides: under 1% reads "consistent with".
  */
-export function verdict(o: {
+type VerdictInput = {
   label: string;
   range: TrendViewRange;
   agg: TrendAgg;
@@ -121,7 +122,34 @@ export function verdict(o: {
   prior: number | null;
   fmt: (v: number) => string;
   typical?: [number, number] | null;
-}) {
+};
+
+/** The verdict in Portuguese: the prior period is written with its article, so "acima d" + "o total" / "a média". */
+function verdictPt(o: VerdictInput) {
+  const { label, range, now, prior, fmt } = o;
+  const THIS = { w: "nesta semana", m: "neste mês", "6m": "neste período" } as const;
+  if (now === null) return `Sem dados de ${label} ${THIS[range]}.`;
+  if (o.typical && range === "w") {
+    const [lo, hi] = o.typical;
+    const where = now < lo ? "abaixo" : now > hi ? "acima" : "dentro";
+    return `Sua média de ${label} neste período de 7 dias ficou ${where} da sua faixa típica (${fmt(lo)} - ${fmt(hi)}).`;
+  }
+  const change = prior === null ? null : relativeChange(now, prior);
+  const cmp = (g: "o" | "a") => (change === 0 || change === null ? `consistente com ${g}` : change > 0 ? `acima d${g}` : `abaixo d${g}`);
+  if (o.agg === "weekly") {
+    const lead = range === "w" ? `Neste período de 7 dias, seu total de ${label} (${fmt(now)})` : `Sua média semanal de ${label} ${{ m: "nestas quatro semanas", "6m": "neste período" }[range]} (${fmt(now)})`;
+    if (prior === null) return `${lead}.`;
+    const ref = { w: ["o", "total dos 7 dias anteriores"], m: ["a", "média das quatro semanas anteriores"], "6m": ["a", "média dos 6 meses anteriores"] }[range] as ["o" | "a", string];
+    return `${lead} foi ${cmp(ref[0])} ${ref[1]} de ${fmt(prior)}.`;
+  }
+  const lead = `Sua média de ${label} ${THIS[range]} (${fmt(now)})`;
+  if (prior === null) return `${lead}.`;
+  const ref = { w: "média dos 7 dias anteriores", m: "média dos 30 dias anteriores", "6m": "média dos 6 meses anteriores" }[range];
+  return `${lead} foi ${cmp("a")} ${ref} de ${fmt(prior)}.`;
+}
+
+export function verdict(o: VerdictInput) {
+  if (isPt()) return verdictPt(o);
   const { label, range, now, prior, fmt } = o;
   if (now === null) return `No ${label} data ${WORD[range].this}.`;
   if (o.typical && range === "w") {

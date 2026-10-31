@@ -8,6 +8,7 @@ import { StressChart } from "@/components/charts/StressChart"
 import { ReasonPlaceholder } from "@/components/metrics/ReasonPlaceholder"
 import { CAPTION, DeltaMark, LABEL } from "@/components/metrics/primitives"
 import type { KeyStat, SleepVM } from "@/server/queries/types"
+import { tr } from "@/lib/locale-context"
 
 const BAR = "h-3.5 rounded-[3px]"
 const signed = (min: number, sign: "+" | "−") => `${sign}${hmm(Math.abs(min))}`
@@ -24,7 +25,7 @@ function Headline({ value, stat, down = false }: { value: number; stat?: Pick<Ke
       </p>
       {avg !== null && (
         <p className="font-numeric text-[13px] leading-4 font-medium text-muted-foreground tabular-nums">
-          <span className="sr-only">Prior 30-night average </span>
+          <span className="sr-only">{tr("Prior 30-night average", "Média das 30 noites anteriores")} </span>
           {Math.round(avg)}%
         </p>
       )}
@@ -61,7 +62,7 @@ export function HoursVsNeed({ vm }: { vm: SleepVM }) {
       <div className="mt-4 space-y-4">
         <div>
           <p className="mb-1.5 flex items-baseline justify-between gap-3">
-            <span className={cn(LABEL, "text-muted-foreground")}>Hours of sleep</span>
+            <span className={cn(LABEL, "text-muted-foreground")}>{tr("Hours of sleep", "Horas de sono")}</span>
             <span className="font-numeric text-lg leading-6 font-bold tabular-nums">{hmm(h.asleepMin)}</span>
           </p>
           {/* The reference app's bar fades in from the track to sleep blue at the night's length. */}
@@ -83,7 +84,7 @@ export function HoursVsNeed({ vm }: { vm: SleepVM }) {
             </div>
           )}
           <p className="mt-1.5 flex items-baseline justify-between gap-3">
-            <span className={cn(LABEL, "text-muted-foreground")}>Sleep needed</span>
+            <span className={cn(LABEL, "text-muted-foreground")}>{tr("Sleep needed", "Sono necessário")}</span>
             <span className="font-numeric text-lg leading-6 font-bold tabular-nums">{hmm(h.needMin)}</span>
           </p>
         </div>
@@ -91,10 +92,10 @@ export function HoursVsNeed({ vm }: { vm: SleepVM }) {
       {!h.calibrating && (
         <Legend
           rows={[
-            { swatch: "bg-foreground/35", label: "Healthy Minimum", value: hmm(baselineMin) },
-            { swatch: "bg-strain", label: "Recent Strain", value: signed(strainMin, "+") },
-            { swatch: "bg-foreground/80", label: "Sleep Debt", value: signed(debtMin, "+") },
-            ...(napMin > 0 ? [{ swatch: "bg-sleep", label: "Naps", value: signed(napMin, "−") }] : []),
+            { swatch: "bg-foreground/35", label: tr("Healthy Minimum", "Mínimo saudável"), value: hmm(baselineMin) },
+            { swatch: "bg-strain", label: tr("Recent Strain", "Esforço recente"), value: signed(strainMin, "+") },
+            { swatch: "bg-foreground/80", label: tr("Sleep Debt", "Dívida de sono"), value: signed(debtMin, "+") },
+            ...(napMin > 0 ? [{ swatch: "bg-sleep", label: tr("Naps", "Cochilos"), value: signed(napMin, "−") }] : []),
           ]}
         />
       )}
@@ -153,10 +154,10 @@ export function SleepConsistency({ vm }: { vm: SleepVM }) {
         <Headline value={c.pct} stat={vm.summary.find((k) => k.key === "consistency")} />
         <p className="flex items-center gap-2 pb-px text-[13px] leading-4 font-medium text-foreground-secondary">
           <span aria-hidden className="w-5 border-t-[1.5px] border-dashed border-foreground/55" />
-          Optimal bed/wake time
+          {tr("Optimal bed/wake time", "Horário ideal de dormir/acordar")}
         </p>
       </div>
-      <div role="img" aria-label={`Bed and wake times for the last five nights${last ? `, last night ${at(last.bed)} to ${at(last.wake)}` : ""}`} className="mt-4 flex gap-3">
+      <div role="img" aria-label={tr(`Bed and wake times for the last five nights${last ? `, last night ${at(last.bed)} to ${at(last.wake)}` : ""}`, `Horários de dormir e acordar das últimas cinco noites${last ? `, ontem à noite ${at(last.bed)} a ${at(last.wake)}` : ""}`)} className="mt-4 flex gap-3">
         <div aria-hidden className="relative h-52 w-10 shrink-0 font-numeric text-[12px] leading-3 font-semibold text-muted-foreground tabular-nums">
           {ticks.map((t) => (
             <span key={t} className="absolute right-0 -translate-y-1/2" style={{ top: `${pctOf(t)}%` }}>
@@ -234,7 +235,7 @@ export function SleepEfficiency({ vm }: { vm: SleepVM }) {
       <Headline value={e.pct} stat={e} />
       <div className="mt-4 space-y-2">
         <p className="flex items-baseline justify-between gap-3">
-          <span className={cn(LABEL, "text-muted-foreground")}>Asleep</span>
+          <span className={cn(LABEL, "text-muted-foreground")}>{tr("Asleep", "Dormindo")}</span>
           <span className="font-numeric text-lg leading-6 font-bold tabular-nums">{hmm(e.asleepMin)}</span>
         </p>
         <div aria-hidden className={cn("relative overflow-hidden bg-sleep", BAR)}>
@@ -244,13 +245,13 @@ export function SleepEfficiency({ vm }: { vm: SleepVM }) {
           <Wakes wakes={e.wakes} className="bg-foreground" />
         </div>
         <p className="flex items-baseline justify-between gap-3">
-          <span className={cn(LABEL, "text-muted-foreground")}>Awake</span>
+          <span className={cn(LABEL, "text-muted-foreground")}>{tr("Awake", "Acordado")}</span>
           <span className="font-numeric text-lg leading-6 font-bold tabular-nums">{hmm(e.awakeMin)}</span>
         </p>
       </div>
       <p className="mt-4 flex items-center gap-3 border-t border-border pt-4">
         <span aria-hidden className="size-3.5 shrink-0 rounded-[3px] bg-foreground/80" />
-        <span className={cn(LABEL, "flex-1")}>Wake events</span>
+        <span className={cn(LABEL, "flex-1")}>{tr("Wake events", "Despertares")}</span>
         <span className="font-numeric text-xl leading-6 font-bold tabular-nums">{e.wakeEvents ?? "--"}</span>
       </p>
     </div>
@@ -273,7 +274,7 @@ export function SleepStress({ vm }: { vm: SleepVM }) {
     <div>
       <Headline value={s.pct} stat={s} down />
       <div className="mt-4">
-        <StressChart variant="full" data={{ value: { points: s.points.map((p) => ({ t: p.t, value: p.v })), spans: [{ kind: "sleep", label: "Sleep", start: s.bed, end: s.wake }] }, reason: null, provisional: false }} />
+        <StressChart variant="full" data={{ value: { points: s.points.map((p) => ({ t: p.t, value: p.v })), spans: [{ kind: "sleep", label: tr("Sleep", "Sono"), start: s.bed, end: s.wake }] }, reason: null, provisional: false }} />
       </div>
       <div className="mt-4 space-y-4">
         {LEVELS.map((l) => {

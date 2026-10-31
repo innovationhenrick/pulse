@@ -1,4 +1,4 @@
-import { formatDay } from "@/lib/format"
+import { formatDay, locale } from "@/lib/format"
 import type { WeekDay } from "@/server/queries/log"
 import { ColumnChart } from "@/components/charts/ColumnChart"
 import { CAPTION, LABEL } from "@/components/metrics/primitives"
@@ -24,7 +24,7 @@ export function WeekCard({ week, day }: { week: WeekDay[]; day: string }) {
           <section key={r.key} aria-label={`${r.title}, last 7 days`} className="flex flex-col gap-1">
             <div className="flex items-baseline justify-between gap-3">
               <h3 className={LABEL}>{r.title}</h3>
-              <span className={cn(CAPTION, "tabular-nums")}>{a === null ? "No data" : `avg ${a.toLocaleString("en-US")} ${r.unit}`}</span>
+              <span className={cn(CAPTION, "tabular-nums")}>{a === null ? "No data" : `avg ${a.toLocaleString(locale())} ${r.unit}`}</span>
             </div>
             <ColumnChart
               summary={`${r.title} per day for the 7 days to ${formatDay(day, { month: "short", day: "numeric" })}`}

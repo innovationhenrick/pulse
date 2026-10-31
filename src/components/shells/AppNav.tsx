@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { createLucideIcon, HeartPulse, Menu, NotebookPen, Settings, type LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Mark } from "@/components/brand/Mark"
@@ -21,11 +22,11 @@ const HomeChart = createLucideIcon("home-chart", [
   ["path", { d: "m7 16 3-3 2.5 2.5L17 11", key: "chart" }],
 ])
 
-const TABS: { tab: Tab; label: string; icon: LucideIcon }[] = [
-  { tab: "home", label: "Home", icon: HomeChart },
-  { tab: "health", label: "Health", icon: HeartPulse },
-  { tab: "journal", label: "Journal", icon: NotebookPen },
-  { tab: "more", label: "More", icon: Menu },
+const TABS: { tab: Tab; icon: LucideIcon }[] = [
+  { tab: "home", icon: HomeChart },
+  { tab: "health", icon: HeartPulse },
+  { tab: "journal", icon: NotebookPen },
+  { tab: "more", icon: Menu },
 ]
 const ROOTS = new Set(Object.values(TAB_ROOT))
 
@@ -60,11 +61,12 @@ function Lens({ index, axis, className }: { index: number; axis: "x" | "y"; clas
 /** Phone tab bar: a 62 px glass squircle with four destinations (spec §4.2, G1). */
 function TabBar({ current }: { current: number }) {
   const go = useTabNavigate()
+  const t = useTranslations("nav")
   return (
-    <nav aria-label="Primary" onClick={() => haptic(6)} className={cn(GLASS, "relative h-[62px] min-w-0 flex-1 rounded-[22px] p-1")}>
+    <nav aria-label={t("primary")} onClick={() => haptic(6)} className={cn(GLASS, "relative h-[62px] min-w-0 flex-1 rounded-[22px] p-1")}>
       <Lens index={current} axis="x" className="inset-y-1 left-1 w-[calc((100%-8px)/4)] rounded-[18px]" />
       <ul className="relative grid h-full grid-cols-4">
-        {TABS.map(({ tab, label, icon: Icon }, i) => (
+        {TABS.map(({ tab, icon: Icon }, i) => (
           <li key={tab} className="min-w-0">
             <Link
               href={TAB_ROOT[tab]}
@@ -74,7 +76,7 @@ function TabBar({ current }: { current: number }) {
               className={cn(PRESS, ITEM_TONE(i === current), "flex h-full flex-col items-center justify-center gap-0.5 rounded-[18px] focus-visible:ring-inset")}
             >
               <Icon aria-hidden strokeWidth={1.6} className="size-[26px]" />
-              <span className="text-[11px] leading-[13px] font-semibold">{label}</span>
+              <span className="text-[11px] leading-[13px] font-semibold">{t(`tabs.${tab}`)}</span>
             </Link>
           </li>
         ))}
@@ -86,11 +88,12 @@ function TabBar({ current }: { current: number }) {
 /** Tablet rail, 88 px, floating (inferred, I2): the tab bar turned on its side. */
 function Rail({ current, wide, pathname }: { current: number; wide: boolean; pathname: string }) {
   const go = useTabNavigate()
+  const t = useTranslations("nav")
   return (
-    <nav aria-label="Primary" className={cn(GLASS, "fixed top-[calc(var(--inset-top)+12px)] bottom-3 left-3 z-30 hidden w-[88px] flex-col items-center rounded-[28px] py-4 md:flex", !wide && "xl:hidden")}>
+    <nav aria-label={t("primary")} className={cn(GLASS, "fixed top-[calc(var(--inset-top)+12px)] bottom-3 left-3 z-30 hidden w-[88px] flex-col items-center rounded-[28px] py-4 md:flex", !wide && "xl:hidden")}>
       <Link
         href="/"
-        aria-label="Pulse home"
+        aria-label={t("home")}
         className="mb-5 grid size-10 place-items-center rounded-full transition-[background-color,scale] duration-150 ease-standard outline-none hover:bg-foreground/8 focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.96]"
       >
         <span aria-hidden>
@@ -99,7 +102,7 @@ function Rail({ current, wide, pathname }: { current: number; wide: boolean; pat
       </Link>
       <ul className="relative flex flex-col gap-1">
         <Lens index={current} axis="y" className="inset-x-0 top-0 h-16 rounded-[20px]" />
-        {TABS.map(({ tab, label, icon: Icon }, i) => (
+        {TABS.map(({ tab, icon: Icon }, i) => (
           <li key={tab} className="relative">
             <Link
               href={TAB_ROOT[tab]}
@@ -109,7 +112,7 @@ function Rail({ current, wide, pathname }: { current: number; wide: boolean; pat
               className={cn(PRESS, ITEM_TONE(i === current), "flex h-16 w-[72px] flex-col items-center justify-center gap-1 rounded-[20px]")}
             >
               <Icon aria-hidden strokeWidth={1.6} className="size-[26px]" />
-              <span className="text-xs leading-4 font-semibold">{label}</span>
+              <span className="text-xs leading-4 font-semibold">{t(`tabs.${tab}`)}</span>
             </Link>
           </li>
         ))}
@@ -126,7 +129,7 @@ function Rail({ current, wide, pathname }: { current: number; wide: boolean; pat
             className={cn(PRESS, ITEM_TONE(pathname.startsWith("/settings")), "flex h-16 w-[72px] flex-col items-center justify-center gap-1 rounded-[20px]", pathname.startsWith("/settings") && "bg-glass-lens")}
           >
             <Settings aria-hidden strokeWidth={1.6} className="size-[26px]" />
-            <span className="text-xs leading-4 font-semibold">Settings</span>
+            <span className="text-xs leading-4 font-semibold">{t("settings")}</span>
           </Link>
         </>
       )}
@@ -141,8 +144,9 @@ function Rail({ current, wide, pathname }: { current: number; wide: boolean; pat
 
 /** Laptop sidebar, 232 px, floating (inferred, I2), with Settings under a hairline. */
 function Sidebar({ current, pathname }: { current: number; pathname: string }) {
+  const t = useTranslations("nav")
   // Reports, Trends and the rest live in More (U21), so each destination is listed once.
-  const extra = [{ href: "/settings", match: "/settings", label: "Settings", icon: Settings }]
+  const extra = [{ href: "/settings", match: "/settings", label: t("settings"), icon: Settings }]
   const extraActive = extra.some((e) => pathname.startsWith(e.match))
   const tab = extraActive ? -1 : current
   const go = useTabNavigate()
@@ -161,10 +165,10 @@ function Sidebar({ current, pathname }: { current: number; pathname: string }) {
     </li>
   )
   return (
-    <nav aria-label="Primary" className={cn(GLASS, "fixed top-[calc(var(--inset-top)+12px)] bottom-3 left-3 z-30 hidden w-[232px] flex-col rounded-[28px] p-3 xl:flex")}>
+    <nav aria-label={t("primary")} className={cn(GLASS, "fixed top-[calc(var(--inset-top)+12px)] bottom-3 left-3 z-30 hidden w-[232px] flex-col rounded-[28px] p-3 xl:flex")}>
       <Link
         href="/"
-        aria-label="Pulse home"
+        aria-label={t("home")}
         className="flex h-14 items-center rounded-full px-3 transition-[color] duration-150 ease-standard outline-none hover:text-foreground-secondary focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <span aria-hidden className="flex items-center gap-2.5">
@@ -174,7 +178,7 @@ function Sidebar({ current, pathname }: { current: number; pathname: string }) {
       </Link>
       <ul className="relative flex flex-col gap-1">
         <Lens index={tab} axis="y" className="inset-x-0 top-0 h-12 rounded-full" />
-        {TABS.map((t, i) => item(TAB_ROOT[t.tab], t.label, t.icon, i === tab))}
+        {TABS.map((x, i) => item(TAB_ROOT[x.tab], t(`tabs.${x.tab}`), x.icon, i === tab))}
       </ul>
       <div aria-hidden className="mx-3 my-2 h-px bg-foreground/8" />
       <ul className="flex flex-col gap-1">{extra.map((e) => item(e.href, e.label, e.icon, pathname.startsWith(e.match), pathname.startsWith(e.match)))}</ul>
@@ -215,7 +219,8 @@ function CheckInAction({ variant }: { variant: "float" | "rail" | "sidebar" }) {
   const { coach } = useShellStatus()
   const params = useSearchParams()
   const { d } = parseDay(params.get("d") ?? undefined, today)
-  const label = `Check in for ${dayLabel(d, today)}`
+  const t = useTranslations("nav")
+  const label = t("checkInFor", { day: dayLabel(d, today) })
   // With coach access the same button opens the coach (spec §11 V6), as the reference app's opens its assistant;
   // the check-in moves to the coach's first chip and the Journal tab.
   if (coach) {
@@ -224,9 +229,9 @@ function CheckInAction({ variant }: { variant: "float" | "rail" | "sidebar" }) {
         ? "flex h-12 items-center gap-3 rounded-full pr-4 pl-2.5 text-[15px] leading-5 font-semibold"
         : cn("grid shrink-0 place-items-center", variant === "rail" ? "size-14 rounded-[20px]" : "size-[62px] rounded-[22px] shadow-glass backdrop-blur-md backdrop-saturate-150")
     return (
-      <Link href="/coach" aria-label="Open Coach" className={cn(ACTION_FACE, face)}>
+      <Link href="/coach" aria-label={t("openCoach")} className={cn(ACTION_FACE, face)}>
         <Monogram />
-        {variant === "sidebar" && "Coach"}
+        {variant === "sidebar" && t("coach")}
       </Link>
     )
   }
@@ -234,7 +239,7 @@ function CheckInAction({ variant }: { variant: "float" | "rail" | "sidebar" }) {
     return (
       <SheetTrigger sheet="checkin" aria-label={label} className={cn(ACTION_FACE, "flex h-12 items-center gap-3 rounded-full pr-4 pl-2.5 text-[15px] leading-5 font-semibold")}>
         <Monogram />
-        Check in
+        {t("checkIn")}
       </SheetTrigger>
     )
   return (

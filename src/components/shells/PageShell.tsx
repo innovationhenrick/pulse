@@ -5,6 +5,7 @@ import type { DateSwitcherProps } from "./DateSwitcher"
 import { HomeHeader, type HeaderRings } from "./HomeHeader"
 import { PageEnter } from "./PageEnter"
 import { TitleHeader } from "./TopBar"
+import { tr } from "@/lib/locale-context"
 
 /** The content column (spec §2.5, §4.5). */
 export const CONTENT_COLUMN = cn(
@@ -35,7 +36,7 @@ export type PageShellProps = {
 /** The sr-only status a loading shell carries (spec §5.19): skeleton bars are hidden from assistive tech. */
 export const LoadingStatus = ({ title }: { title: string }) => (
   <p role="status" className="sr-only">
-    {title.trim() ? `Loading ${title}…` : "Loading…"}
+    {title.trim() ? tr(`Loading ${title}…`, `Carregando ${title}…`) : tr("Loading…", "Carregando…")}
   </p>
 )
 

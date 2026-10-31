@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { LoaderCircle } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 
 /** True from the click until the page is left; reset when the browser restores this page from its back-forward cache. */
@@ -20,12 +21,13 @@ const Spinner = () => <LoaderCircle aria-hidden className="animate-spin motion-r
 
 /** "Continue with demo data": posts to /login/demo, which sets a demo session and lands on Home. */
 export function DemoSignIn() {
+  const t = useTranslations("auth.login")
   const [pending, start] = usePending()
   return (
     <form method="post" action="/login/demo" onSubmit={start}>
       <Button type="submit" size="sheet" disabled={pending} aria-busy={pending || undefined} className="normal-case tracking-normal text-[16px]">
         {pending && <Spinner />}
-        {pending ? "Loading demo…" : "Continue with demo data"}
+        {pending ? t("demoLoading") : t("demoContinue")}
       </Button>
     </form>
   )

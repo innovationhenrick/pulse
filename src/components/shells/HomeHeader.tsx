@@ -15,15 +15,16 @@ import { MiniRing, type MiniRingVariant } from "@/components/metrics/MiniRing"
 import { DateSwitcher } from "./DateSwitcher"
 import { useShellStatus } from "./ShellStatus"
 import { HEADER_FILL, SyncStatus } from "./TopBar"
+import { tr } from "@/lib/locale-context"
 
 export type HeaderRing = { value: number | null; href: string }
 /** The day's three scores for the ring row (the dials' own view model), with their detail links. */
 export type HeaderRings = Record<MiniRingVariant, HeaderRing>
 
 const RING_ORDER: { key: MiniRingVariant; label: string }[] = [
-  { key: "sleep", label: "Sleep" },
-  { key: "recovery", label: "Recovery" },
-  { key: "strain", label: "Strain" },
+  { key: "sleep", get label() { return tr("Sleep", "Sono") } },
+  { key: "recovery", get label() { return tr("Recovery", "Recuperação") } },
+  { key: "strain", get label() { return tr("Strain", "Esforço") } },
 ]
 
 /** How far the band can grow under the top row: more than the tallest dial row (120 px dials, labels, tags). */
@@ -41,10 +42,10 @@ const RING_ROW_MOTION =
   "translate-y-1.5 opacity-0 transition-[opacity,translate] duration-220 ease-out-expo group-data-[state=rings]/hdr:translate-y-0 group-data-[state=rings]/hdr:opacity-100 motion-reduce:translate-y-0 motion-reduce:duration-120 group-data-[morph]/hdr:translate-y-0 group-data-[morph]/hdr:transition-none"
 
 function ringLabel(key: MiniRingVariant, label: string, value: number | null) {
-  if (value === null) return `${label}: no score. Open ${label}`
-  if (key === "recovery") return `Recovery ${formatValue("int", value)} percent, ${BAND_WORD[recoveryBand(value)].toLowerCase()}. Open Recovery`
-  if (key === "sleep") return `Sleep performance ${formatValue("int", value)} percent. Open Sleep`
-  return `Strain ${formatValue("decimal1", value)} of 21. Open Strain`
+  if (value === null) return tr(`${label}: no score. Open ${label}`, `${label}: sem score. Abrir ${label}`)
+  if (key === "recovery") return tr(`Recovery ${formatValue("int", value)} percent, ${BAND_WORD[recoveryBand(value)].toLowerCase()}. Open Recovery`, `Recuperação ${formatValue("int", value)} por cento, ${BAND_WORD[recoveryBand(value)].toLowerCase()}. Abrir Recuperação`)
+  if (key === "sleep") return tr(`Sleep performance ${formatValue("int", value)} percent. Open Sleep`, `Desempenho do sono ${formatValue("int", value)} por cento. Abrir Sono`)
+  return tr(`Strain ${formatValue("decimal1", value)} of 21. Open Strain`, `Esforço ${formatValue("decimal1", value)} de 21. Abrir Esforço`)
 }
 
 /**
@@ -84,8 +85,8 @@ function Streak() {
     <span
       role="img"
       data-streak
-      aria-label={`${streak.days}-day streak`}
-      title="Days in a row with your band worn"
+      aria-label={tr(`${streak.days}-day streak`, `Sequência de ${streak.days} ${streak.days === 1 ? "dia" : "dias"}`)}
+      title={tr("Days in a row with your band worn", "Dias seguidos usando a pulseira")}
       // Starts under the avatar (its 3 px page-colour ring plus 16 of its 40 px), so the avatar sits on the pill's left
       // end (spec §11 M6). Every size is a multiple of --u, which the row steps down on narrow phones (M4, M6).
       className="-ml-[calc(var(--u)*19px)] inline-flex h-[calc(var(--u)*36px)] shrink-0 items-center gap-[calc(var(--u)*10px)] rounded-full bg-foreground/[0.045] pr-[calc(var(--u)*12px)] pl-[calc(var(--u)*32px)]"
@@ -105,7 +106,7 @@ function Avatar() {
     // The 3 px ring is the page ground itself (the header's own fill), so it cuts the pill exactly where the reference app's does.
     <Link
       href="/settings"
-      aria-label="Settings"
+      aria-label={tr("Settings", "Ajustes")}
       className={cn(
         HEADER_FILL,
         "relative z-10 -ml-[calc(var(--u)*3px)] grid size-[calc(var(--u)*46px)] shrink-0 place-items-center rounded-full p-[calc(var(--u)*3px)] after:absolute after:-inset-[max(0px,calc((44px-var(--u)*46px)/2))] transition-[scale,color] duration-150 ease-standard outline-none hover:text-foreground-secondary focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.96]"
@@ -303,7 +304,7 @@ export function HomeHeader({ rings }: { rings?: HeaderRings }) {
   return (
     // In flow: the top row and its fade only. Everything that grows does so over the content, never pushing it.
     <header className="sticky top-0 z-20 h-[calc(var(--inset-top)+68px)] md:h-[calc(var(--inset-top)+76px)]">
-      <h1 className="sr-only">Home</h1>
+      <h1 className="sr-only">{tr("Home", "Início")}</h1>
       <div ref={panel} data-state="top" className="group/hdr pointer-events-none absolute inset-x-0 top-0 pt-[var(--inset-top)]">
         {/* The page ground with the 24 px fade, as a reveal: it covers the top row at rest and grows under it. */}
         <div
@@ -340,7 +341,7 @@ export function HomeHeader({ rings }: { rings?: HeaderRings }) {
               <SyncStatus />
             </div>
           </div>
-          <nav ref={ringRow} inert aria-label="Today’s scores" className={cn("absolute inset-x-0 top-full group-data-[state=rings]/hdr:pointer-events-auto", RING_ROW_MOTION)}>
+          <nav ref={ringRow} inert aria-label={tr("Today’s scores", "Scores de hoje")} className={cn("absolute inset-x-0 top-full group-data-[state=rings]/hdr:pointer-events-auto", RING_ROW_MOTION)}>
             <ul className={cn("grid h-10 grid-cols-3 items-center", ROW_EDGES)}>
               {RING_ORDER.map(({ key, label }) => {
                 const ring = rings?.[key]

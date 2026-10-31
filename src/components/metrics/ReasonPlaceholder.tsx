@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
 import { reasonCopy } from "@/lib/reasons"
+import { tr } from "@/lib/locale-context"
 
 export type ReasonPlaceholderProps = {
   /** Any string; unknown codes fall back to `no_data`. */
@@ -37,7 +38,7 @@ export function ReasonPlaceholder({ reason, nightsLeft, size, copy, className }:
     <div className={cn("flex flex-col items-center gap-2 text-center", className)}>
       {Icon && <Icon aria-hidden className="size-6 text-foreground-secondary" strokeWidth={1.75} />}
       <p className="line-clamp-2 max-w-40 text-base leading-[22px] font-semibold text-balance text-foreground-secondary">
-        {r.code === "no_data" ? "No data" : r.short}
+        {r.code === "no_data" ? tr("No data", "Sem dados") : r.short}
       </p>
     </div>
   )

@@ -1,4 +1,5 @@
 import { Check, ChevronDown, CircleAlert, Minus, TriangleAlert } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { ago, DAY, formatDay } from "@/lib/format"
 import { HEALTH_SIGNUP_URL } from "@/lib/google"
@@ -11,7 +12,7 @@ import { Progress } from "@/components/ui/progress"
 import { GoogleFit } from "@/components/brand/GoogleFit"
 import { Mark } from "@/components/brand/Mark"
 import { AppSettings, SignOutForm } from "./AppSettings"
-import { AvatarButtons, ChangePasswordButton, DeleteAccountButton, DisconnectButton, EditProfileButton, SwitchGoogleButton, ThemePicker } from "./SettingsClient"
+import { AvatarButtons, ChangePasswordButton, DeleteAccountButton, DisconnectButton, EditProfileButton, LanguagePicker, SwitchGoogleButton, ThemePicker } from "./SettingsClient"
 import { SettingsLayout, type SettingsSection } from "./SettingsLayout"
 import { CAPTION } from "@/components/metrics/primitives"
 
@@ -269,10 +270,11 @@ export function Profile({ profile }: { profile: SettingsVM["profile"] }) {
  * App (appearance, install, notifications) and, with coach access, Coach. About, reports, exports and help live in More.
  */
 export function SettingsView({ vm, now, account, coach, pushKey = null, initial }: { vm: SettingsVM; now: number; account: SettingsAccount; coach?: React.ReactNode; pushKey?: string | null; initial?: string | null }) {
+  const t = useTranslations("settings")
   const sections: SettingsSection[] = [
     {
       id: "account",
-      label: "Account",
+      label: t("sections.account"),
       node: (
         <>
           <Account account={account} />
@@ -286,21 +288,25 @@ export function SettingsView({ vm, now, account, coach, pushKey = null, initial 
         </>
       ),
     },
-    { id: "source", label: "Data source", node: <DataSource vm={vm} now={now} googleEmail={account.googleEmail} /> },
+    { id: "source", label: t("sections.source"), node: <DataSource vm={vm} now={now} googleEmail={account.googleEmail} /> },
     {
       id: "app",
-      label: "App",
+      label: t("sections.app"),
       node: (
         <>
-          <SectionShell variant="card" level={2} id="appearance" title="Appearance">
+          <SectionShell variant="card" level={2} id="language" title={t("language.title")}>
+            <LanguagePicker />
+            <p className="mt-2 text-[13px] leading-[18px] text-pretty text-muted-foreground">{t("language.hint")}</p>
+          </SectionShell>
+          <SectionShell variant="card" level={2} id="appearance" title={t("appearance.title")}>
             <ThemePicker />
-            <p className="mt-2 text-[13px] leading-[18px] text-pretty text-muted-foreground">System follows this device’s light or dark setting.</p>
+            <p className="mt-2 text-[13px] leading-[18px] text-pretty text-muted-foreground">{t("appearance.hint")}</p>
           </SectionShell>
           <AppSettings pushKey={pushKey} />
         </>
       ),
     },
-    ...(coach ? [{ id: "coach" as const, label: "Coach", node: coach }] : []),
+    ...(coach ? [{ id: "coach" as const, label: t("sections.coach"), node: coach }] : []),
   ]
   // Keyed by the section asked for, so a link to another one (?s=) opens it even on this page.
   return <SettingsLayout key={initial ?? ""} sections={sections} initial={initial} />

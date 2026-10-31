@@ -22,8 +22,13 @@ import type { StrainVM } from "@/server/queries/types"
 import { pageDay, type SearchParams } from "../_lib/day"
 import { STRAIN_INFO, STRAIN_TARGET_INFO } from "../_lib/info"
 import { CAPTION, hrSeries, LABEL, statProps, TodayVsLegend } from "../_lib/view"
+import { getTranslations } from "next-intl/server"
+import { tr } from "@/lib/locale-context"
 
-export const metadata = { title: "Strain", description: "Day Strain, your Strain Target, heart-rate zones, activities, calories burned and workout time." }
+export async function generateMetadata() {
+  const t = await getTranslations("meta.strain")
+  return { title: t("title"), description: t("description") }
+}
 
 /** Weekly Trends in the reference app's order (strain-weekly-trends-*). */
 const WEEKLY: readonly TrendViewKey[] = ["strain", "zones13", "zones45", "steps", "calories", "strength"]
@@ -37,7 +42,7 @@ export default async function StrainPage({ searchParams }: PageProps<"/strain">)
 
   return (
     <DetailShell
-      title="Strain"
+      title={tr("Strain", "Esforço")}
       info={STRAIN_INFO}
       dateSwitcher={{ mode: "day", placement: "header", steppers: false }}
       notch
@@ -59,20 +64,20 @@ export default async function StrainPage({ searchParams }: PageProps<"/strain">)
               <KeyStatRow key={k.key} variant="row" {...statProps(k, { d, today })} />
             ))}
           </div>
-          <TodayVsLegend period="prior 30 days" />
+          <TodayVsLegend period={tr("prior 30 days", "os 30 dias anteriores")} />
         </Card>
       }
-      insight={vm.coach && <InsightCard body={vm.coach} action={{ label: "Explore your strain insights", href: trendHref("strain", { d, today }) }} />}
+      insight={vm.coach && <InsightCard body={vm.coach} action={{ label: tr("Explore your strain insights", "Explore seus insights de esforço"), href: trendHref("strain", { d, today }) }} />}
       primary={
-        <SectionShell variant="card" title="Heart rate" level={2}>
+        <SectionShell variant="card" title={tr("Heart rate", "Frequência cardíaca")} level={2}>
           <IntradayHrChart data={hrSeries(vm.hr, vm.maxHr)} />
         </SectionShell>
       }
       secondary={[
-        <SectionShell key="zones" variant="card" title="Time in zones" level={2} fill className="xl:row-span-2">
-          <ZoneBars variant="rows" data={vm.zones} note={vm.zoneNote} emptyCopy={vm.isToday ? "No heart-rate zones yet today." : "No heart-rate zones on this day."} />
+        <SectionShell key="zones" variant="card" title={tr("Time in zones", "Tempo nas zonas")} level={2} fill className="xl:row-span-2">
+          <ZoneBars variant="rows" data={vm.zones} note={vm.zoneNote} emptyCopy={vm.isToday ? tr("No heart-rate zones yet today.", "Ainda sem zonas de frequência cardíaca hoje.") : tr("No heart-rate zones on this day.", "Sem zonas de frequência cardíaca neste dia.")} />
         </SectionShell>,
-        <SectionShell key="activities" variant="card" title="Activities" level={2}>
+        <SectionShell key="activities" variant="card" title={tr("Activities", "Atividades")} level={2}>
           {vm.activities.length ? (
             <div className="space-y-1.5">
               {vm.activities.map((a) => (
@@ -80,7 +85,7 @@ export default async function StrainPage({ searchParams }: PageProps<"/strain">)
               ))}
             </div>
           ) : (
-            <EmptyState body="No activities on this day." />
+            <EmptyState body={tr("No activities on this day.", "Sem atividades neste dia.")} />
           )}
         </SectionShell>,
       ]}
@@ -96,16 +101,16 @@ function TargetRow({ vm }: { vm: StrainVM }) {
   const reason = t.value ? null : reasonCopy(t.reason, t.nightsLeft).short
   return (
     <div className="flex min-h-13 items-center gap-3 py-2">
-      <span className="sr-only">{reason ? `Strain Target: ${reason}` : `Strain Target ${text.replace(" - ", " to ")}`}</span>
+      <span className="sr-only">{reason ? `${tr("Strain Target", "Meta de Esforço")}: ${reason}` : `${tr("Strain Target", "Meta de Esforço")} ${text.replace(" - ", tr(" to ", " a "))}`}</span>
       <span aria-hidden className="grid size-5 shrink-0 place-items-center text-muted-foreground [&_svg]:size-5">
         <Flame strokeWidth={1.75} />
       </span>
       <span aria-hidden className="min-w-0 flex-1">
-        <span className={cn(LABEL, "block text-balance")}>Strain Target</span>
+        <span className={cn(LABEL, "block text-balance")}>{tr("Strain Target", "Meta de Esforço")}</span>
         {reason && <span className={cn(CAPTION, "mt-0.5 block truncate")}>{reason}</span>}
         {t.value?.estimate && <MetricTags extra={["estimate"]} className="mt-1 justify-start" />}
       </span>
-      <InfoButton info={STRAIN_TARGET_INFO} label="Strain Target" variant="card" />
+      <InfoButton info={STRAIN_TARGET_INFO} label={tr("Strain Target", "Meta de Esforço")} variant="card" />
       {/* Same grid as KeyStatRow's value + arrow column, so the values right-align down the card. */}
       <span aria-hidden className="grid shrink-0 grid-cols-[auto_8px] gap-x-2">
         <span className={cn("font-numeric text-xl leading-6 font-bold tabular-nums", reason && "text-muted-foreground")}>{text}</span>

@@ -9,6 +9,7 @@ import { SkeletonText } from "@/components/ui/skeleton"
 import { MetricState, type MetricMeta } from "@/components/shells/MetricState"
 import { CAPTION, DeltaMark, LABEL, MetricTags, StatusChip, ValueUnit } from "./primitives"
 import { Sparkline } from "./Sparkline"
+import { tr } from "@/lib/locale-context"
 
 export type SleepStatus = "poor" | "sufficient" | "optimal"
 
@@ -231,7 +232,7 @@ function Tile({ p, c }: { p: KeyStatRowProps; c: Computed }) {
         )}
         {p.wide && !p.spark && !c.loading && !c.reason && (p.chip || c.avgText) && (
           <span className={cn("flex shrink-0 flex-col items-end gap-1 text-right", p.wide === "md" && "md:hidden", p.wide === "xl" && "xl:hidden")}>
-            <span className={CAPTION}>{p.chip ? "Your range" : (p.averageLabel ?? "30-day avg")}</span>
+            <span className={CAPTION}>{p.chip ? tr("Your range", "Sua faixa") : (p.averageLabel ?? tr("30-day avg", "Média de 30 dias"))}</span>
             {p.chip ? (
               <StatusChip tone={p.chip.tone} className={TILE_CHIP}>
                 {p.chip.text}

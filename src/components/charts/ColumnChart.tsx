@@ -6,6 +6,7 @@ import { formatValue, type FormatKey } from "@/lib/format"
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AXIS, BAR_CURSOR, ChartFigure, GRID, gutterLabel, labelGutter, TOOLTIP_CLASS, TooltipLine, useSeriesAnimation } from "./ChartFrame"
+import { tr } from "@/lib/locale-context"
 
 export type Column = {
   /** Axis label ("06:00", "Mon", "Sep 21"). */
@@ -72,7 +73,7 @@ export function ColumnChart({ summary, data, format, unit, tickEvery = 1, refere
                 const r = item.payload as (typeof rows)[number]
                 return (
                   <TooltipLine color={r.fill}>
-                    {r.value === null ? "No data" : `${formatValue(format, r.value)}${unitText}`}
+                    {r.value === null ? tr("No data", "Sem dados") : `${formatValue(format, r.value)}${unitText}`}
                   </TooltipLine>
                 )
               }}

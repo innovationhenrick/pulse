@@ -4,7 +4,7 @@ import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { CalendarHeart, Droplet, FlaskConical, Plus, Scale, Smile, Thermometer, Utensils, type LucideIcon } from "lucide-react"
 import { toast } from "sonner"
-import { DAY, dayLabel, formatDay } from "@/lib/format"
+import { DAY, dayLabel, formatDay, locale } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import {
   CYCLE_SYMPTOMS,
@@ -153,7 +153,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 
 export type LogProps = { vm: LogVM }
 
-const n = (v: number) => v.toLocaleString("en-US")
+const n = (v: number) => v.toLocaleString(locale())
 const MOOD_LABEL = Object.fromEntries([...MOODS, ...VALENCES].map(([v, l]) => [v, l]))
 
 /** Each tile's figure for the day shown: a total, the latest reading, or nothing yet. */
@@ -342,7 +342,7 @@ export function Log({ vm }: LogProps) {
                     ))}
                   </div>
                   <p className={cn(CAPTION, "tabular-nums")} aria-live="polite">
-                    {dayLabel(vm.day, vm.today)}: {vm.water.total.toLocaleString("en-US")} ml
+                    {dayLabel(vm.day, vm.today)}: {vm.water.total.toLocaleString(locale())} ml
                   </p>
                 </Section>
                 <Section title="Other amount">

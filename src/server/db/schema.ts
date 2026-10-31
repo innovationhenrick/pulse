@@ -466,6 +466,8 @@ export const profile = pgTable("profile", {
   timeZone: text("time_zone").notNull(),
   /** How clock times are shown. Display only: a change does not recompute scores. */
   timeFormat: text("time_format", { enum: ["24", "12"] }).notNull().default("24"),
+  /** Interface language (Settings › App). Display only: a change does not recompute scores. */
+  locale: text("locale", { enum: ["en", "pt-BR"] }).notNull().default("en"),
   updatedAt: ts("updated_at").notNull(),
 });
 

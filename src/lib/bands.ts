@@ -1,6 +1,7 @@
 // Band and tone logic for data colour (spec §2.3, §5.0). Colour is a data channel: every helper
 // here returns a meaning first, and the token for it second.
 import { acwrBand, type AcwrBand } from "@/core/scoring/readiness";
+import { lazy, tr } from "./locale-context";
 
 /** Data tokens. `bg`/`text` are literal class names so Tailwind sees them; `css` is for Recharts props. */
 export const DATA_COLORS = {
@@ -67,7 +68,7 @@ export function recoveryBand(value: number): RecoveryBand {
   return "red";
 }
 
-export const BAND_WORD: Record<RecoveryBand, string> = { green: "Green", yellow: "Yellow", red: "Red" };
+export const BAND_WORD: Record<RecoveryBand, string> = lazy(() => ({ green: tr("Green", "Verde"), yellow: tr("Yellow", "Amarelo"), red: tr("Red", "Vermelho") }));
 export const BAND_COLOR: Record<RecoveryBand, DataColor> = {
   green: "recovery-green",
   yellow: "recovery-yellow",
@@ -89,7 +90,7 @@ export function stressLevel(value: number): StressLevel {
   if (value >= 1) return "medium";
   return "low";
 }
-export const STRESS_WORD: Record<StressLevel, string> = { low: "Low", medium: "Medium", high: "High" };
+export const STRESS_WORD: Record<StressLevel, string> = lazy(() => ({ low: tr("Low", "Baixo"), medium: tr("Medium", "Médio"), high: tr("High", "Alto") }));
 export const STRESS_COLOR: Record<StressLevel, DataColor> = {
   low: "stress-low",
   medium: "stress-medium",

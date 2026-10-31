@@ -18,29 +18,33 @@ import { SectionShell } from "@/components/shells/SectionShell"
 import { Skeleton } from "@/components/ui/skeleton"
 import { categoryTone, categoryWord, ordinal } from "./format"
 import { LastReading } from "./heart-rate/LiveHeartRate"
+import { lazy, tr } from "@/lib/locale-context"
+import { getTranslations } from "next-intl/server"
 
-export const metadata = { title: "Health" }
+export async function generateMetadata() {
+  return { title: (await getTranslations("meta.health"))("title") }
+}
 
 const TILE = "font-numeric text-4xl leading-10 font-bold tracking-[-0.01em]"
 const EMPTY = "text-[15px] leading-[22px] text-pretty text-foreground-secondary"
 
 const VITAL_ICON: Record<VitalKey, typeof Wind> = { resp: Wind, spo2: Droplet, restingHr: Heart, hrv: Activity, skinTempDev: Thermometer }
 const VITAL_ORDER: { key: VitalKey; short: string }[] = [
-  { key: "resp", short: "Resp" },
+  { key: "resp", get short() { return tr("Resp", "Resp") } },
   { key: "spo2", short: "SpO2" },
-  { key: "restingHr", short: "RHR" },
-  { key: "hrv", short: "HRV" },
-  { key: "skinTempDev", short: "Temp" },
+  { key: "restingHr", get short() { return tr("RHR", "FC rep.") } },
+  { key: "hrv", get short() { return tr("HRV", "VFC") } },
+  { key: "skinTempDev", get short() { return tr("Temp", "Temp.") } },
 ]
-const ACWR_WORD: Record<ChipTone, string> = { optimal: "Optimal", warning: "Pushing", alert: "High risk", neutral: "Detraining" }
+const ACWR_WORD: Record<ChipTone, string> = lazy(() => ({ optimal: tr("Optimal", "Ideal"), warning: tr("Pushing", "Forçando"), alert: tr("High risk", "Risco alto"), neutral: tr("Detraining", "Destreino") }))
 
 const skeleton = <Skeleton className="h-16 w-full" />
 
 /** "Slower vs. last week" / "Faster vs. last week" / "No change vs. last week" (spec §6), from the week-on-week pace change. */
 function paceChip(delta: number | null) {
   if (delta === null) return null
-  if (Math.abs(delta) < 0.05) return { tone: "neutral" as const, dir: "flat" as const, text: "No change vs. last week" }
-  return delta < 0 ? { tone: "optimal" as const, dir: "down" as const, text: "Slower vs. last week" } : { tone: "warning" as const, dir: "up" as const, text: "Faster vs. last week" }
+  if (Math.abs(delta) < 0.05) return { tone: "neutral" as const, dir: "flat" as const, text: tr("No change vs. last week", "Sem mudança vs. semana passada") }
+  return delta < 0 ? { tone: "optimal" as const, dir: "down" as const, text: tr("Slower vs. last week", "Mais lento vs. semana passada") } : { tone: "warning" as const, dir: "up" as const, text: tr("Faster vs. last week", "Mais rápido vs. semana passada") }
 }
 
 /**
@@ -54,7 +58,7 @@ function AgeBlock({ m }: { m: HealthHubVM["healthspan"] }) {
       skeleton={skeleton}
       renderReason={() => (
         <SectionShell variant="card" level={2} title="Healthspan" href="/health/healthspan">
-          <p className={EMPTY}>Healthspan needs 20 days of data.</p>
+          <p className={EMPTY}>{tr("Healthspan needs 20 days of data.", "O Healthspan precisa de 20 dias de dados.")}</p>
         </SectionShell>
       )}
     >
@@ -68,7 +72,7 @@ function AgeBlock({ m }: { m: HealthHubVM["healthspan"] }) {
             <SectionShell
               variant="card"
               level={2}
-              title="Pace of Aging"
+              title={tr("Pace of Aging", "Ritmo de envelhecimento")}
               action={
                 chip && (
                   <StatusChip tone={chip.tone} delta={chip.dir}>
@@ -80,27 +84,27 @@ function AgeBlock({ m }: { m: HealthHubVM["healthspan"] }) {
               <div className="space-y-5">
                 <TickScale
                   variant="marker"
-                  label="Pace of Aging"
+                  label={tr("Pace of Aging", "Ritmo de envelhecimento")}
                   metric={{ value: v.pace, reason: null, provisional: meta.provisional }}
                   min={-1}
                   max={3}
                   format="decimal1"
                   unit="x"
-                  describe={v.pace < 1 ? "aging slower than your 6-month average" : v.pace > 1 ? "aging faster than your 6-month average" : "aging at the normal rate"}
+                  describe={v.pace < 1 ? tr("aging slower than your 6-month average", "envelhecendo mais devagar que sua média de 6 meses") : v.pace > 1 ? tr("aging faster than your 6-month average", "envelhecendo mais rápido que sua média de 6 meses") : tr("aging at the normal rate", "envelhecendo no ritmo normal")}
                   ends={["−1.0x", "1.0x", "3.0x"]}
                   leading={
                     <>
-                      <Turtle aria-hidden strokeWidth={1.75} /> Slow
+                      <Turtle aria-hidden strokeWidth={1.75} /> {tr("Slow", "Lento")}
                     </>
                   }
                   trailing={
                     <>
-                      Fast <Rabbit aria-hidden strokeWidth={1.75} />
+                      {tr("Fast", "Rápido")} <Rabbit aria-hidden strokeWidth={1.75} />
                     </>
                   }
                 />
                 <Link href="/health/healthspan" className={CARD_BUTTON}>
-                  Go to Healthspan
+                  {tr("Go to Healthspan", "Ir para o Healthspan")}
                 </Link>
               </div>
             </SectionShell>
@@ -117,8 +121,8 @@ function AgeBlock({ m }: { m: HealthHubVM["healthspan"] }) {
  */
 function BloodPressure() {
   return (
-    <SectionShell variant="card" level={2} title="Blood Pressure Insights" info={false} action={<Tag kind="beta" />}>
-      <p className={EMPTY}>How your blood pressure trends against your sleep, strain and recovery, from the readings your cuff shares with Google Health.</p>
+    <SectionShell variant="card" level={2} title={tr("Blood Pressure Insights", "Insights de pressão arterial")} info={false} action={<Tag kind="beta" />}>
+      <p className={EMPTY}>{tr("How your blood pressure trends against your sleep, strain and recovery, from the readings your cuff shares with Google Health.", "Como sua pressão arterial evolui em relação ao sono, ao esforço e à recuperação, a partir das medições que seu aparelho compartilha com o Google Health.")}</p>
     </SectionShell>
   )
 }
@@ -130,7 +134,7 @@ function Monitor({ m }: { m: HealthHubVM["monitor"] }) {
         const Icon = VITAL_ICON[key]
         const status = v?.vitals.find((x) => x.key === key)?.status ?? "no_data"
         const ok = status === "in_range"
-        const label = `${short}: ${status === "no_data" ? "no reading" : ok ? "within range" : "out of range"}`
+        const label = `${short}: ${status === "no_data" ? tr("no reading", "sem medição") : ok ? tr("within range", "dentro da faixa") : tr("out of range", "fora da faixa")}`
         return (
           <li key={key} className="flex min-w-0 flex-col items-center gap-2 px-1">
             <span className="sr-only">{label}</span>
@@ -165,7 +169,7 @@ function Monitor({ m }: { m: HealthHubVM["monitor"] }) {
       renderReason={() => (
         <div className="space-y-3">
           {readings()}
-          <p className={EMPTY}>No readings from last night</p>
+          <p className={EMPTY}>{tr("No readings from last night", "Sem medições da noite passada")}</p>
         </div>
       )}
     >
@@ -179,7 +183,7 @@ function Monitor({ m }: { m: HealthHubVM["monitor"] }) {
                 {all ? <Check aria-hidden className="size-3.5" strokeWidth={3} /> : <TriangleAlert aria-hidden className="size-3" strokeWidth={2.5} />}
               </span>
               <span className="text-[15px] leading-[22px] tabular-nums">
-                {v.inRange}/{v.total} within range
+                {v.inRange}/{v.total} {tr("within range", "dentro da faixa")}
               </span>
             </div>
           </div>
@@ -191,7 +195,7 @@ function Monitor({ m }: { m: HealthHubVM["monitor"] }) {
 
 function Stress({ m }: { m: HealthHubVM["stress"] }) {
   return (
-    <MetricState metric={m} skeleton={skeleton} renderReason={() => <p className={EMPTY}>No still minutes yet today</p>}>
+    <MetricState metric={m} skeleton={skeleton} renderReason={() => <p className={EMPTY}>{tr("No still minutes yet today", "Ainda sem minutos de repouso hoje")}</p>}>
       {(v, meta) => {
         const typical = v.typicalHighMin
         const dir = typical === null ? null : v.highMin < typical - 1 ? "down" : v.highMin > typical + 1 ? "up" : "flat"
@@ -200,11 +204,11 @@ function Stress({ m }: { m: HealthHubVM["stress"] }) {
         return (
           <div className="grid grid-cols-[auto_minmax(0,1fr)] items-end gap-4">
             <div className="space-y-2">
-              <p className={LABEL}>Today’s high stress</p>
-              <ValueUnit value={hmm(v.highMin)} unit="hrs" className={cn(TILE, "block")} />
+              <p className={LABEL}>{tr("Today’s high stress", "Estresse alto de hoje")}</p>
+              <ValueUnit value={hmm(v.highMin)} unit={tr("hrs", "h")} className={cn(TILE, "block")} />
               {dir && (
                 <StatusChip tone={tone} delta={dir}>
-                  vs. typical {v.weekday}
+                  {tr("vs. typical", "vs. típico de")} {v.weekday}
                 </StatusChip>
               )}
             </div>
@@ -221,18 +225,18 @@ function Fitness({ m }: { m: HealthHubVM["fitness"] }) {
     <MetricState
       metric={m}
       skeleton={skeleton}
-      renderReason={() => <p className={EMPTY}>No VO2 max yet. Fitbit estimates it from runs and resting heart rate.</p>}
+      renderReason={() => <p className={EMPTY}>{tr("No VO2 max yet. Fitbit estimates it from runs and resting heart rate.", "Ainda sem VO2 máx. O Fitbit o estima a partir de corridas e da frequência cardíaca de repouso.")}</p>}
     >
       {(v) => (
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 space-y-1">
             <ValueUnit value={formatValue("decimal1", v.vo2max)} unit="ml/kg/min" className={cn(TILE, "block")} />
             <p className={cn(LABEL, categoryTone(v.category))}>{categoryWord(v.category)}</p>
-            <p className={CAPTION}>{ordinal(v.percentile)} percentile for your age</p>
+            <p className={CAPTION}>{tr(`${ordinal(v.percentile)} percentile for your age`, `${ordinal(v.percentile)} percentil para a sua idade`)}</p>
           </div>
           {v.acwr !== null && v.acwrTone && (
             <div className="flex shrink-0 flex-col items-end gap-1">
-              <p className={LABEL}>Training load</p>
+              <p className={LABEL}>{tr("Training load", "Carga de treino")}</p>
               <span className="font-numeric text-xl leading-6 font-bold tabular-nums">{formatValue("decimal2", v.acwr)}</span>
               <StatusChip tone={v.acwrTone}>{ACWR_WORD[v.acwrTone]}</StatusChip>
             </div>
@@ -244,7 +248,7 @@ function Fitness({ m }: { m: HealthHubVM["fitness"] }) {
 }
 
 function HeartRate({ hr }: { hr: HealthHubVM["heartRate"] }) {
-  if (!hr) return <p className={EMPTY}>No heart-rate readings yet. They show here once your band syncs.</p>
+  if (!hr) return <p className={EMPTY}>{tr("No heart-rate readings yet. They show here once your band syncs.", "Ainda sem medições de frequência cardíaca. Elas aparecem aqui quando a pulseira sincronizar.")}</p>
   return (
     <div className="space-y-1">
       <ValueUnit value={String(hr.bpm)} unit="bpm" className={cn(TILE, "block")} />
@@ -258,28 +262,28 @@ export default async function HealthPage() {
   await connection()
   const vm = await getHealthHub(await userCtx())
   return (
-    <PageShell title="Health">
+    <PageShell title={tr("Health", "Saúde")}>
       {/* The reference app's order (health-stress-card-upgrade-promo, health-whoop-age-hero, health-monitor-card-labs): Stress Monitor, the age block, then Health Monitor; Pulse's
           Fitness and Heart rate follow. */}
       <HealthCards>
-        <SectionShell variant="card" level={2} title="Stress Monitor" info={false} href="/health/stress" className="xl:col-span-2">
+        <SectionShell variant="card" level={2} title={tr("Stress Monitor", "Monitor de estresse")} info={false} href="/health/stress" className="xl:col-span-2">
           <Stress m={vm.stress} />
         </SectionShell>
         <div className="xl:col-span-2">
           <AgeBlock m={vm.healthspan} />
         </div>
         {FEATURES.bloodPressure && <BloodPressure />}
-        <SectionShell variant="card" level={2} title="Health Monitor" info={false} href="/health/monitor">
+        <SectionShell variant="card" level={2} title={tr("Health Monitor", "Monitor de saúde")} info={false} href="/health/monitor">
           <Monitor m={vm.monitor} />
         </SectionShell>
-        <SectionShell variant="card" level={2} title="Fitness" href="/health/fitness">
+        <SectionShell variant="card" level={2} title={tr("Fitness", "Condicionamento")} href="/health/fitness">
           <Fitness m={vm.fitness} />
         </SectionShell>
-        <SectionShell variant="card" level={2} title="Heart rate" href="/health/heart-rate">
+        <SectionShell variant="card" level={2} title={tr("Heart rate", "Frequência cardíaca")} href="/health/heart-rate">
           <HeartRate hr={vm.heartRate} />
         </SectionShell>
       </HealthCards>
-      <p className={cn(CAPTION, "text-center")}>Estimates for personal insight, not medical advice.</p>
+      <p className={cn(CAPTION, "text-center")}>{tr("Estimates for personal insight, not medical advice.", "Estimativas para conhecimento pessoal, não aconselhamento médico.")}</p>
     </PageShell>
   )
 }

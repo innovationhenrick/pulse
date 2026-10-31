@@ -2,16 +2,17 @@
 import type { TrendRange } from "@/lib/url"
 import { TREND_GROUPS, TREND_METRICS, type TrendMetricKey } from "@/server/queries/trends"
 import { MetricSheet } from "./MetricSheet"
+import { lazy, tr } from "@/lib/locale-context"
 
 /** Chart card beside the Averages card from 1280 px. */
 export const TRENDS_GRID = "grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:items-start xl:gap-4"
 
-export const PERIOD: Record<TrendRange, { label: string; prior: string }> = {
-  w: { label: "Last 7 days", prior: "the 7 days before" },
-  m: { label: "Last 30 days", prior: "the 30 days before" },
-  "6m": { label: "Last 6 months", prior: "the 6 months before" },
-  "1y": { label: "Last 12 months", prior: "the year before" },
-}
+export const PERIOD: Record<TrendRange, { label: string; prior: string }> = lazy(() => ({
+  w: { label: tr("Last 7 days", "Últimos 7 dias"), prior: tr("the 7 days before", "os 7 dias anteriores") },
+  m: { label: tr("Last 30 days", "Últimos 30 dias"), prior: tr("the 30 days before", "os 30 dias anteriores") },
+  "6m": { label: tr("Last 6 months", "Últimos 6 meses"), prior: tr("the 6 months before", "os 6 meses anteriores") },
+  "1y": { label: tr("Last 12 months", "Últimos 12 meses"), prior: tr("the year before", "o ano anterior") },
+}))
 
 /**
  * The metric picker (spec §7.17): one row naming the section and metric on show; it opens a sheet on a phone and a

@@ -1,0 +1,157 @@
+{
+  "nav": {
+    "primary": "Principal",
+    "home": "Início do Pulse",
+    "settings": "Ajustes",
+    "coach": "Coach",
+    "openCoach": "Abrir o Coach",
+    "checkIn": "Check-in",
+    "checkInFor": "Check-in de {day}",
+    "tabs": {
+      "home": "Início",
+      "health": "Saúde",
+      "journal": "Diário",
+      "more": "Mais"
+    }
+  },
+  "settings": {
+    "sections": {
+      "account": "Conta",
+      "source": "Fonte de dados",
+      "app": "App",
+      "coach": "Coach"
+    },
+    "language": {
+      "title": "Idioma",
+      "legend": "Idioma",
+      "hint": "Vale para todos os dispositivos conectados à sua conta.",
+      "error": "Não foi possível mudar o idioma. Tente de novo."
+    },
+    "appearance": {
+      "title": "Aparência",
+      "hint": "Sistema segue o modo claro ou escuro deste dispositivo."
+    }
+  },
+  "auth": {
+    "login": {
+      "metaTitle": "Entrar",
+      "title": "Bem-vindo de volta",
+      "body": "Entre para ver a Recuperação, o Esforço e o Sono de hoje.",
+      "demoTitle": "Saiba quando acelerar e quando descansar",
+      "demoBody": "Recuperação, Esforço e Sono do seu Fitbit Air, calculados no seu próprio servidor.",
+      "demoNote": "Este servidor usa dados gerados. Para usar os seus, configure um cliente OAuth do Google (veja <path>docs/setup.md</path>).",
+      "demoContinue": "Continuar com dados de demonstração",
+      "demoLoading": "Carregando a demonstração…",
+      "closed": "Seus dados ficam neste servidor.",
+      "invite": "Novo no Pulse? Abra o link de convite que você recebeu.",
+      "newHere": "Novo no Pulse?",
+      "createAccount": "Criar conta"
+    },
+    "signup": {
+      "metaTitle": "Criar conta",
+      "title": "Crie sua conta",
+      "body": "Seus dados ficam neste servidor, visíveis só para você.",
+      "firstBody": "Este servidor ainda não tem contas. Use o e-mail de administrador definido em ADMIN_EMAILS.",
+      "haveAccount": "Já tem uma conta?",
+      "signIn": "Entrar",
+      "needAdminTitle": "Configure um administrador primeiro",
+      "needAdminBody": "Adicione seu e-mail em ADMIN_EMAILS no .env deste servidor e reinicie-o. Depois crie sua conta aqui.",
+      "inviteExpiredTitle": "Este convite expirou",
+      "inviteExpiredBody": "O link já foi usado, expirou ou foi revogado. Peça um novo a quem administra este servidor.",
+      "inviteOnlyTitle": "Este Pulse é só por convite",
+      "inviteOnlyBody": "Peça um link de convite a quem administra este servidor."
+    },
+    "forgot": {
+      "metaTitle": "Esqueci a senha",
+      "title": "Esqueceu a senha?",
+      "body": "O Pulse não envia e-mails, então quem administra o servidor redefine a senha para você.",
+      "stepsLabel": "Como redefinir sua senha",
+      "step1Email": "Envie ao administrador o seu nome de usuário ou o e-mail com que você se cadastrou.",
+      "step1Ask": "Peça a quem administra este Pulse que redefina a sua senha. Informe o seu nome de usuário ou e-mail.",
+      "step2": "Ele envia uma senha temporária, e todos os dispositivos em que você estava conectado são desconectados.",
+      "step3": "Entre com ela e escolha uma nova senha em Ajustes › Conta.",
+      "emailAdmin": "Enviar e-mail ao administrador",
+      "mailSubject": "Redefinição de senha do Pulse",
+      "mailBody": "Olá,\n\nPor favor, redefina a senha da minha conta no Pulse.\n\nMeu nome de usuário ou e-mail: \n\nObrigado!",
+      "backToSignIn": "Voltar para entrar",
+      "selfHosted": "Administra o seu próprio Pulse?",
+      "resetFromServer": "Redefinir uma senha pelo servidor",
+      "newTab": "(abre em uma nova aba)"
+    },
+    "form": {
+      "showPassword": "Mostrar senha",
+      "hidePassword": "Ocultar senha",
+      "rateLimited": "Muitas tentativas. Aguarde alguns minutos e tente de novo.",
+      "offline": "Não foi possível acessar o Pulse. Verifique sua conexão e tente de novo.",
+      "emailOrUsername": "E-mail ou usuário",
+      "password": "Senha",
+      "forgot": "Esqueceu a senha?",
+      "signIn": "Entrar",
+      "signingIn": "Entrando…",
+      "badCredentials": "E-mail/usuário ou senha incorretos.",
+      "name": "Nome",
+      "username": "Usuário",
+      "usernameTitle": "3 a 30 letras, números, _ ou .",
+      "usernameHint": "Letras, números, _ e . (3 a 30)",
+      "email": "E-mail",
+      "passwordHint": "Pelo menos 10 caracteres.",
+      "createAccount": "Criar conta",
+      "creatingAccount": "Criando conta…",
+      "signupClosed": "O cadastro está fechado neste servidor.",
+      "ownerReserved": "Este e-mail é reservado ao administrador deste servidor. Use outro e-mail.",
+      "inviteUsed": "Este link de convite acabou de ser usado, expirou ou foi revogado. Peça um novo.",
+      "inviteNeeded": "O cadastro aqui exige um link de convite. Peça um a quem administra este servidor.",
+      "signupFailed": "Não foi possível criar a conta. Tente de novo.",
+      "signupErrors": {
+        "usernameTaken": "Esse usuário já existe. Tente outro.",
+        "usernameInvalid": "Use de 3 a 30 letras, números, _ ou .",
+        "usernameShort": "Use pelo menos 3 caracteres.",
+        "usernameLong": "Use no máximo 30 caracteres.",
+        "emailTaken": "Já existe uma conta com este e-mail. Entre nela.",
+        "emailInvalid": "Digite um e-mail válido.",
+        "passwordShort": "Use pelo menos 10 caracteres.",
+        "passwordLong": "Use no máximo 128 caracteres."
+      }
+    }
+  },
+  "home": {
+    "metaTitle": "Hoje",
+    "metaDescription": "Sono, Recuperação e Esforço de hoje num relance."
+  },
+  "meta": {
+    "recovery": {
+      "title": "Recuperação",
+      "description": "Sua Recuperação e o que a moldou: VFC, frequência cardíaca de repouso, respiração e sono em relação aos últimos 30 dias."
+    },
+    "strain": {
+      "title": "Esforço",
+      "description": "Esforço do dia, sua meta de Esforço, zonas de frequência cardíaca, atividades, calorias gastas e tempo de treino."
+    },
+    "sleep": {
+      "title": "Sono",
+      "description": "Desempenho do sono, fases, necessidade e dívida, mais o plano de hora de dormir desta noite."
+    },
+    "health": {
+      "title": "Saúde"
+    },
+    "healthspan": {
+      "title": "Healthspan"
+    },
+    "healthMonitor": {
+      "title": "Monitor de saúde"
+    },
+    "fitness": {
+      "title": "Condicionamento"
+    },
+    "stress": {
+      "title": "Monitor de estresse"
+    },
+    "heartRate": {
+      "title": "Frequência cardíaca",
+      "description": "Sua frequência cardíaca mais recente, o gráfico de hoje minuto a minuto e o tempo nas zonas de frequência cardíaca."
+    },
+    "trends": {
+      "title": "Tendências"
+    }
+  }
+}

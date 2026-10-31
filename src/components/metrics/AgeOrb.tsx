@@ -3,12 +3,13 @@
 import { useEffect, useRef } from "react"
 import { useTheme } from "@/hooks/use-theme"
 import { cn } from "@/lib/utils"
-import { AGE_LABEL, formatValue } from "@/lib/format"
+import { ageLabel, formatValue } from "@/lib/format"
 import { reasonCopy, type ReasonCode } from "@/lib/reasons"
 import { blobRadius, css, cssMix, easeOutCubic, hexRGB, mixRGB, ORB, orbColors, orbStops, particleCount, rng, shadeRGB, type RGB, type Token } from "@/lib/orb"
 import { ageDelta } from "@/app/(app)/health/format"
 import { MetricTags } from "@/components/metrics/primitives"
 import { ReasonPlaceholder } from "@/components/metrics/ReasonPlaceholder"
+import { tr } from "@/lib/locale-context"
 
 export type AgeOrbProps = {
   /** Pulse Age, the number in the middle. */
@@ -81,8 +82,8 @@ export function AgeOrb({ age, deltaYears, provisional = false, size: sizeProp, r
   const r = reasonCopy(reason)
 
   const label = has
-    ? `${AGE_LABEL} ${formatValue("decimal1", age)}, ${same ? "same as your age" : `${d!.text} than your age`}${provisional ? ", provisional" : ""}`
-    : `${AGE_LABEL} unavailable. ${r.long}`
+    ? `${ageLabel()} ${formatValue("decimal1", age)}, ${same ? tr("same as your age", "igual à sua idade") : tr(`${d!.text} than your age`, `${d!.text} que a sua idade`)}${provisional ? tr(", provisional", ", provisório") : ""}`
+    : `${ageLabel()} ${tr("unavailable", "indisponível")}. ${r.long}`
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -380,7 +381,7 @@ export function AgeOrb({ age, deltaYears, provisional = false, size: sizeProp, r
             !compact && ENTER
           )}
         >
-          {AGE_LABEL}
+          {ageLabel()}
         </span>
         {!small && d && (
           <span

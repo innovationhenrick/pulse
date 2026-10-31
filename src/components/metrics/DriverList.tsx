@@ -6,6 +6,7 @@ import { SkeletonText } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/shells/EmptyState"
 import { MetricState } from "@/components/shells/MetricState"
 import { MetricTags } from "./primitives"
+import { tr } from "@/lib/locale-context"
 
 export type DriverItem = {
   key: string
@@ -34,22 +35,26 @@ export type DriverListProps = {
 const fmt = (v: number, unit: DriverListProps["unit"]) =>
   unit === "SD" ? `${formatValue("signed1", v)} SD` : `${formatValue("signedInt", v)}${unit === "%" ? "%" : ""}`
 const effectOf = (i: DriverItem) => i.effect ?? (i.delta > 0 ? "positive" : i.delta < 0 ? "negative" : "none")
-const unitWord = { pts: "points", "%": "percent", SD: "standard deviations" }
+const unitWord = () => ({ pts: tr("points", "pontos"), "%": tr("percent", "por cento"), SD: tr("standard deviations", "desvios-padrão") })
 
-function sentence(i: DriverItem, variant: DriverListProps["variant"], unit: DriverListProps["unit"], outcome = "Recovery") {
+function sentence(i: DriverItem, variant: DriverListProps["variant"], unit: DriverListProps["unit"], outcome = tr("Recovery", "Recuperação")) {
   const e = effectOf(i)
-  const size = `${formatValue(unit === "SD" ? "decimal1" : "int", Math.abs(i.delta))}\u00a0${unitWord[unit]}`
+  const size = `${formatValue(unit === "SD" ? "decimal1" : "int", Math.abs(i.delta))}\u00a0${unitWord()[unit]}`
   if (variant === "recovery")
-    return e === "none" ? `${i.label}: no clear effect` : `${i.label} ${e === "positive" ? "raised" : "lowered"} Recovery by ${size}`
+    return e === "none"
+      ? tr(`${i.label}: no clear effect`, `${i.label}: sem efeito claro`)
+      : tr(`${i.label} ${e === "positive" ? "raised" : "lowered"} Recovery by ${size}`, `${i.label} ${e === "positive" ? "aumentou" : "reduziu"} a Recuperação em ${size}`)
   const k = unit === "SD" ? "decimal1" : "int"
-  const ci = i.ci ? `, 90 percent confidence ${formatValue(k, Math.min(Math.abs(i.ci[0]), Math.abs(i.ci[1])))} to ${formatValue(k, Math.max(Math.abs(i.ci[0]), Math.abs(i.ci[1])))}` : ""
-  const n = i.yes !== undefined && i.no !== undefined ? `, from ${i.yes} days with and ${i.no} without` : ""
-  const verb = e === "none" ? `had no clear effect on next-day ${outcome}` : `${e === "positive" ? "raised" : "lowered"} next-day ${outcome} by ${size}`
+  const ci = i.ci ? `, ${tr("90 percent confidence", "confiança de 90 por cento")} ${formatValue(k, Math.min(Math.abs(i.ci[0]), Math.abs(i.ci[1])))} ${tr("to", "a")} ${formatValue(k, Math.max(Math.abs(i.ci[0]), Math.abs(i.ci[1])))}` : ""
+  const n = i.yes !== undefined && i.no !== undefined ? tr(`, from ${i.yes} days with and ${i.no} without`, `, de ${i.yes} dias com e ${i.no} sem`) : ""
+  const verb = e === "none"
+    ? tr(`had no clear effect on next-day ${outcome}`, `não teve efeito claro em ${outcome} no dia seguinte`)
+    : tr(`${e === "positive" ? "raised" : "lowered"} next-day ${outcome} by ${size}`, `${e === "positive" ? "aumentou" : "reduziu"} ${outcome} no dia seguinte em ${size}`)
   return `${i.label} ${verb}${ci}${n}`
 }
 
 function Header({ variant, unit, provisional }: { variant: DriverListProps["variant"]; unit: DriverListProps["unit"]; provisional: boolean }) {
-  const [left, mid, right] = variant === "recovery" ? ["Lowered", "Points", "Raised"] : ["Hurts", unit === "SD" ? "Impact (SD)" : "% Impact", "Helps"]
+  const [left, mid, right] = variant === "recovery" ? [tr("Lowered", "Reduziu"), tr("Points", "Pontos"), tr("Raised", "Aumentou")] : [tr("Hurts", "Prejudica"), unit === "SD" ? tr("Impact (SD)", "Impacto (DP)") : tr("% Impact", "% de impacto"), tr("Helps", "Ajuda")]
   return (
     <div aria-hidden className="mb-2 grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-xs leading-4 font-bold tracking-[0.1em] uppercase">
       <span className="flex items-center gap-2 text-warning-text">
@@ -159,7 +164,7 @@ export function DriverList(p: DriverListProps) {
     ) : (
       <EmptyState
         body="Not enough check-ins yet. Insights need 5 days with and 5 without a behaviour in the last 90 days."
-        action={{ label: "Check in", sheet: "checkin" }}
+        action={{ label: tr("Check in", "Check-in"), sheet: "checkin" }}
       />
     )
   return (

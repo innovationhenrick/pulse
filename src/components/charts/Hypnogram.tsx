@@ -12,6 +12,7 @@ import { MetricState } from "@/components/shells/MetricState"
 import { useClock, useOptionalShellCalendar } from "@/components/shells/ShellStatus"
 import { ReasonPlaceholder } from "@/components/metrics/ReasonPlaceholder"
 import { AXIS, ChartFigure, GRID, LINE_CURSOR, TOOLTIP_CLASS, TooltipLine, useSeriesAnimation } from "./ChartFrame"
+import { lazy, tr } from "@/lib/locale-context"
 
 export type HypnogramNight = { bed: number; wake: number; segments: StageSegment[] }
 export type HypnogramProps = {
@@ -19,7 +20,7 @@ export type HypnogramProps = {
   data: Metric<HypnogramNight> | null | undefined
 }
 
-const STAGE_NAME: Record<Stage, string> = { awake: "Awake", rem: "REM", light: "Light", deep: "Deep" }
+const STAGE_NAME: Record<Stage, string> = lazy(() => ({ awake: tr("Awake", "Acordado"), rem: "REM", light: tr("Light", "Leve"), deep: tr("Deep", "Profundo") }))
 const LANE_NAME = ["Deep", "Light", "REM", "Awake"]
 const LANE_STAGE: Stage[] = ["deep", "light", "rem", "awake"]
 

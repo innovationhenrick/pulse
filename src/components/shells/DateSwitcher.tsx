@@ -10,6 +10,7 @@ import { dayHref, parseDay, stepDay, weekOf } from "@/lib/url"
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { CalendarPanel } from "./CalendarPanel"
 import { useShellCalendar } from "./ShellStatus"
+import { tr } from "@/lib/locale-context"
 
 export type DateSwitcherProps = {
   mode: "day" | "week"
@@ -81,7 +82,6 @@ function Switcher({ mode, calendar, placement = "body", narrow = false, steppers
   const [weekStart, weekEnd] = weekOf(d)
   const atEnd = week ? weekStart >= weekOf(today)[0] : d >= today
   const atStart = !!firstDay && (week ? weekStart <= firstDay : d <= firstDay)
-  const unit = week ? "week" : "day"
 
   // The day the last step asked for. `d` only moves when a navigation commits, so a second tap while the
   // first day loads steps from here, not from `d`; once nothing is loading, the URL is the truth again.
@@ -129,7 +129,7 @@ function Switcher({ mode, calendar, placement = "body", narrow = false, steppers
     <Dialog open={open} onOpenChange={setOpen}>
       <div className={cn("inline-flex items-center", bare ? "gap-1" : "h-[30px] rounded-full bg-foreground/[0.04] p-px")}>
         {steppers && (
-          <button type="button" className={bare ? BARE_STEP : cn(STEP, narrow && NARROW_STEP)} aria-label={`Previous ${unit}`} disabled={atStart} onClick={() => by(-step)}>
+          <button type="button" className={bare ? BARE_STEP : cn(STEP, narrow && NARROW_STEP)} aria-label={week ? tr("Previous week", "Semana anterior") : tr("Previous day", "Dia anterior")} disabled={atStart} onClick={() => by(-step)}>
             <ChevronLeft aria-hidden className={bare ? "size-4" : "size-[18px]"} strokeWidth={2.25} />
           </button>
         )}
@@ -149,7 +149,7 @@ function Switcher({ mode, calendar, placement = "body", narrow = false, steppers
           </button>
         </DialogTrigger>
         {steppers && (
-          <button type="button" className={bare ? BARE_STEP : cn(STEP, narrow && NARROW_STEP)} aria-label={`Next ${unit}`} disabled={atEnd} onClick={() => by(step)}>
+          <button type="button" className={bare ? BARE_STEP : cn(STEP, narrow && NARROW_STEP)} aria-label={week ? tr("Next week", "Próxima semana") : tr("Next day", "Próximo dia")} disabled={atEnd} onClick={() => by(step)}>
             <ChevronRight aria-hidden className={bare ? "size-4" : "size-[18px]"} strokeWidth={2.25} />
           </button>
         )}

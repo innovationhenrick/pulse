@@ -3,8 +3,11 @@
 import * as React from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Camera, KeyRound, Monitor, Moon, Pencil, Sun } from "lucide-react"
+import { useLocale, useTranslations } from "next-intl"
 import { useTheme } from "@/hooks/use-theme"
 import { toast } from "sonner"
+import { LOCALE_NAMES, LOCALES, type Locale } from "@/i18n/config"
+import { setLocaleAction } from "@/server/actions/locale"
 import { uploadAvatar } from "@/server/actions/avatar"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -353,6 +356,41 @@ const THEMES = [
  * Appearance: system, light or dark, as a radio group styled like the profile's segmented control. Kept per device
  * (stored locally), so a phone can follow the system while a laptop stays dark.
  */
+export function LanguagePicker() {
+  const t = useTranslations("settings.language")
+  const current = useLocale()
+  const router = useRouter()
+  const [pending, startTransition] = React.useTransition()
+  const [chosen, setChosen] = React.useState(current)
+  const choose = (next: Locale) => {
+    setChosen(next)
+    startTransition(async () => {
+      const r = await setLocaleAction(next)
+      if (!r.ok) {
+        setChosen(current)
+        toast.error(t("error"))
+        return
+      }
+      router.refresh()
+    })
+  }
+  return (
+    <fieldset disabled={pending}>
+      <legend className="sr-only">{t("legend")}</legend>
+      <div className="grid grid-cols-2 gap-1 rounded-[14px] bg-field p-1">
+        {LOCALES.map((value) => (
+          <label key={value} className="relative">
+            <input type="radio" name="locale" value={value} checked={chosen === value} onChange={() => choose(value)} className="peer sr-only" />
+            <span className="flex h-11 cursor-pointer items-center justify-center rounded-[10px] px-2 text-center text-[15px] font-semibold text-foreground-secondary transition-[background-color,color,scale] duration-150 ease-standard select-none active:scale-[0.96] peer-checked:bg-foreground peer-checked:text-background peer-focus-visible:ring-2 peer-focus-visible:ring-foreground/70">
+              {LOCALE_NAMES[value]}
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  )
+}
+
 export function ThemePicker() {
   const { theme, setTheme } = useTheme()
   return (

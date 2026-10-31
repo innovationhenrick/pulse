@@ -14,6 +14,7 @@ import { useClock, useOptionalShellCalendar } from "@/components/shells/ShellSta
 import { ReasonPlaceholder } from "@/components/metrics/ReasonPlaceholder"
 import { AXIS, BandGradient, bandPaint, ChartFigure, FadeGradient, GlowDot, GRID, LINE_CURSOR, Pill, TOOLTIP_CLASS, TooltipLine, useSeriesAnimation, type Band } from "./ChartFrame"
 import { spanAreas } from "./IntradayHrChart"
+import { tr } from "@/lib/locale-context"
 
 export type EnergySeries = {
   /** Reserve 0-100 from wake to now (today) or to sleep (past days). */
@@ -43,17 +44,17 @@ function Chart({ e }: { e: EnergySeries }) {
   const valueAt = (t: number) => e.points.reduce((best, p) => (Math.abs(p.t - t) < Math.abs(best.t - t) ? p : best), e.points[0]).value
   const drains = [...(e.drains ?? [])].sort((a, b) => b.amount - a.amount).slice(0, 3)
   const startV = e.points.find((p) => p.value !== null)?.value
-  const summary = `Energy from ${at(first, tz)}: started at ${formatValue("int", startV)} percent, now ${formatValue("int", latest?.value)} percent.`
+  const summary = tr(`Energy from ${at(first, tz)}: started at ${formatValue("int", startV)} percent, now ${formatValue("int", latest?.value)} percent.`, `Energia desde ${at(first, tz)}: começou em ${formatValue("int", startV)} por cento, agora ${formatValue("int", latest?.value)} por cento.`)
 
   return (
-    <ChartFigure summary={summary} config={{ all: { label: "Energy", color: "var(--recovery-green)" } }} className="h-[140px]">
+    <ChartFigure summary={summary} config={{ all: { label: tr("Energy", "Energia"), color: "var(--recovery-green)" } }} className="h-[140px]">
       <ComposedChart data={data} accessibilityLayer margin={{ top: 18, right: 8, bottom: 0, left: 0 }}>
         <CartesianGrid {...GRID} />
         <defs>
           <BandGradient id={`energy-${id}`} top={top} bottom={bottom} bands={BANDS} />
           <FadeGradient id={`energy-fill-${id}`} color={bandColor(latest?.value ?? top, BANDS)} from={0.24} />
         </defs>
-        {spanAreas(e.naps?.map((n) => ({ kind: "sleep" as const, start: n.start, end: n.end, label: "Nap" })))}
+        {spanAreas(e.naps?.map((n) => ({ kind: "sleep" as const, start: n.start, end: n.end, label: tr("Nap", "Cochilo") })))}
         <XAxis dataKey="x" type="number" scale="time" domain={[first, last]} ticks={hourTicks(first, last, 6, tz)} tickFormatter={(v: number) => at(v, tz)} interval="preserveStartEnd" minTickGap={24} {...AXIS} />
         <YAxis domain={[0, 100]} ticks={[33, 67, 100]} width={28} {...AXIS} tickMargin={4} />
         <ChartTooltip

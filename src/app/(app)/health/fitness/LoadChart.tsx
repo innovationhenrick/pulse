@@ -5,11 +5,12 @@ import { DAY, formatDay, formatValue } from "@/lib/format"
 import type { FitnessVM } from "@/server/queries/types"
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { AXIS, ChartFigure, FadeGradient, GRID, LINE_CURSOR, TOOLTIP_CLASS, useSeriesAnimation } from "@/components/charts/ChartFrame"
+import { tr } from "@/lib/locale-context"
 
 const CONFIG = {
-  ctl: { label: "Fitness", color: "var(--chart-1)" },
-  atl: { label: "Fatigue", color: "var(--chart-4)" },
-  tsb: { label: "Form", color: "var(--chart-2)" },
+  ctl: { get label() { return tr("Fitness", "Condicionamento") }, color: "var(--chart-1)" },
+  atl: { get label() { return tr("Fatigue", "Fadiga") }, color: "var(--chart-4)" },
+  tsb: { get label() { return tr("Form", "Forma") }, color: "var(--chart-2)" },
 }
 
 /** Fitness (CTL), fatigue (ATL) and form (TSB) over 90 days (spec §7.10). */
@@ -17,8 +18,8 @@ export function LoadChart({ load }: { load: FitnessVM["load"] }) {
   const anim = useSeriesAnimation()
   const last = [...load].reverse().find((p) => p.ctl !== null)
   const summary = last
-    ? `Training load over 90 days: fitness ${formatValue("int", last.ctl)}, fatigue ${formatValue("int", last.atl)}, form ${formatValue("signedInt", last.tsb)} today.`
-    : "No training load data yet."
+    ? tr(`Training load over 90 days: fitness ${formatValue("int", last.ctl)}, fatigue ${formatValue("int", last.atl)}, form ${formatValue("signedInt", last.tsb)} today.`, `Carga de treino em 90 dias: condicionamento ${formatValue("int", last.ctl)}, fadiga ${formatValue("int", last.atl)}, forma ${formatValue("signedInt", last.tsb)} hoje.`)
+    : tr("No training load data yet.", "Ainda sem dados de carga de treino.")
   const ticks = load.filter((p, i) => i > 0 && p.day.slice(0, 7) !== load[i - 1].day.slice(0, 7)).map((p) => p.day)
 
   return (

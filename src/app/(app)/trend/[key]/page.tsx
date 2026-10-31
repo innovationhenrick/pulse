@@ -18,13 +18,17 @@ import { getTrendView, isTrendViewKey, priorLabel, TREND_VIEW, type TrendViewVM 
 import { pageDay, type SearchParams } from "../../_lib/day"
 import { AddActivityTrigger } from "../../_lib/AddActivity"
 import { STAT_ICON } from "../../_lib/view"
+import { lazy, tr } from "@/lib/locale-context"
+import { getTranslations } from "next-intl/server"
+import { localizeView } from "@/server/queries/trendViewPt"
 
-const RANGE_TEXT: Record<TrendViewRange, string> = { w: "W", m: "M", "6m": "6M" }
-const RANGE_ARIA: Record<TrendViewRange, string> = { w: "1 week", m: "1 month", "6m": "6 months" }
+const RANGE_TEXT: Record<TrendViewRange, string> = lazy(() => ({ w: tr("W", "S"), m: "M", "6m": "6M" }))
+const RANGE_ARIA: Record<TrendViewRange, string> = lazy(() => ({ w: tr("1 week", "1 semana"), m: tr("1 month", "1 mês"), "6m": tr("6 months", "6 meses") }))
 
 export async function generateMetadata({ params }: PageProps<"/trend/[key]">) {
   const { key } = await params
-  return { title: isTrendViewKey(key) ? `${TREND_VIEW[key].label} trend` : "Trend view" }
+  await getTranslations("meta")
+  return { title: isTrendViewKey(key) ? tr(`${TREND_VIEW[key].label} trend`, `Tendência: ${localizeView(key, TREND_VIEW[key]).label}`) : tr("Trend view", "Visão de tendência") }
 }
 
 /** Trend View `/trend/[key]?d=&r=&p=` (spec §11 R29): one metric over a W / M / 6M window, stepped back `p` periods. */
@@ -40,7 +44,7 @@ export default async function TrendViewPage({ params, searchParams }: PageProps<
 
   return (
     <DetailShell
-      title="Trend view"
+      title={tr("Trend view", "Visão de tendência")}
       primary={
         <div className="flex flex-col gap-6">
           <TrendMetricMenu
@@ -79,7 +83,7 @@ export default async function TrendViewPage({ params, searchParams }: PageProps<
               {vm.actions.addActivity && (
                 <AddActivityTrigger className={CARD_BUTTON}>
                   <Plus aria-hidden className="size-5" strokeWidth={2} />
-                  Add activity
+                  {tr("Add activity", "Adicionar atividade")}
                 </AddActivityTrigger>
               )}
               {FEATURES.goals && vm.actions.goal && (
@@ -116,7 +120,7 @@ function Headline({ vm, href }: { vm: TrendViewVM; href: (o: { r?: TrendViewRang
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3">
       <div className="min-w-0">
         <p className={cn(LABEL, "text-muted-foreground")}>{vm.caption}</p>
-        <ValueUnit value={formatValue(vm.format, vm.value)} unit={vm.format === "duration" ? "hr" : vm.unit} className="block font-numeric text-[34px] leading-10 font-bold" />
+        <ValueUnit value={formatValue(vm.format, vm.value)} unit={vm.format === "duration" ? tr("hr", "h") : vm.unit} className="block font-numeric text-[34px] leading-10 font-bold" />
         {vm.change !== null && (
           <StatusChip tone={vm.tone === "good" ? "optimal" : vm.tone === "bad" ? "warning" : "neutral"} delta={vm.change > 0 ? "up" : vm.change < 0 ? "down" : "flat"} className="mt-1">
             {Math.abs(vm.change)}% {priorLabel(vm.range)}
@@ -124,16 +128,16 @@ function Headline({ vm, href }: { vm: TrendViewVM; href: (o: { r?: TrendViewRang
         )}
       </div>
       <div className="flex flex-col items-end gap-2">
-        <nav aria-label="Range" className={SEGMENT_TRACK}>
+        <nav aria-label={tr("Range", "Período")} className={SEGMENT_TRACK}>
           {TREND_VIEW_RANGES.map((r) => (
             <Link key={r} href={href({ r, p: 0 })} replace scroll={false} aria-label={RANGE_ARIA[r]} aria-current={r === vm.range ? "page" : undefined} className={cn(SEGMENT_ITEM, "min-w-14")}>
               {RANGE_TEXT[r]}
             </Link>
           ))}
         </nav>
-        <nav aria-label="Period" className="flex items-center gap-1">
+        <nav aria-label={tr("Period", "Intervalo")} className="flex items-center gap-1">
           {vm.canPrev ? (
-            <Link href={href({ p: vm.offset + 1 })} replace scroll={false} aria-label="Previous period" className={arrow}>
+            <Link href={href({ p: vm.offset + 1 })} replace scroll={false} aria-label={tr("Previous period", "Período anterior")} className={arrow}>
               <ChevronLeft aria-hidden strokeWidth={2.5} className="size-5" />
             </Link>
           ) : (
@@ -143,7 +147,7 @@ function Headline({ vm, href }: { vm: TrendViewVM; href: (o: { r?: TrendViewRang
           )}
           <span className="font-numeric text-[13px] leading-4 font-bold tracking-[0.06em] whitespace-nowrap uppercase tabular-nums">{vm.period}</span>
           {vm.offset > 0 ? (
-            <Link href={href({ p: vm.offset - 1 })} replace scroll={false} aria-label="Next period" className={arrow}>
+            <Link href={href({ p: vm.offset - 1 })} replace scroll={false} aria-label={tr("Next period", "Próximo período")} className={arrow}>
               <ChevronRight aria-hidden strokeWidth={2.5} className="size-5" />
             </Link>
           ) : (

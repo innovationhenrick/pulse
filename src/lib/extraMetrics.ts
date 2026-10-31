@@ -3,6 +3,7 @@
 // (and its value path in src/server/sources/google/map.ts) is all it takes to show it.
 import type { GoodDirection } from "./bands"
 import type { FormatKey } from "./format"
+import { tr } from "./locale-context"
 
 export type ExtraMetric = {
   key: string
@@ -18,23 +19,23 @@ export type ExtraMetric = {
 }
 
 export const EXTRA_METRICS = [
-  { key: "distance", label: "Distance", unit: "km", format: "decimal2", direction: "up", group: "activity", partialToday: true },
-  { key: "floors", label: "Floors", format: "grouped", direction: "up", group: "activity", partialToday: true },
-  { key: "elevation", label: "Elevation gain", unit: "m", format: "int", direction: "up", group: "activity", partialToday: true },
-  { key: "active_minutes", label: "Active minutes", format: "duration", direction: "up", group: "activity", partialToday: true },
-  { key: "light_minutes", label: "Light activity", format: "duration", direction: "up", group: "activity", partialToday: true },
-  { key: "azm", label: "Active Zone Minutes", format: "duration", direction: "up", group: "activity", partialToday: true },
-  { key: "active_calories", label: "Active calories", unit: "kcal", format: "grouped", direction: "neutral", group: "activity", partialToday: true },
-  { key: "sedentary_minutes", label: "Sedentary time", format: "duration", direction: "down", group: "activity", partialToday: true },
-  { key: "avg_hr", label: "Average heart rate", unit: "bpm", format: "int", direction: "neutral", group: "activity" },
-  { key: "water", label: "Water", unit: "ml", format: "grouped", direction: "up", group: "nutrition", partialToday: true },
-  { key: "calories_in", label: "Calories eaten", unit: "kcal", format: "grouped", direction: "neutral", group: "nutrition", partialToday: true },
-  { key: "protein", label: "Protein", unit: "g", format: "int", direction: "neutral", group: "nutrition", partialToday: true },
-  { key: "carbs", label: "Carbohydrates", unit: "g", format: "int", direction: "neutral", group: "nutrition", partialToday: true },
-  { key: "fat", label: "Fat", unit: "g", format: "int", direction: "neutral", group: "nutrition", partialToday: true },
-  { key: "glucose", label: "Blood glucose", unit: "mg/dL", format: "int", direction: "neutral", group: "vitals" },
-  { key: "core_temp", label: "Core temperature", unit: "°C", format: "decimal1", direction: "neutral", group: "vitals" },
-  { key: "swim_strokes", label: "Swim strokes", format: "grouped", direction: "up", group: "activity", partialToday: true },
+  { key: "distance", get label() { return tr("Distance", "Distância") }, unit: "km", format: "decimal2", direction: "up", group: "activity", partialToday: true },
+  { key: "floors", get label() { return tr("Floors", "Andares") }, format: "grouped", direction: "up", group: "activity", partialToday: true },
+  { key: "elevation", get label() { return tr("Elevation gain", "Ganho de elevação") }, unit: "m", format: "int", direction: "up", group: "activity", partialToday: true },
+  { key: "active_minutes", get label() { return tr("Active minutes", "Minutos ativos") }, format: "duration", direction: "up", group: "activity", partialToday: true },
+  { key: "light_minutes", get label() { return tr("Light activity", "Atividade leve") }, format: "duration", direction: "up", group: "activity", partialToday: true },
+  { key: "azm", get label() { return tr("Active Zone Minutes", "Minutos em zona ativa") }, format: "duration", direction: "up", group: "activity", partialToday: true },
+  { key: "active_calories", get label() { return tr("Active calories", "Calorias ativas") }, unit: "kcal", format: "grouped", direction: "neutral", group: "activity", partialToday: true },
+  { key: "sedentary_minutes", get label() { return tr("Sedentary time", "Tempo sedentário") }, format: "duration", direction: "down", group: "activity", partialToday: true },
+  { key: "avg_hr", get label() { return tr("Average heart rate", "Frequência cardíaca média") }, unit: "bpm", format: "int", direction: "neutral", group: "activity" },
+  { key: "water", get label() { return tr("Water", "Água") }, unit: "ml", format: "grouped", direction: "up", group: "nutrition", partialToday: true },
+  { key: "calories_in", get label() { return tr("Calories eaten", "Calorias consumidas") }, unit: "kcal", format: "grouped", direction: "neutral", group: "nutrition", partialToday: true },
+  { key: "protein", get label() { return tr("Protein", "Proteína") }, unit: "g", format: "int", direction: "neutral", group: "nutrition", partialToday: true },
+  { key: "carbs", get label() { return tr("Carbohydrates", "Carboidratos") }, unit: "g", format: "int", direction: "neutral", group: "nutrition", partialToday: true },
+  { key: "fat", get label() { return tr("Fat", "Gordura") }, unit: "g", format: "int", direction: "neutral", group: "nutrition", partialToday: true },
+  { key: "glucose", get label() { return tr("Blood glucose", "Glicose no sangue") }, unit: "mg/dL", format: "int", direction: "neutral", group: "vitals" },
+  { key: "core_temp", get label() { return tr("Core temperature", "Temperatura corporal") }, unit: "°C", format: "decimal1", direction: "neutral", group: "vitals" },
+  { key: "swim_strokes", get label() { return tr("Swim strokes", "Braçadas de natação") }, format: "grouped", direction: "up", group: "activity", partialToday: true },
 ] as const satisfies readonly ExtraMetric[]
 
 export type ExtraKey = (typeof EXTRA_METRICS)[number]["key"]

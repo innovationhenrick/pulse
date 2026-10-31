@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/shells/EmptyState"
 import { MetricState } from "@/components/shells/MetricState"
 import { ReasonPlaceholder } from "@/components/metrics/ReasonPlaceholder"
 import { AXIS, ChartFigure, GlowDot, GRID, LINE_CURSOR, Pill, TOOLTIP_CLASS, TooltipLine, useSeriesAnimation } from "./ChartFrame"
+import { tr } from "@/lib/locale-context"
 
 export type SleepHr = {
   /** Epoch ms of the main sleep's start and end. */
@@ -53,10 +54,10 @@ function Chart({ hr, highlight }: { hr: SleepHr; highlight?: { start: number; en
   const avg = night.length ? Math.round(night.reduce((a, b) => a + b, 0) / night.length) : null
   // The night's lowest minute, marked as a point with a pill: the number people look for on this chart.
   const low = points.reduce<{ t: number; v: number } | null>((m, p) => (p.t >= bed && p.t < wake && p.v !== null && (!m || p.v < m.v) ? { t: p.t, v: p.v } : m), null)
-  const summary = `Heart rate during sleep from ${at(bed, tz)} to ${at(wake, tz)}: low ${Math.min(...night)}, average ${avg}, high ${Math.max(...night)} beats per minute.`
+  const summary = tr(`Heart rate during sleep from ${at(bed, tz)} to ${at(wake, tz)}: low ${Math.min(...night)}, average ${avg}, high ${Math.max(...night)} beats per minute.`, `Frequência cardíaca durante o sono, de ${at(bed, tz)} a ${at(wake, tz)}: mínima ${Math.min(...night)}, média ${avg}, máxima ${Math.max(...night)} batimentos por minuto.`)
 
   return (
-    <ChartFigure summary={summary} config={{ night: { label: "Heart rate", color: "var(--foreground)" } }} className={H}>
+    <ChartFigure summary={summary} config={{ night: { label: tr("Heart rate", "Frequência cardíaca"), color: "var(--foreground)" } }} className={H}>
       <AreaChart data={rows} accessibilityLayer margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id={`sleep-hr-${id}`} x1="0" y1="0" x2="0" y2="1">
@@ -85,7 +86,7 @@ function Chart({ hr, highlight }: { hr: SleepHr; highlight?: { start: number; en
             stroke="var(--card)"
             strokeWidth={2}
             label={({ viewBox }: { viewBox?: { x?: number; y?: number; width?: number; height?: number } }) => (
-              <Pill x={(viewBox?.x ?? 0) + (viewBox?.width ?? 0) / 2} y={(viewBox?.y ?? 0) + (viewBox?.height ?? 0) + 14} anchor="middle" text={`Low ${low.v}`} />
+              <Pill x={(viewBox?.x ?? 0) + (viewBox?.width ?? 0) / 2} y={(viewBox?.y ?? 0) + (viewBox?.height ?? 0) + 14} anchor="middle" text={tr(`Low ${low.v}`, `Mín. ${low.v}`)} />
             )}
           />
         )}

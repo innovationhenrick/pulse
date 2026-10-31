@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow, Figtree } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { Toaster } from "@/components/ui/sonner";
 import { PwaRuntime } from "@/components/pwa/PwaRuntime"
 import { SW_SCRIPT } from "@/lib/sw"
 import { ThemeColor } from "@/components/shells/ThemeColor";
+import { FormatLocale } from "@/components/shells/FormatLocale";
 import { THEME_SCRIPT } from "@/lib/theme";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import launchScreens from "./launch-screens.json"
@@ -63,10 +66,11 @@ export const viewport: Viewport = {
   colorScheme: "dark light",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getLocale();
   return (
     <html
-      lang="en"
+      lang={locale}
       suppressHydrationWarning
       className={`${figtree.variable} ${barlow.variable} h-full scroll-pt-[calc(120px+var(--inset-top))] scroll-pb-[110px] antialiased md:scroll-pb-24`}
     >
@@ -84,7 +88,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
       </head>
       <body className="flex min-h-full flex-col">
-        <TooltipProvider>{children}</TooltipProvider>
+        <NextIntlClientProvider>
+          <FormatLocale />
+          <TooltipProvider>{children}</TooltipProvider>
+        </NextIntlClientProvider>
         <Toaster />
         <ThemeColor />
         <PwaRuntime />

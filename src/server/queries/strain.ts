@@ -26,6 +26,7 @@ import {
 } from "./common";
 import { ZONE_NAMES } from "@/core/scoring/zones";
 import type { HrChart, KeyStat, Metric, StrainVM, ZoneRow } from "./types";
+import { tr } from "@/lib/locale-context"
 
 /** The activity roll-ups the Strain summary shows after Steps (spec §11 EX1). */
 export const STRAIN_EXTRAS = ["distance", "floors", "active_minutes", "azm", "active_calories"] as const satisfies readonly ExtraKey[];
@@ -69,10 +70,10 @@ export async function getStrain(day: string, ctx: QueryCtx): Promise<StrainVM> {
   const worn = (d: string) => (rows.get(d)?.s1?.hrCount ?? 0) > 0;
   const summary: KeyStat[] = [
     // The reference app's four rows open their Trend Views (spec §11 R35); the extras keep their metric screens.
-    { ...stat("zones13", "Heart rate zones 1-3", (d) => zoneMin(rows.get(d), 0, 3), "min"), href: trendHref("zones13") },
-    { ...stat("zones45", "Heart rate zones 4-5", (d) => zoneMin(rows.get(d), 3, 5), "min"), href: trendHref("zones45") },
-    { ...stat("strength", "Strength activity time", (d) => (worn(d) ? strengthMin(d) : null), "min"), href: trendHref("strength") },
-    { ...stat("steps", "Steps", (d) => rows.get(d)?.metrics?.steps ?? null, undefined), href: trendHref("steps") },
+    { ...stat("zones13", tr("Heart rate zones 1-3", "Zonas de frequência cardíaca 1-3"), (d) => zoneMin(rows.get(d), 0, 3), "min"), href: trendHref("zones13") },
+    { ...stat("zones45", tr("Heart rate zones 4-5", "Zonas de frequência cardíaca 4-5"), (d) => zoneMin(rows.get(d), 3, 5), "min"), href: trendHref("zones45") },
+    { ...stat("strength", tr("Strength activity time", "Tempo de treino de força"), (d) => (worn(d) ? strengthMin(d) : null), "min"), href: trendHref("strength") },
+    { ...stat("steps", tr("Steps", "Passos"), (d) => rows.get(d)?.metrics?.steps ?? null, undefined), href: trendHref("steps") },
     ...STRAIN_EXTRAS.map(extra),
   ];
 
@@ -100,29 +101,29 @@ export function coach(strain: Metric<number>, target: { low: number; high: numbe
   if (strain.value == null || !target) return null;
   const { low, high } = target;
   const range = `${fmt1(low)} - ${fmt1(high)}`;
-  if (row?.recovery?.value != null && row.recovery.value < 34) return `Your body needs rest today. Keep strain between ${range.replace(" - ", " and ")}.`;
+  if (row?.recovery?.value != null && row.recovery.value < 34) return tr(`Your body needs rest today. Keep strain between ${range.replace(" - ", " and ")}.`, `Seu corpo precisa de descanso hoje. Mantenha o esforço entre ${range.replace(" - ", " e ")}.`);
   if (strain.value < low) {
     // ponytail: about 8 minutes of moderate activity per strain point near the target; a rough guide, not a model.
     const minutes = Math.max(10, Math.round(((low - strain.value) * 8) / 5) * 5);
-    return `Your target today is ${range}. You are at ${fmt1(strain.value)}, so about ${minutes} minutes of moderate activity would put you in range.`;
+    return tr(`Your target today is ${range}. You are at ${fmt1(strain.value)}, so about ${minutes} minutes of moderate activity would put you in range.`, `Sua meta de hoje é ${range}. Você está em ${fmt1(strain.value)}, então cerca de ${minutes} minutos de atividade moderada colocariam você na faixa.`);
   }
-  if (strain.value <= high) return `You are inside today’s target of ${range}. More strain from here adds load faster than benefit.`;
-  return "You are past today’s target. Prioritise sleep tonight to recover.";
+  if (strain.value <= high) return tr(`You are inside today’s target of ${range}. More strain from here adds load faster than benefit.`, `Você está dentro da meta de hoje, de ${range}. Mais esforço a partir daqui soma carga mais rápido que benefício.`);
+  return tr("You are past today’s target. Prioritise sleep tonight to recover.", "Você passou da meta de hoje. Priorize o sono esta noite para se recuperar.");
 }
 
 export const zoneBounds = (lower: number[]): ZoneRow[] =>
-  lower.map((min, i) => ({ zone: i + 1, label: ZONE_NAMES[i], min: Math.round(min), max: i < lower.length - 1 ? Math.round(lower[i + 1]) - 1 : null, seconds: 0 }));
+  lower.map((min, i) => ({ zone: i + 1, label: tr(ZONE_NAMES[i], ZONE_NAMES[i].replace("Zone", "Zona")), min: Math.round(min), max: i < lower.length - 1 ? Math.round(lower[i + 1]) - 1 : null, seconds: 0 }));
 
 /** How the day's zones are set, under the zone rows. */
 export const zoneNote = (row: DayRow | undefined, ctx: QueryCtx) =>
-  `Zones on your heart-rate reserve: resting ${Math.round(row?.s1?.restingHr ?? 0)} to max ${row?.s1?.maxHr ?? ctx.profile.maxHr} bpm.`;
+  tr(`Zones on your heart-rate reserve: resting ${Math.round(row?.s1?.restingHr ?? 0)} to max ${row?.s1?.maxHr ?? ctx.profile.maxHr} bpm.`, `Zonas pela sua reserva de frequência cardíaca: repouso ${Math.round(row?.s1?.restingHr ?? 0)} a máxima ${row?.s1?.maxHr ?? ctx.profile.maxHr} bpm.`);
 
 export function zoneRows(row: DayRow | undefined, seconds = row?.s1?.zoneSeconds, below = row?.s1?.zoneBelowSeconds): Metric<ZoneRow[]> {
   const s1 = row?.s1;
   if (!s1 || s1.hrCount === 0 || !seconds) return none(hrReason(s1 ?? null));
   const rows = zoneBounds(s1.zoneLower).map((z, i) => ({ ...z, seconds: Math.round(seconds[i]) }));
   // Zone 0: time under Zone 1, from the Zone 1 floor. Days stored before it was kept have no such row.
-  if (below != null) rows.push({ zone: 0, label: "Zone 0", min: 0, max: rows[0].min - 1, seconds: Math.round(below) });
+  if (below != null) rows.push({ zone: 0, label: tr("Zone 0", "Zona 0"), min: 0, max: rows[0].min - 1, seconds: Math.round(below) });
   return ok(rows);
 }
 
