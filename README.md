@@ -24,6 +24,7 @@ Daily scores from what your Fitbit or Pixel Watch syncs to Google Health. Built 
 
 <a href="docs/setup.md"><img src="docs/badges/self-host.svg" alt="Self-host on your server" height="56"></a>
 <a href="https://github.com/adityaongit/pulse-mobile/releases/latest"><img src="docs/badges/android.svg" alt="Available on Android" height="56"></a>
+<a href="docs/mobile.md"><img src="docs/badges/ios.svg" alt="Available on iOS" height="56"></a>
 
 **Self-host:** one Docker container with Postgres behind HTTPS, for you and the people you invite. The [setup guide](docs/setup.md)
 walks through Google Cloud, Docker and Tailscale.
