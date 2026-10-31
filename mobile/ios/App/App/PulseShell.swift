@@ -7,7 +7,7 @@ enum ServerStore {
     private static let pickKey = "pulse.showPicker"
     // Sign-in hosts a Pulse server may sit behind; every other host opens in the browser.
     static let authHosts = ["*.cloudflareaccess.com"]
-    static let changeServerShortcut = "io.github.adityaongit.pulse.change-server"
+    static let changeServerShortcut = "io.github.innovationhenrick.pulse.change-server"
 
     static var url: String? { origin(UserDefaults.standard.string(forKey: urlKey)) }
 

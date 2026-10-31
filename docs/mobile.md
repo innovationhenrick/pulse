@@ -100,8 +100,9 @@ pnpm exec cap sync ios
 pnpm ios                  # opens Xcode
 ```
 
-In Xcode, pick your team under Signing & Capabilities (change the bundle id if `io.github.adityaongit.pulse` is
-taken for your team), then run on a device, or Product › Archive for TestFlight.
+In Xcode, pick your team under Signing & Capabilities (the fork uses
+`io.github.innovationhenrick.pulse`; change it if that identifier is taken for your team), then run on a device,
+or Product › Archive for TestFlight.
 
 ## Rebrand it for your fork
 

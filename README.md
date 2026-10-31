@@ -8,7 +8,7 @@
 
 Daily scores from what your Fitbit or Pixel Watch syncs to Google Health. Built on Fitbit Air, free for personal use.
 
-[![CI](https://github.com/adityaongit/pulse/actions/workflows/ci.yml/badge.svg)](https://github.com/adityaongit/pulse/actions/workflows/ci.yml)
+[![CI](https://github.com/innovationhenrick/pulse/actions/workflows/ci.yml/badge.svg)](https://github.com/innovationhenrick/pulse/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue)](LICENSE)
 [![Website](https://img.shields.io/badge/site-pulse.portlabs.in-00f19f)](https://pulse.portlabs.in)
 
@@ -31,6 +31,10 @@ walks through Google Cloud, Docker and Tailscale.
 **Android:** [Pulse Mobile](https://github.com/adityaongit/pulse-mobile) needs no server or account and scores everything on your
 phone, from Health Connect.
 
+**iPhone:** this fork includes an iOS shell in [`mobile/`](docs/mobile.md). It connects to your self-hosted Pulse server
+over HTTPS and remembers the server address on the phone. It does not read Apple Health/HealthKit yet; the scores still
+come from the Pulse server's Google Health data pipeline.
+
 </div>
 
 ## What you get
@@ -47,7 +51,7 @@ More screens: [docs/screenshots.md](docs/screenshots.md).
 No Google account needed: demo mode generates 180 days of data.
 
 ```sh
-git clone https://github.com/adityaongit/pulse.git && cd pulse
+git clone https://github.com/innovationhenrick/pulse.git && cd pulse
 pnpm install && cp .env.example .env
 docker compose -f compose.dev.yaml up -d && pnpm dev    # http://localhost:3000
 ```
@@ -55,7 +59,7 @@ docker compose -f compose.dev.yaml up -d && pnpm dev    # http://localhost:3000
 ## Documentation
 
 [Setup](docs/setup.md) · [Other setups](docs/other-setups.md) · [Admin](docs/admin.md) · [PWA](docs/pwa.md) ·
-[App shell](docs/mobile.md) · [Technical details](docs/technical-details.md) · [Contributing](CONTRIBUTING.md) ·
+[App shell for Android and iPhone](docs/mobile.md) · [Technical details](docs/technical-details.md) · [Contributing](CONTRIBUTING.md) ·
 [AGENTS.md](AGENTS.md)
 
 ## License

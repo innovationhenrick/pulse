@@ -13,7 +13,7 @@ Curious how it works under the hood? See [technical-details.md](technical-detail
 You need Node 24, pnpm (`corepack enable` uses the version pinned in `package.json`) and Docker.
 
 ```sh
-git clone https://github.com/adityaongit/pulse.git
+git clone https://github.com/innovationhenrick/pulse.git
 cd pulse
 pnpm install
 cp .env.example .env                           # DATA_SOURCE=demo: demo mode
@@ -49,7 +49,7 @@ server. The commands below assume Debian or Ubuntu (`apt`).
 4. Clone Pulse and create your `.env`:
 
    ```sh
-   git clone https://github.com/adityaongit/pulse.git
+   git clone https://github.com/innovationhenrick/pulse.git
    cd pulse
    cp .env.example .env
    ```
