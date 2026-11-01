@@ -76,7 +76,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
 
   return (
     <PageShell
-      title="Home"
+      title={tr("Home", "Início")}
       layout="home"
       rings={{
         sleep: { value: dials.sleep.value, href: at("/sleep") },
@@ -237,7 +237,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
                           reason={r}
                           nightsLeft={meta.nightsLeft}
                           size="md"
-                          copy={r === "calibrating" ? "Sleep Planner needs 7 nights to learn your wake time." : undefined}
+                          copy={r === "calibrating" ? tr("Sleep Planner needs 7 nights to learn your wake time.", "O Planejador de Sono precisa de 7 noites para aprender seu horário de acordar.") : undefined}
                         />
                       </div>
                     )}
@@ -354,7 +354,7 @@ function JournalWeek({ vm, at, className }: { vm: HomeVM; at: (href: string) => 
       </ol>
       <Link href="/journal/insights" className={cn(CARD_BUTTON, "mt-3")}>
         <Lightbulb aria-hidden className="size-5" strokeWidth={2} />
-        Behaviour insights
+        {tr("Behaviour insights", "Insights de comportamento")}
       </Link>
     </SectionShell>
   )
@@ -385,7 +385,7 @@ function MonitorAlert({ alert, href }: { alert: NonNullable<HomeVM["monitorAlert
           href={href}
           className="relative inline-flex items-center gap-0.5 rounded-md text-xs leading-4 font-bold tracking-[0.1em] text-foreground uppercase no-underline! outline-none after:absolute after:-inset-x-2 after:-inset-y-3.5 hover:text-foreground-secondary focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          View Health Monitor
+          {tr("View Health Monitor", "Ver Monitor de saúde")}
           <ChevronRight aria-hidden className="size-3.5" strokeWidth={2} />
         </Link>
       </AlertDescription>
@@ -535,7 +535,7 @@ function EnergyCard({ vm, timeZone, timeFormat, className }: { vm: HomeVM; timeZ
             <div className="space-y-1.5">
               <TickScale variant="meter" label={tr("Energy", "Energia")} metric={{ value: eb.current, reason: null, provisional: false }} min={0} max={100} format="int" unit="%" />
               <p className={CAPTION}>
-                Started at <span className="font-numeric tabular-nums">{formatValue("int", eb.startLevel)}%</span> at{" "}
+                {tr("Started at", "Começou em")} <span className="font-numeric tabular-nums">{formatValue("int", eb.startLevel)}%</span> {tr("at", "às")}{" "}
                 <span className="font-numeric tabular-nums">{clock(eb.startAt, timeZone, timeFormat)}</span>
               </p>
             </div>

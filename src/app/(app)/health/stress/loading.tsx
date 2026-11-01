@@ -5,6 +5,7 @@ import { ScoreDialSkeleton } from "@/components/metrics/ScoreDial"
 import { DetailShell } from "@/components/shells/DetailShell"
 import { SectionShell } from "@/components/shells/SectionShell"
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton"
+import { tr } from "@/lib/locale-context"
 
 const LABEL = "text-xs leading-4 font-bold tracking-[0.1em] uppercase"
 
@@ -15,17 +16,17 @@ const LABEL = "text-xs leading-4 font-bold tracking-[0.1em] uppercase"
 export default function Loading() {
   return (
     <DetailShell loading
-      title="Stress Monitor"
+      title={tr("Stress Monitor", "Monitor de estresse")}
       dateSwitcher={{ mode: "day" }}
       hero={<ScoreDialSkeleton variant="gauge" size="lg" />}
       insight={<InsightCardSkeleton />}
       primary={
-        <SectionShell variant="card" title="Today">
+        <SectionShell variant="card" title={tr("Today", "Hoje")}>
           <StressChartSkeleton variant="full" />
         </SectionShell>
       }
       secondary={[
-        <SectionShell key="levels" variant="card" title="Total day">
+        <SectionShell key="levels" variant="card" title={tr("Total day", "Total do dia")}>
           <div aria-hidden className="space-y-4">
             <SkeletonText className={`${LABEL} w-48`} />
             <div className="space-y-1.5">
@@ -44,7 +45,7 @@ export default function Loading() {
             <SkeletonText className="w-56 text-xs leading-4" />
           </div>
         </SectionShell>,
-        <SectionShell key="trend" variant="card" title="30-day trend">
+        <SectionShell key="trend" variant="card" title={tr("30-day trend", "Tendência de 30 dias")}>
           <TrendChartSkeleton />
         </SectionShell>,
       ]}

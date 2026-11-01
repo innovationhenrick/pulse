@@ -24,6 +24,7 @@ import {
 import { hrChartOf, zoneNote, zoneRows } from "./strain";
 import type { Metric } from "@/lib/reasons";
 import type { ActivityVM, KeyStat, ZoneRow } from "./types";
+import { tr } from "@/lib/locale-context"
 
 /** Activity `/activity/[id]` (spec §7.4); null for an unknown id. */
 export async function getActivity(id: string, ctx: QueryCtx): Promise<ActivityVM | null> {
@@ -64,16 +65,16 @@ export async function getActivity(id: string, ctx: QueryCtx): Promise<ActivityVM
   const travels = kind === "run" || kind === "walk" || kind === "ride";
   const distance = travels
     ? [
-        { ...tile("distance", "Distance", here.distanceKm, "km", same.map((x) => distanceOf(x).distanceKm), "no_data"), format: "decimal2" as const },
-        ...(kind === "ride" ? [] : [{ ...tile("pace", "Pace", here.paceS, "/km", same.map((x) => distanceOf(x).paceS), "no_data"), format: "pace" as const }]),
+        { ...tile("distance", tr("Distance", "Distância"), here.distanceKm, "km", same.map((x) => distanceOf(x).distanceKm), "no_data"), format: "decimal2" as const },
+        ...(kind === "ride" ? [] : [{ ...tile("pace", tr("Pace", "Ritmo"), here.paceS, "/km", same.map((x) => distanceOf(x).paceS), "no_data"), format: "pace" as const }]),
       ]
     : [];
   // The reference app's order (activity-weightlifting-key-stats): calories, heart rate, then duration; distance and pace after.
   const stats = [
-    tile("calories", "Calories", e.calories, "kcal", same.map((x) => x.calories), "no_data"),
-    tile("avgHr", "Average heart rate", a?.avgHr, "bpm", same.map((x) => statOf(x)?.avgHr)),
-    tile("maxHr", "Max heart rate", a?.maxHr, "bpm", same.map((x) => statOf(x)?.maxHr)),
-    tile("duration", "Duration", durationMin(e), "min", same.map(durationMin), "no_data"),
+    tile("calories", tr("Calories", "Calorias"), e.calories, "kcal", same.map((x) => x.calories), "no_data"),
+    tile("avgHr", tr("Average heart rate", "Frequência cardíaca média"), a?.avgHr, "bpm", same.map((x) => statOf(x)?.avgHr)),
+    tile("maxHr", tr("Max heart rate", "Frequência cardíaca máxima"), a?.maxHr, "bpm", same.map((x) => statOf(x)?.maxHr)),
+    tile("duration", tr("Duration", "Duração"), durationMin(e), "min", same.map(durationMin), "no_data"),
     ...distance,
   ];
   const ownSteps = stepping ? stepsIn(e) : 0;
@@ -82,7 +83,7 @@ export async function getActivity(id: string, ctx: QueryCtx): Promise<ActivityVM
   const hrr: ActivityVM["hrr"] =
     hrr60 == null
       ? none("insufficient_hr_data")
-      : ok(hrr60 >= 20 ? { value: hrr60, tone: "optimal", label: "Good" } : hrr60 >= 12 ? { value: hrr60, tone: "neutral", label: "Typical" } : { value: hrr60, tone: "warning", label: "Low" });
+      : ok(hrr60 >= 20 ? { value: hrr60, tone: "optimal", label: tr("Good", "Boa") } : hrr60 >= 12 ? { value: hrr60, tone: "neutral", label: tr("Typical", "Típica") } : { value: hrr60, tone: "warning", label: tr("Low", "Baixa") });
 
   return {
     id,
@@ -121,8 +122,8 @@ export function withTypical(m: Metric<ZoneRow[]>, prior: number[][]): Metric<Zon
 function zoneInsight(seconds: number[]): string | null {
   const min = seconds.map((s) => Math.round(s / 60));
   const hard = min[3] + min[4];
-  if (hard >= 10) return `You spent ${hard} minutes in zones 4 and 5, hard work that builds speed and power.`;
-  if (min[2] >= 10) return `You spent ${min[2]} minutes in zone 3, steady aerobic work that builds your base.`;
-  if (min[0] + min[1] >= 10) return `You spent ${min[0] + min[1]} minutes in zones 1 and 2, easy movement that helps you recover.`;
+  if (hard >= 10) return tr(`You spent ${hard} minutes in zones 4 and 5, hard work that builds speed and power.`, `Você passou ${hard} minutos nas zonas 4 e 5, um trabalho intenso que constrói velocidade e potência.`);
+  if (min[2] >= 10) return tr(`You spent ${min[2]} minutes in zone 3, steady aerobic work that builds your base.`, `Você passou ${min[2]} minutos na zona 3, um trabalho aeróbico constante que constrói a sua base.`);
+  if (min[0] + min[1] >= 10) return tr(`You spent ${min[0] + min[1]} minutes in zones 1 and 2, easy movement that helps you recover.`, `Você passou ${min[0] + min[1]} minutos nas zonas 1 e 2, um movimento leve que ajuda na recuperação.`);
   return null;
 }

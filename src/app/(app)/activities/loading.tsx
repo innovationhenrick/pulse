@@ -3,13 +3,14 @@ import { DetailShell } from "@/components/shells/DetailShell"
 import { GROUP_LABEL, MORE_COLUMN } from "@/components/shells/LinkList"
 import { CARD_MATERIAL } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { tr } from "@/lib/locale-context"
 
 /** Activities: the summary card and two day groups at their final size (spec §5.19). */
 export default function Loading() {
   return (
     <DetailShell
       loading
-      title="Activities"
+      title={tr("Activities", "Atividades")}
       primary={
         <div className={MORE_COLUMN}>
           <div className="space-y-2">

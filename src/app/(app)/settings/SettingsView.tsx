@@ -15,6 +15,7 @@ import { AppSettings, SignOutForm } from "./AppSettings"
 import { AvatarButtons, ChangePasswordButton, DeleteAccountButton, DisconnectButton, EditProfileButton, LanguagePicker, SwitchGoogleButton, ThemePicker } from "./SettingsClient"
 import { SettingsLayout, type SettingsSection } from "./SettingsLayout"
 import { CAPTION } from "@/components/metrics/primitives"
+import { lazy, tr } from "@/lib/locale-context"
 
 const BODY = "max-w-[65ch] text-[15px] leading-[22px] text-pretty text-foreground-secondary"
 /** One settings row: label left, value right, 52 px tall, hairline between rows. */
@@ -46,14 +47,14 @@ export function Account({ account }: { account: SettingsAccount }) {
   const title = account.name || (account.username ? `@${account.username}` : account.email)
   const line = [account.username && `@${account.username}`, account.email].filter((v) => v && v !== title).join(" · ")
   return (
-    <SectionShell variant="card" level={2} id="account" title="Account">
+    <SectionShell variant="card" level={2} id="account" title={tr("Account", "Conta")}>
       <div className="flex min-h-11 items-center gap-3">
         <span className="size-14 shrink-0">
           <UserAvatar src={account.avatar} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] leading-[22px] font-semibold">{own ? title : "Demo"}</p>
-          <p className="truncate text-[13px] leading-[18px] text-muted-foreground">{own ? line : "Signed in to the demo"}</p>
+          <p className="truncate text-[15px] leading-[22px] font-semibold">{own ? title : tr("Demo", "Demonstração")}</p>
+          <p className="truncate text-[13px] leading-[18px] text-muted-foreground">{own ? line : tr("Signed in to the demo", "Conectado à demonstração")}</p>
         </div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
@@ -61,12 +62,12 @@ export function Account({ account }: { account: SettingsAccount }) {
         {own && <ChangePasswordButton />}
         {account.admin && (
           <Button asChild variant="secondary" size="touch" className="col-span-2 w-full">
-            <a href="/admin">Admin panel</a>
+            <a href="/admin">{tr("Admin panel", "Painel de administração")}</a>
           </Button>
         )}
         <SignOutForm className="col-span-2">
           <Button type="submit" variant="outline" size="touch" className="w-full">
-            Sign out
+            {tr("Sign out", "Sair")}
           </Button>
         </SignOutForm>
       </div>
@@ -75,25 +76,32 @@ export function Account({ account }: { account: SettingsAccount }) {
 }
 
 /** The status line under the source name, and what to do about it. Connected says nothing more: its line has the last sync. */
-const SOURCE: Record<SettingsVM["source"]["status"], { line?: string; tone?: string; body?: string }> = {
+const SOURCE: Record<SettingsVM["source"]["status"], { line?: string; tone?: string; body?: string }> = lazy(() => ({
   demo: {
-    line: "180 days of generated data",
-    body: "Every screen runs on realistic generated data. Set DATA_SOURCE=google on the server to use your Fitbit data.",
+    line: tr("180 days of generated data", "180 dias de dados gerados"),
+    body: tr("Every screen runs on realistic generated data. Set DATA_SOURCE=google on the server to use your Fitbit data.", "Todas as telas usam dados gerados realistas. Defina DATA_SOURCE=google no servidor para usar os dados do seu Fitbit."),
   },
-  not_connected: { line: "Not connected", body: "Connect the Google account your Fitbit Air syncs to. Pulse reads your data and writes only what you log in Pulse." },
+  not_connected: {
+    line: tr("Not connected", "Não conectado"),
+    body: tr("Connect the Google account your Fitbit Air syncs to. Pulse reads your data and writes only what you log in Pulse.", "Conecte a conta Google com a qual o seu Fitbit Air sincroniza. O Pulse lê seus dados e grava apenas o que você registra no Pulse."),
+  },
   not_linked: {
-    line: "No Google Health profile",
+    line: tr("No Google Health profile", "Sem perfil no Google Health"),
     tone: "text-warning-text",
-    body: "This Google account has no Google Health profile, so there is no Fitbit data to read. Set up Google Health with this account (or move your Fitbit account to it), or switch to the account your Fitbit Air uses.",
+    body: tr("This Google account has no Google Health profile, so there is no Fitbit data to read. Set up Google Health with this account (or move your Fitbit account to it), or switch to the account your Fitbit Air uses.", "Esta conta Google não tem perfil no Google Health, então não há dados do Fitbit para ler. Configure o Google Health com esta conta (ou mova sua conta Fitbit para ela), ou troque para a conta que o seu Fitbit Air usa."),
   },
   no_device: {
-    line: "No Fitbit device",
+    line: tr("No Fitbit device", "Sem dispositivo Fitbit"),
     tone: "text-warning-text",
-    body: "This Google account has Google Health but no Fitbit device, so there is nothing to import. Pair your Fitbit Air in the Google Health app and sync again, or switch to the account it uses.",
+    body: tr("This Google account has Google Health but no Fitbit device, so there is nothing to import. Pair your Fitbit Air in the Google Health app and sync again, or switch to the account it uses.", "Esta conta Google tem Google Health, mas nenhum dispositivo Fitbit, então não há nada para importar. Pareie seu Fitbit Air no app Google Health e sincronize de novo, ou troque para a conta que ele usa."),
   },
   connected: {},
-  revoked: { line: "Access revoked", tone: "text-recovery-red-text", body: "Google access was revoked or expired. Sync is paused until you reconnect." },
-}
+  revoked: {
+    line: tr("Access revoked", "Acesso revogado"),
+    tone: "text-recovery-red-text",
+    body: tr("Google access was revoked or expired. Sync is paused until you reconnect.", "O acesso ao Google foi revogado ou expirou. A sincronização fica pausada até você reconectar."),
+  },
+}))
 
 function OAuthLink({ label }: { label: string }) {
   return (
@@ -112,17 +120,17 @@ function SyncIcon({ status }: { status: SettingsVM["sync"][number]["status"] }) 
   return <Minus aria-hidden className="size-4 text-muted-foreground" strokeWidth={2} />
 }
 
-const STATUS_WORD = { ok: "up to date", stale: "behind", error: "failed", never: "not synced yet" }
+const STATUS_WORD: Record<"ok" | "stale" | "error" | "never", string> = lazy(() => ({ ok: tr("up to date", "em dia"), stale: tr("behind", "atrasado"), error: tr("failed", "com falha"), never: tr("not synced yet", "ainda não sincronizado") }))
 
 /** Per data type, folded under one summary line; it opens itself when something failed or fell behind. */
 function DataTypes({ rows, now }: { rows: SettingsVM["sync"]; now: number }) {
   const failing = rows.filter((r) => r.status === "error").length
   const behind = rows.filter((r) => r.status === "stale").length
-  const summary = failing ? `${failing} failing` : behind ? `${behind} behind` : rows.every((r) => r.status === "ok") ? "All up to date" : "Waiting for first sync"
+  const summary = failing ? tr(`${failing} failing`, `${failing} com falha`) : behind ? tr(`${behind} behind`, `${behind} atrasados`) : rows.every((r) => r.status === "ok") ? tr("All up to date", "Tudo em dia") : tr("Waiting for first sync", "Aguardando a primeira sincronização")
   return (
     <details id="sync" open={failing + behind > 0} className="group mt-4 border-t border-border">
       <summary className="flex min-h-13 cursor-pointer list-none items-center justify-between gap-3 rounded-md py-2 outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
-        <span className={ROW_LABEL}>Data types</span>
+        <span className={ROW_LABEL}>{tr("Data types", "Tipos de dados")}</span>
         <span className="flex items-center gap-2">
           <span className={cn("text-[13px] leading-[18px]", failing ? "text-recovery-red-text" : behind ? "text-warning-text" : "text-muted-foreground")}>{summary}</span>
           <ChevronDown aria-hidden className="size-4 text-muted-foreground transition-transform duration-200 ease-standard group-open:rotate-180 motion-reduce:transition-none" strokeWidth={2} />
@@ -135,7 +143,7 @@ function DataTypes({ rows, now }: { rows: SettingsVM["sync"]; now: number }) {
               <span className="truncate text-[15px] leading-[22px]">{r.label}</span>
               {r.status === "error" && r.error && <span className={cn(CAPTION, "text-recovery-red-text")}>{r.error}</span>}
             </span>
-            <span className={cn(CAPTION, "shrink-0 font-numeric tabular-nums")}>{r.lastSuccessAt ? ago(r.lastSuccessAt, now) : "Never"}</span>
+            <span className={cn(CAPTION, "shrink-0 font-numeric tabular-nums")}>{r.lastSuccessAt ? ago(r.lastSuccessAt, now) : tr("Never", "Nunca")}</span>
             <SyncIcon status={r.status} />
             <span className="sr-only">, {STATUS_WORD[r.status]}</span>
           </li>
@@ -153,7 +161,7 @@ export function DataSource({ vm, now, googleEmail = null }: { vm: Pick<SettingsV
   const { source } = vm
   const s = SOURCE[source.status]
   const last = vm.sync.reduce<number | null>((m, r) => (r.lastSuccessAt && (!m || r.lastSuccessAt > m) ? r.lastSuccessAt : m), null)
-  const line = s.line ?? (last ? `Synced ${ago(last, now)}` : "Not synced yet")
+  const line = s.line ?? (last ? tr(`Synced ${ago(last, now)}`, `Sincronizado ${ago(last, now)}`) : tr("Not synced yet", "Ainda não sincronizado"))
   const actions =
     source.status === "connected" || source.status === "no_device" ? (
       <>
@@ -164,19 +172,19 @@ export function DataSource({ vm, now, googleEmail = null }: { vm: Pick<SettingsV
       <>
         <Button asChild size="touch" variant="default" className="w-full">
           <a href={HEALTH_SIGNUP_URL} target="_blank" rel="noreferrer">
-            Set up
+            {tr("Set up", "Configurar")}
           </a>
         </Button>
         <DisconnectButton />
       </>
     ) : source.status === "revoked" ? (
       <>
-        <OAuthLink label="Reconnect Google" />
+        <OAuthLink label={tr("Reconnect Google", "Reconectar Google")} />
         <DisconnectButton />
       </>
     ) : source.status === "not_connected" ? (
       <div className="col-span-2">
-        <OAuthLink label="Connect Google" />
+        <OAuthLink label={tr("Connect Google", "Conectar Google")} />
       </div>
     ) : (
       <div className="col-span-2">
@@ -184,7 +192,7 @@ export function DataSource({ vm, now, googleEmail = null }: { vm: Pick<SettingsV
       </div>
     )
   return (
-    <SectionShell variant="card" level={2} id="source" title="Data source">
+    <SectionShell variant="card" level={2} id="source" title={tr("Data source", "Fonte de dados")}>
       <div className="flex min-h-11 items-center gap-3">
         <span aria-hidden className={TILE}>
           {source.status === "demo" ? <Mark className="size-5" /> : <GoogleFit className="size-6" />}
@@ -200,10 +208,10 @@ export function DataSource({ vm, now, googleEmail = null }: { vm: Pick<SettingsV
         <div role="note" aria-labelledby="permissions-title" className="mt-4 rounded-xl bg-foreground/[0.04] p-4">
           <p id="permissions-title" className="flex items-center gap-2 text-[15px] leading-[22px] font-semibold">
             <TriangleAlert aria-hidden className="size-4 shrink-0 text-warning-text" strokeWidth={2} />
-            Pulse needs new permissions
+            {tr("Pulse needs new permissions", "O Pulse precisa de novas permissões")}
           </p>
           <p className={cn(BODY, "mt-1")}>
-            To save what you log (water, food, weight, mood, symptoms, cycle) to Google Health, reconnect Google and allow them. Sync keeps working until then.
+            {tr("To save what you log (water, food, weight, mood, symptoms, cycle) to Google Health, reconnect Google and allow them. Sync keeps working until then.", "Para salvar no Google Health o que você registra (água, comida, peso, humor, sintomas, ciclo), reconecte o Google e permita. A sincronização continua funcionando até lá.")}
           </p>
           <div className="mt-3">
             <OAuthLink label="Reconnect Google" />
@@ -213,9 +221,9 @@ export function DataSource({ vm, now, googleEmail = null }: { vm: Pick<SettingsV
       {vm.import && (
         <div className="mt-4 space-y-2" role="status" aria-live="polite">
           <p className="text-[15px] leading-[22px] tabular-nums">
-            Importing history… {vm.import.done} of {vm.import.total}&nbsp;days
+            {tr(`Importing history… ${vm.import.done} of ${vm.import.total}\u00a0days`, `Importando o histórico… ${vm.import.done} de ${vm.import.total}\u00a0dias`)}
           </p>
-          <Progress value={(vm.import.done / vm.import.total) * 100} aria-label="Import progress" className="h-1.5 bg-muted" />
+          <Progress value={(vm.import.done / vm.import.total) * 100} aria-label={tr("Import progress", "Progresso da importação")} className="h-1.5 bg-muted" />
         </div>
       )}
       <div className="mt-4 grid grid-cols-2 gap-2">
@@ -233,19 +241,19 @@ export function DataSource({ vm, now, googleEmail = null }: { vm: Pick<SettingsV
 
 export function Profile({ profile }: { profile: SettingsVM["profile"] }) {
   const rows: [string, string][] = [
-    ["Birth date", formatDay(profile.birthDate, DAY.full)],
-    ["Age", String(profile.age)],
-    ["Sex", profile.sex === "male" ? "Male" : "Female"],
-    ["Height", profile.heightCm ? `${profile.heightCm}\u00a0cm` : "Not set"],
-    ["Max heart rate", `${profile.maxHr}\u00a0bpm, ${profile.maxHrSource}`],
-    ["Time zone", profile.timeZone],
-    ["Time format", profile.timeFormat === "12" ? "12-hour" : "24-hour"],
+    [tr("Birth date", "Data de nascimento"), formatDay(profile.birthDate, DAY.full)],
+    [tr("Age", "Idade"), String(profile.age)],
+    [tr("Sex", "Sexo"), profile.sex === "male" ? tr("Male", "Masculino") : tr("Female", "Feminino")],
+    [tr("Height", "Altura"), profile.heightCm ? `${profile.heightCm}\u00a0cm` : tr("Not set", "Não definida")],
+    [tr("Max heart rate", "Frequência cardíaca máxima"), `${profile.maxHr}\u00a0bpm, ${profile.maxHrSource === "set" ? tr("set", "definida") : tr("estimated", "estimada")}`],
+    [tr("Time zone", "Fuso horário"), profile.timeZone],
+    [tr("Time format", "Formato de hora"), profile.timeFormat === "12" ? tr("12-hour", "12 horas") : tr("24-hour", "24 horas")],
   ]
   return (
     <SectionShell
       variant="card"
       level={2}
-      title="Profile"
+      title={tr("Profile", "Perfil")}
       action={
         <EditProfileButton
           defaults={{ birthDate: profile.birthDate, sex: profile.sex, maxHr: profile.maxHrSource === "set" ? profile.maxHr : null, heightCm: profile.heightCm, timeZone: profile.timeZone, timeFormat: profile.timeFormat }}
@@ -260,7 +268,7 @@ export function Profile({ profile }: { profile: SettingsVM["profile"] }) {
           </div>
         ))}
       </dl>
-      <p className={cn(CAPTION, "mt-2")}>Your days start at midnight in your time zone. Changing your body or time zone recomputes your scores. Time format only changes how times are shown.</p>
+      <p className={cn(CAPTION, "mt-2")}>{tr("Your days start at midnight in your time zone. Changing your body or time zone recomputes your scores. Time format only changes how times are shown.", "Seus dias começam à meia-noite no seu fuso horário. Mudar seu corpo ou o fuso recalcula seus scores. O formato de hora só muda como os horários são exibidos.")}</p>
     </SectionShell>
   )
 }

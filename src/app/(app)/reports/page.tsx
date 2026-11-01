@@ -8,8 +8,12 @@ import { MiniRing } from "@/components/metrics/MiniRing"
 import { DetailShell } from "@/components/shells/DetailShell"
 import { EmptyState } from "@/components/shells/EmptyState"
 import { LinkList, type LinkListRow, MORE_COLUMN } from "@/components/shells/LinkList"
+import { tr } from "@/lib/locale-context"
+import { getTranslations } from "next-intl/server"
 
-export const metadata = { title: "Reports" }
+export async function generateMetadata() {
+  return { title: (await getTranslations("meta.reports"))("title") }
+}
 
 /** The period's average Recovery as the reference app's 22 px ring and its value. */
 function Aside({ r }: { r: ReportListItem }) {
@@ -17,7 +21,7 @@ function Aside({ r }: { r: ReportListItem }) {
     <span className="flex shrink-0 items-center gap-2">
       <MiniRing variant="recovery" value={r.recovery} />
       <span className="w-[4ch] text-right font-numeric text-[15px] leading-5 font-bold tabular-nums">
-        <span className="sr-only">, average Recovery </span>
+        <span className="sr-only">, {tr("average Recovery", "Recuperação média")} </span>
         {formatValue("int", r.recovery)}
         {r.recovery !== null && "%"}
       </span>
@@ -42,8 +46,8 @@ function groupRows(items: ReportListItem[], key: (r: ReportListItem) => string, 
   return groups
 }
 
-const weekRow = (r: ReportListItem): LinkListRow => ({ label: rangeLabel(r.start, r.end), href: `/reports/${r.period}`, aside: <Aside r={r} />, description: r.partial ? "Partial week" : undefined })
-const monthRow = (r: ReportListItem): LinkListRow => ({ label: formatDay(r.start, { month: "long" }), href: `/reports/${r.period}`, aside: <Aside r={r} />, description: r.partial ? "Partial month" : undefined })
+const weekRow = (r: ReportListItem): LinkListRow => ({ label: rangeLabel(r.start, r.end), href: `/reports/${r.period}`, aside: <Aside r={r} />, description: r.partial ? tr("Partial week", "Semana parcial") : undefined })
+const monthRow = (r: ReportListItem): LinkListRow => ({ label: formatDay(r.start, { month: "long" }), href: `/reports/${r.period}`, aside: <Aside r={r} />, description: r.partial ? tr("Partial month", "Mês parcial") : undefined })
 
 /** Weekly / Monthly as links: the view lives in the URL, so Back and a shared link keep it. */
 function ViewSwitch({ view }: { view: View }) {
@@ -62,9 +66,9 @@ function ViewSwitch({ view }: { view: View }) {
     </Link>
   )
   return (
-    <nav aria-label="Report period" className="flex gap-0.5 rounded-lg bg-muted p-0.5">
-      {item("weeks", "Weekly")}
-      {item("months", "Monthly")}
+    <nav aria-label={tr("Report period", "Período do relatório")} className="flex gap-0.5 rounded-lg bg-muted p-0.5">
+      {item("weeks", tr("Weekly", "Semanal"))}
+      {item("months", tr("Monthly", "Mensal"))}
     </nav>
   )
 }
@@ -88,10 +92,10 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
   const shown = view === "weeks" && !all ? groups.slice(0, RECENT_MONTHS) : groups
   return (
     <DetailShell
-      title="Reports"
+      title={tr("Reports", "Relatórios")}
       primary={
         empty ? (
-          <EmptyState body="No reports yet. Your first weekly report appears once a week has data." />
+          <EmptyState body={tr("No reports yet. Your first weekly report appears once a week has data.", "Ainda sem relatórios. O primeiro relatório semanal aparece quando uma semana tiver dados.")} />
         ) : (
           // One 640 px column like More and Settings: two columns of uneven month groups left holes.
           <div className={MORE_COLUMN}>
@@ -106,7 +110,7 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
                 scroll={false}
                 className="mx-auto grid h-11 place-items-center rounded-full px-5 text-xs font-bold tracking-[0.1em] text-foreground/85 uppercase outline-none transition-[background-color,color] duration-150 ease-standard hover:bg-foreground/[0.06] hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
               >
-                Show earlier weeks
+                {tr("Show earlier weeks", "Mostrar semanas anteriores")}
               </Link>
             )}
           </div>

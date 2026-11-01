@@ -86,7 +86,7 @@ function Highlight({ index, count }: { index: number; count: number }) {
 function AvgPill({ value }: { value: number }) {
   const y = useYAxisScale()
   if (!y) return null
-  return <Pill x={2} y={y(value) ?? 0} text="AVG." fill="var(--foreground)" color="var(--background)" />
+  return <Pill x={2} y={y(value) ?? 0} text={tr("AVG.", "MÉD.")} fill="var(--foreground)" color="var(--background)" />
 }
 
 /** 6M: a level segment per month with its value above and its change below, coloured by the metric's good direction. */

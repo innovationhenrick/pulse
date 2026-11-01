@@ -3,6 +3,7 @@ import { Suspense } from "react"
 import { AppNavigationProvider } from "./AppNavigation"
 import { AppNav } from "./AppNav"
 import { ShellStatusProvider, type ShellStatus } from "./ShellStatus"
+import { tr } from "@/lib/locale-context"
 
 export type AppShellProps = {
   status: ShellStatus
@@ -20,7 +21,7 @@ export function AppShell({ status, live = false, children }: AppShellProps) {
             href="#main"
             className="sr-only rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50"
           >
-            Skip to content
+            {tr("Skip to content", "Ir para o conteúdo")}
           </a>
           {/* DOM order puts navigation directly after the skip link for keyboard users. */}
           <AppNav />

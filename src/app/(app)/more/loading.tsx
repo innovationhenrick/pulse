@@ -4,6 +4,7 @@ import { APP_VERSION } from "@/server/queries/settings"
 import { LinkListSkeleton, MORE_COLUMN } from "@/components/shells/LinkList"
 import { PageShell } from "@/components/shells/PageShell"
 import { About } from "./About"
+import { tr } from "@/lib/locale-context"
 
 /** More: the same rows and About card in their final boxes; only the captions are bars (spec §5.19). */
 export default function Loading() {
@@ -28,7 +29,7 @@ export default function Loading() {
             { icon: Archive, label: "All reports" },
           ]}
         />
-        <LinkListSkeleton title="Trends" rows={[{ icon: ChartLine, label: "Trends" }]} />
+        <LinkListSkeleton title={tr("Trends", "Tendências")} rows={[{ icon: ChartLine, label: "Trends" }]} />
         <LinkListSkeleton title="Journal" rows={[{ icon: ListChecks, label: "Behaviours" }]} />
         <LinkListSkeleton title="Help" rows={[{ icon: BookOpen, label: "How Pulse works" }]} />
         <LinkListSkeleton title="Your data" rows={[{ icon: Database, label: "Export" }]} />

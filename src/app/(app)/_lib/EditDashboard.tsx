@@ -10,6 +10,7 @@ import { ResponsiveSheet, SHEET_SECTION } from "@/components/shells/ResponsiveSh
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { STAT_ICON } from "./view"
+import { tr } from "@/lib/locale-context"
 
 export type EditDashboardProps = {
   /** The metrics on Home now, in order. */
@@ -111,34 +112,34 @@ export function EditDashboard({ keys, empty = [] }: EditDashboardProps) {
       {/* the reference app's "CUSTOMIZE" with a pencil at the section header's right (home-my-plan-card-scroll-up). */}
       <Button
         variant="ghost"
-        aria-label="Customize My Dashboard"
+        aria-label={tr("Customize My Dashboard", "Personalizar Meu painel")}
         onClick={start}
         className="relative -mr-2 h-8 gap-1.5 rounded-full px-2 text-xs leading-4 font-bold tracking-[0.1em] text-foreground uppercase after:absolute after:-inset-y-1.5 hover:bg-foreground/[0.06]"
       >
-        Customize
+        {tr("Customize", "Personalizar")}
         <Pencil aria-hidden strokeWidth={1.75} className="size-4" />
       </Button>
       <ResponsiveSheet
         open={open}
         onOpenChange={setOpen}
-        title="Customize dashboard"
+        title={tr("Customize dashboard", "Personalizar painel")}
         size="screen"
-        done={done ? { title: "Success", body: "Your preferences have been saved.", onDone: () => setOpen(false) } : null}
+        done={done ? { title: tr("Success", "Pronto"), body: tr("Your preferences have been saved.", "Suas preferências foram salvas."), onDone: () => setOpen(false) } : null}
         footer={
           <Button size="sheet" variant="outline-pill" onClick={save} disabled={saving || shown.length === 0} aria-describedby={shown.length === 0 ? "dashboard-none" : undefined}>
-            {saving ? "Saving…" : "Save"}
+            {saving ? tr("Saving…", "Salvando…") : tr("Save", "Salvar")}
           </Button>
         }
       >
         <h3 id="dashboard-shown" className="mt-4 text-[22px] leading-7 font-semibold">
-          My Dashboard
+          {tr("My Dashboard", "Meu painel")}
         </h3>
         <p id="dashboard-reorder-help" className="sr-only">
-          Drag the handle, or press the up and down arrows on it, to move a metric.
+          {tr("Drag the handle, or press the up and down arrows on it, to move a metric.", "Arraste a alça, ou use as setas para cima e para baixo nela, para mover uma métrica.")}
         </p>
         {shown.length === 0 ? (
           <p id="dashboard-none" role="alert" className="py-4 text-[15px] leading-[22px] text-pretty text-foreground-secondary">
-            Add at least one metric to save.
+            {tr("Add at least one metric to save.", "Adicione pelo menos uma métrica para salvar.")}
           </p>
         ) : (
           <ul ref={list} aria-labelledby="dashboard-shown" className="mt-4 space-y-3">
@@ -153,7 +154,7 @@ export function EditDashboard({ keys, empty = [] }: EditDashboardProps) {
                   {/* dashboard-customize-reorder: the chart tile carries a small bar-chart glyph. */}
                   {key === "stress" && <ChartNoAxesColumn aria-hidden strokeWidth={1.5} className="size-5 shrink-0 text-muted-foreground" />}
                   {/* the reference app hides removal behind a swipe that members could not find; Pulse shows it (spec §11 CD2). */}
-                  <Button id={`dashboard-remove-${key}`} variant="ghost" size="icon-touch" aria-label={`Remove ${label}`} onClick={() => remove(i)} className="text-foreground-secondary hover:text-foreground">
+                  <Button id={`dashboard-remove-${key}`} variant="ghost" size="icon-touch" aria-label={tr(`Remove ${label}`, `Remover ${label}`)} onClick={() => remove(i)} className="text-foreground-secondary hover:text-foreground">
                     <span className="grid size-6 place-items-center rounded-full ring-1 ring-current">
                       <Minus className="size-3.5" strokeWidth={2.25} />
                     </span>
@@ -162,7 +163,7 @@ export function EditDashboard({ keys, empty = [] }: EditDashboardProps) {
                     id={`dashboard-move-${key}`}
                     variant="ghost"
                     size="icon-touch"
-                    aria-label={`Reorder ${label}, position ${i + 1} of ${shown.length}`}
+                    aria-label={tr(`Reorder ${label}, position ${i + 1} of ${shown.length}`, `Reordenar ${label}, posição ${i + 1} de ${shown.length}`)}
                     aria-describedby="dashboard-reorder-help"
                     onPointerDown={drag(key)}
                     onPointerMove={dragMove}
@@ -186,7 +187,7 @@ export function EditDashboard({ keys, empty = [] }: EditDashboardProps) {
         )}
 
         <h3 id="dashboard-add" className={cn(SHEET_SECTION, "mt-8")}>
-          Add to My Dashboard
+          {tr("Add to My Dashboard", "Adicionar ao Meu painel")}
         </h3>
         <div className="relative mt-3">
           <Search aria-hidden className="pointer-events-none absolute top-1/2 left-3.5 size-[18px] -translate-y-1/2 text-muted-foreground" strokeWidth={1.75} />
@@ -198,8 +199,8 @@ export function EditDashboard({ keys, empty = [] }: EditDashboardProps) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search metrics…"
-            aria-label="Search metrics"
+            placeholder={tr("Search metrics…", "Buscar métricas…")}
+            aria-label={tr("Search metrics", "Buscar métricas")}
             autoComplete="off"
             enterKeyHint="search"
             className="h-12 rounded-xl bg-foreground/[0.06] pl-10 text-base"
@@ -217,7 +218,7 @@ export function EditDashboard({ keys, empty = [] }: EditDashboardProps) {
                     id={`dashboard-add-${m.key}`}
                     type="button"
                     onClick={() => add(m.key)}
-                    aria-label={`Add ${m.label}${noData.has(m.key) ? ", no data yet" : ""}`}
+                    aria-label={tr(`Add ${m.label}${noData.has(m.key) ? ", no data yet" : ""}`, `Adicionar ${m.label}${noData.has(m.key) ? ", ainda sem dados" : ""}`)}
                     className={cn(CARD, "w-full pr-3 text-left transition-[background-color,scale] duration-150 ease-standard outline-none hover:bg-foreground/10 focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.98]")}
                   >
                     <span aria-hidden className={ICON}>
@@ -225,7 +226,7 @@ export function EditDashboard({ keys, empty = [] }: EditDashboardProps) {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className={cn(NAME, "block")}>{m.label}</span>
-                      {noData.has(m.key) && <span className="mt-0.5 block text-xs leading-4 font-medium text-muted-foreground">No data yet</span>}
+                      {noData.has(m.key) && <span className="mt-0.5 block text-xs leading-4 font-medium text-muted-foreground">{tr("No data yet", "Ainda sem dados")}</span>}
                     </span>
                     <Plus aria-hidden className="size-6 shrink-0" strokeWidth={2} />
                   </button>
@@ -236,7 +237,7 @@ export function EditDashboard({ keys, empty = [] }: EditDashboardProps) {
         ))}
         {groups.length === 0 && (
           <p className="py-6 text-center text-[15px] leading-[22px] text-pretty text-foreground-secondary">
-            {hidden.length ? `No metric matches “${query.trim()}”.` : "Every metric is on Home."}
+            {hidden.length ? tr(`No metric matches “${query.trim()}”.`, `Nenhuma métrica corresponde a “${query.trim()}”.`) : tr("Every metric is on Home.", "Todas as métricas já estão no Início.")}
           </p>
         )}
         <p role="status" className="sr-only">

@@ -21,8 +21,12 @@ import { DayLog } from "./DayLog"
 import { Log } from "./Log"
 import { WeekCard } from "./WeekCard"
 import { pageDay, type SearchParams } from "../_lib/day"
+import { tr } from "@/lib/locale-context"
+import { getTranslations } from "next-intl/server"
 
-export const metadata = { title: "Journal" }
+export async function generateMetadata() {
+  return { title: (await getTranslations("meta.journal"))("title") }
+}
 
 /** History rows before "Show 30 days": a week. The day strip above already reaches every day of the last three weeks. */
 const RECENT = 7
@@ -39,7 +43,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
   const open = (id: string) => !closed.has(id)
 
   return (
-    <PageShell title="Journal" dateSwitcher={{ mode: "day" }}>
+    <PageShell title={tr("Journal", "Diário")} dateSwitcher={{ mode: "day" }}>
       {/* Full-bleed on phone: the strip scrolls edge to edge, its first tile keeps the 16 px gutter inside. From 768 px
           the tiles sit on the column's edges; the 4 px inset only leaves room for the focus ring, which the viewport clips (SYM2). */}
       <div className="-mx-4 md:-mx-1">
@@ -52,29 +56,29 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
       <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] xl:items-start xl:gap-x-6 xl:gap-y-10">
         {/* Log tiles first: a drink or a weigh-in is a two-tap job; then the check-in, then what the day holds (spec §11 LG1). */}
         <div className="flex flex-col gap-8">
-        <SectionShell variant="section" title="Log">
+        <SectionShell variant="section" title={tr("Log", "Registrar")}>
           <Log vm={log} />
         </SectionShell>
 
-        <CollapsibleSection id="check-in" title="Check-in" defaultOpen={open("check-in")}>
+        <CollapsibleSection id="check-in" title={tr("Check-in", "Check-in")} defaultOpen={open("check-in")}>
           <CheckIn dayLabel={date} checkIn={vm.checkIn} />
         </CollapsibleSection>
 
-        <CollapsibleSection id="logged" title={`Logged ${d === today ? "today" : d === addDays(today, -1) ? "yesterday" : `on ${date}`}`} defaultOpen={open("logged")}>
+        <CollapsibleSection id="logged" title={tr(`Logged ${d === today ? "today" : d === addDays(today, -1) ? "yesterday" : `on ${date}`}`, `Registrado ${d === today ? "hoje" : d === addDays(today, -1) ? "ontem" : `em ${date}`}`)} defaultOpen={open("logged")}>
           <DayLog vm={log} />
         </CollapsibleSection>
         </div>
 
         <div className="flex flex-col gap-8">
-          <CollapsibleSection id="insights" title="Insights" defaultOpen={open("insights")} action={<ActionLink label="See all" href="/journal/insights" />}>
-            <InsightCard body={vm.teaser.text} action={vm.teaser.ready ? { label: "See all insights", href: "/journal/insights" } : undefined} />
+          <CollapsibleSection id="insights" title={tr("Insights", "Insights")} defaultOpen={open("insights")} action={<ActionLink label={tr("See all", "Ver todos")} href="/journal/insights" />}>
+            <InsightCard body={vm.teaser.text} action={vm.teaser.ready ? { label: tr("See all insights", "Ver todos os insights"), href: "/journal/insights" } : undefined} />
           </CollapsibleSection>
 
-          <SectionShell variant="section" title="This week">
+          <SectionShell variant="section" title={tr("This week", "Esta semana")}>
             <WeekCard week={log.week} day={d} />
           </SectionShell>
 
-          <CollapsibleSection id="history" title="History" defaultOpen={open("history")}>
+          <CollapsibleSection id="history" title={tr("History", "Histórico")} defaultOpen={open("history")}>
           {vm.history.length ? (
             <Card className="gap-0 px-4 py-1 xl:px-5">
               <ul>
@@ -86,7 +90,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
                       <Link
                         href={dayHref("/journal", h.day, today)}
                         aria-current={h.day === d ? "date" : undefined}
-                        aria-label={`${dayLabel(h.day, today)}: ${h.yes.length ? h.yes.join(", ") : "no behaviours"}`}
+                        aria-label={`${dayLabel(h.day, today)}: ${h.yes.length ? h.yes.join(", ") : tr("no behaviours", "sem comportamentos")}`}
                         className="relative -mx-2 flex min-h-13 items-center gap-3 rounded-lg px-2 py-2 transition-[background-color] duration-150 ease-standard outline-none before:absolute before:inset-y-3.5 before:left-0 before:w-[3px] before:rounded-full before:bg-foreground before:opacity-0 hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-accent aria-[current=date]:before:opacity-100"
                       >
                         <span className="w-28 shrink-0 text-xs leading-4 font-bold tracking-[0.1em] uppercase tabular-nums">{dayLabel(h.day, today)}</span>
@@ -97,7 +101,7 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
                             </Badge>
                           ))}
                           {more > 0 && <span className="self-center font-numeric text-[13px] font-semibold text-muted-foreground tabular-nums">+{more}</span>}
-                          {!h.yes.length && <span className="self-center text-xs leading-4 font-medium text-muted-foreground">No behaviours</span>}
+                          {!h.yes.length && <span className="self-center text-xs leading-4 font-medium text-muted-foreground">{tr("No behaviours", "Sem comportamentos")}</span>}
                         </span>
                         <ChevronRight aria-hidden className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.75} />
                       </Link>
@@ -111,14 +115,14 @@ export default async function JournalPage({ searchParams }: PageProps<"/journal"
                   scroll={false}
                   className="-mx-2 mb-1 grid h-11 place-items-center rounded-lg border-t border-border text-xs font-bold tracking-[0.1em] text-foreground/85 uppercase outline-none transition-[background-color,color] duration-150 ease-standard hover:bg-accent hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
-                  {allHistory ? "Show last week" : "Show 30 days"}
+                  {allHistory ? tr("Show last week", "Mostrar a última semana") : tr("Show 30 days", "Mostrar 30 dias")}
                 </Link>
               )}
             </Card>
           ) : (
             <EmptyState
-              body="No check-ins yet. Your first one takes under a minute."
-              action={{ label: "Check in", sheet: "checkin" }}
+              body={tr("No check-ins yet. Your first one takes under a minute.", "Ainda sem check-ins. O primeiro leva menos de um minuto.")}
+              action={{ label: tr("Check in", "Check-in"), sheet: "checkin" }}
             />
           )}
           </CollapsibleSection>

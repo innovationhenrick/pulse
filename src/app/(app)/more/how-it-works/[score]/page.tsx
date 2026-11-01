@@ -6,6 +6,8 @@ import { DetailShell } from "@/components/shells/DetailShell"
 import { SectionShell } from "@/components/shells/SectionShell"
 import { Button } from "@/components/ui/button"
 import { SCORE_DOCS, type HowSection } from "../content"
+import { tr } from "@/lib/locale-context"
+import { getTranslations } from "next-intl/server"
 
 const BODY = "max-w-[65ch] text-[15px] leading-[22px] text-pretty text-foreground-secondary"
 /** A detail this short sits beside its term ("HRV  55%"); a sentence goes under it. */
@@ -18,7 +20,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/more/how-it-works/[score]">) {
   const { score } = await params
   const doc = SCORE_DOCS.find((d) => d.slug === score)
-  return { title: doc ? `How ${doc.name} works` : "How Pulse works" }
+  await getTranslations("meta")
+  return { title: doc ? tr(`How ${doc.name} works`, `Como funciona: ${doc.name}`) : tr("How Pulse works", "Como o Pulse funciona") }
 }
 
 function Section({ s }: { s: HowSection }) {
@@ -60,13 +63,13 @@ export default async function ScoreExplainer({ params }: PageProps<"/more/how-it
   return (
     <DetailShell
       title={doc.name}
-      subtitle="How it works"
+      subtitle={tr("How it works", "Como funciona")}
       primary={
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <p className="max-w-[60ch] text-[17px] leading-6 text-pretty">{doc.summary}</p>
           {doc.href && (
             <Button asChild variant="secondary" size="touch" className="shrink-0">
-              <Link href={doc.href}>Open {doc.name}</Link>
+              <Link href={doc.href}>{tr(`Open ${doc.name}`, `Abrir ${doc.name}`)}</Link>
             </Button>
           )}
         </div>
@@ -77,14 +80,14 @@ export default async function ScoreExplainer({ params }: PageProps<"/more/how-it
       footer={
         <div className="flex flex-col gap-4">
           <p className="text-xs leading-4 font-medium text-pretty text-muted-foreground">
-            Not a medical device. Pulse’s scores are estimates from a wrist sensor, for personal use, not a diagnosis.
+            {tr("Not a medical device. Pulse’s scores are estimates from a wrist sensor, for personal use, not a diagnosis.", "Não é um dispositivo médico. Os scores do Pulse são estimativas de um sensor de pulso, para uso pessoal, e não um diagnóstico.")}
           </p>
-          <nav aria-label="Other scores" className="flex gap-2">
+          <nav aria-label={tr("Other scores", "Outros scores")} className="flex gap-2">
             {prev ? (
               <Link href={`/more/how-it-works/${prev.slug}`} replace className={STEP}>
                 <ChevronLeft aria-hidden className="size-5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
                 <span className="min-w-0">
-                  <span className="block text-xs leading-4 font-medium text-muted-foreground">Previous</span>
+                  <span className="block text-xs leading-4 font-medium text-muted-foreground">{tr("Previous", "Anterior")}</span>
                   <span className="block text-[15px] leading-[22px] font-semibold text-balance">{prev.name}</span>
                 </span>
               </Link>
@@ -94,7 +97,7 @@ export default async function ScoreExplainer({ params }: PageProps<"/more/how-it
             {next && (
               <Link href={`/more/how-it-works/${next.slug}`} replace className={cn(STEP, "justify-end text-right")}>
                 <span className="min-w-0">
-                  <span className="block text-xs leading-4 font-medium text-muted-foreground">Next</span>
+                  <span className="block text-xs leading-4 font-medium text-muted-foreground">{tr("Next", "Próximo")}</span>
                   <span className="block text-[15px] leading-[22px] font-semibold text-balance">{next.name}</span>
                 </span>
                 <ChevronRight aria-hidden className="size-5 shrink-0 text-muted-foreground" strokeWidth={1.75} />

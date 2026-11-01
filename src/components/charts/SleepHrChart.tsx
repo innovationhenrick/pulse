@@ -129,7 +129,7 @@ function Chart({ hr, highlight }: { hr: SleepHr; highlight?: { start: number; en
 export function SleepHrChart({ data, highlight }: SleepHrChartProps) {
   const empty = (
     <div className="grid place-items-center">
-      <EmptyState body="No heart-rate data for this night." />
+      <EmptyState body={tr("No heart-rate data for this night.", "Sem dados de frequência cardíaca para esta noite.")} />
     </div>
   )
   return (

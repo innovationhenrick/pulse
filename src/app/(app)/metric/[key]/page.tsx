@@ -16,21 +16,24 @@ import { pageDay, type SearchParams } from "../../_lib/day"
 import { mapMetric } from "../../_lib/view"
 import { RangeStats, RangeStatsCard } from "./RangeStats"
 import { METRIC_GRID, MetricSection } from "./sections"
+import { tr } from "@/lib/locale-context"
+import { getTranslations } from "next-intl/server"
 
-const STACK: Record<"calories" | "distance", readonly TrendSeries[]> = {
+const stack = (): Record<"calories" | "distance", readonly TrendSeries[]> => ({
   calories: [
-    { key: "resting", label: "Resting", color: DATA_COLORS["energy-resting"].css },
-    { key: "active", label: "Active", color: DATA_COLORS["energy-active"].css },
+    { key: "resting", label: tr("Resting", "Repouso"), color: DATA_COLORS["energy-resting"].css },
+    { key: "active", label: tr("Active", "Ativas"), color: DATA_COLORS["energy-active"].css },
   ],
   distance: [
-    { key: "everyday", label: "Everyday", color: DATA_COLORS["energy-resting"].css },
-    { key: "workouts", label: "Workouts", color: DATA_COLORS["energy-active"].css },
+    { key: "everyday", label: tr("Everyday", "Dia a dia"), color: DATA_COLORS["energy-resting"].css },
+    { key: "workouts", label: tr("Workouts", "Treinos"), color: DATA_COLORS["energy-active"].css },
   ],
-}
+})
 
 export async function generateMetadata({ params }: PageProps<"/metric/[key]">) {
   const { key } = await params
-  return { title: isDetailKey(key) ? DASHBOARD_LABEL[key] : "Metric" }
+  await getTranslations("meta")
+  return { title: isDetailKey(key) ? DASHBOARD_LABEL[key] : tr("Metric", "Métrica") }
 }
 
 /** A metric's own screen `/metric/[key]?d=&r=` (spec §11 MD1): the day, its history, then the metric's own sections. */
@@ -59,19 +62,19 @@ export default async function MetricPage({ params, searchParams }: PageProps<"/m
       summary={lead && <MetricSection s={lead} vm={vm} timeZone={timeZone} timeFormat={timeFormat} />}
       primary={
         empty ? (
-          <SectionShell variant="card" level={2} title="History">
+          <SectionShell variant="card" level={2} title={tr("History", "Histórico")}>
             <EmptyState
               body={
                 vm.group === "nutrition"
-                  ? `No ${vm.label.toLowerCase()} logged yet. Log it in Journal, or in Fitbit or Google Health, and it shows here.`
-                  : `No ${vm.label.toLowerCase()} from Google Health yet. It shows here once your phone, Fitbit or a connected device records it and syncs.`
+                  ? tr(`No ${vm.label.toLowerCase()} logged yet. Log it in Journal, or in Fitbit or Google Health, and it shows here.`, `Ainda sem ${vm.label.toLowerCase()} registrado(a). Registre no Diário, no Fitbit ou no Google Health e aparece aqui.`)
+                  : tr(`No ${vm.label.toLowerCase()} from Google Health yet. It shows here once your phone, Fitbit or a connected device records it and syncs.`, `Ainda sem ${vm.label.toLowerCase()} do Google Health. Aparece aqui quando o celular, o Fitbit ou um dispositivo conectado registrar e sincronizar.`)
               }
-              action={vm.group === "nutrition" ? { label: "Open Journal", href: "/journal" } : undefined}
+              action={vm.group === "nutrition" ? { label: tr("Open Journal", "Abrir o Diário"), href: "/journal" } : undefined}
             />
           </SectionShell>
         ) : (
           <div className={METRIC_GRID}>
-            <SectionShell variant="card" level={2} title="History">
+            <SectionShell variant="card" level={2} title={tr("History", "Histórico")}>
               <TrendChart
                 key={vm.key}
                 label={vm.label}
@@ -82,7 +85,7 @@ export default async function MetricPage({ params, searchParams }: PageProps<"/m
                 data={mapMetric(vm.history, (ps) => ps.map((p) => ({ date: p.day, value: p.value, parts: p.parts })))}
                 deltas={deltas}
                 ranges={RANGES}
-                stack={vm.chart.stack && STACK[vm.chart.stack]}
+                stack={vm.chart.stack && stack()[vm.chart.stack]}
                 reference={vm.chart.reference}
                 baseline={vm.chart.baseline}
                 smooth={vm.chart.smooth}
@@ -96,7 +99,7 @@ export default async function MetricPage({ params, searchParams }: PageProps<"/m
       }
       secondary={empty ? [] : more.map((s) => <MetricSection key={s.kind} s={s} vm={vm} timeZone={timeZone} timeFormat={timeFormat} className={more.length === 1 ? "xl:col-span-2" : undefined} />)}
       footer={
-        <SectionShell variant="card" level={2} title={`About ${vm.label.toLowerCase()}`}>
+        <SectionShell variant="card" level={2} title={tr(`About ${vm.label.toLowerCase()}`, `Sobre: ${vm.label.toLowerCase()}`)}>
           <div className="max-w-[65ch] space-y-2 text-[15px] leading-[22px] text-pretty text-foreground-secondary">
             <p>{vm.about}</p>
             <p>{vm.source}</p>
@@ -112,7 +115,7 @@ const unitText = (unit?: string) => (unit ? (unit === "%" ? "%" : `\u00a0${unit}
 /** The day's value (a reading metric's latest reading) against its 30-day average. */
 function Hero({ vm }: { vm: MetricDetailVM }) {
   // The date switcher names the day; a reading from an earlier day says which.
-  const when = vm.valueDay && vm.valueDay !== vm.day ? `Latest reading, ${formatDay(vm.valueDay, DAY.short)}` : null
+  const when = vm.valueDay && vm.valueDay !== vm.day ? tr(`Latest reading, ${formatDay(vm.valueDay, DAY.short)}`, `Última medição, ${formatDay(vm.valueDay, DAY.short)}`) : null
   return (
     <div className="flex w-full max-w-[360px] flex-col items-center gap-2 py-4 text-center">
       {when && <p className={`${LABEL} text-muted-foreground`}>{when}</p>}
@@ -134,12 +137,12 @@ function Hero({ vm }: { vm: MetricDetailVM }) {
               {t && diff !== null && !vm.soFar && (
                 <StatusChip tone={t.tone === "good" ? "optimal" : t.tone === "bad" ? "warning" : "neutral"} delta={t.dir} className="mt-1">
                   {t.dir === "flat"
-                    ? "In line with your 30-day average"
-                    : `${formatValue(vm.format, Math.abs(diff))}${unitText(vm.unit)} ${t.dir === "up" ? "above" : "below"} your 30-day average`}
+                    ? tr("In line with your 30-day average", "Em linha com a sua média de 30 dias")
+                    : tr(`${formatValue(vm.format, Math.abs(diff))}${unitText(vm.unit)} ${t.dir === "up" ? "above" : "below"} your 30-day average`, `${formatValue(vm.format, Math.abs(diff))}${unitText(vm.unit)} ${t.dir === "up" ? "acima da" : "abaixo da"} sua média de 30 dias`)}
                 </StatusChip>
               )}
               <p className={CAPTION}>
-                {avg === null ? "No 30-day average yet" : `30-day average ${formatValue(vm.format, avg)}${unitText(vm.unit)}`}
+                {avg === null ? tr("No 30-day average yet", "Ainda sem média de 30 dias") : tr(`30-day average ${formatValue(vm.format, avg)}${unitText(vm.unit)}`, `Média de 30 dias: ${formatValue(vm.format, avg)}${unitText(vm.unit)}`)}
               </p>
             </>
           )

@@ -8,6 +8,7 @@ import { useInstall } from "@/lib/install"
 import { SectionShell } from "@/components/shells/SectionShell"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { tr } from "@/lib/locale-context"
 
 const ROW = "flex min-h-13 items-center justify-between gap-3 py-2"
 const LABEL = "text-[15px] leading-[22px]"
@@ -41,7 +42,7 @@ export function AppSettings({ pushKey }: { pushKey: string | null }) {
     if (on) {
       const r = await enablePush(pushKey)
       setPush(r === "ok" ? "on" : r === "denied" ? "denied" : "off")
-      if (r === "error") toast.error("Couldn’t turn on notifications. Try again.")
+      if (r === "error") toast.error(tr("Couldn’t turn on notifications. Try again.", "Não foi possível ativar as notificações. Tente de novo."))
     } else {
       await disablePush()
       setPush("off")
@@ -53,24 +54,24 @@ export function AppSettings({ pushKey }: { pushKey: string | null }) {
   const showPush = pushKey !== null && push !== null
   if (!showInstall && !showPush) return null
   return (
-    <SectionShell variant="card" level={2} id="app" title="App">
+    <SectionShell variant="card" level={2} id="app" title={tr("App", "App")}>
       <div className="divide-y divide-border">
         {showInstall && (
           <div className={ROW}>
             <div className="min-w-0">
-              <p className={LABEL}>Install Pulse</p>
-              <p className={HINT}>{canPrompt ? "Opens full screen, like an app." : "Tap Share, then Add to Home Screen."}</p>
+              <p className={LABEL}>{tr("Install Pulse", "Instalar o Pulse")}</p>
+              <p className={HINT}>{canPrompt ? tr("Opens full screen, like an app.", "Abre em tela cheia, como um app.") : tr("Tap Share, then Add to Home Screen.", "Toque em Compartilhar e depois em Adicionar à Tela de Início.")}</p>
             </div>
             {canPrompt && (
               <Button type="button" variant="secondary" size="touch" onClick={install}>
-                Install
+                {tr("Install", "Instalar")}
               </Button>
             )}
           </div>
         )}
         {ready && installed && (
           <div className={ROW}>
-            <p className={LABEL}>Installed</p>
+            <p className={LABEL}>{tr("Installed", "Instalado")}</p>
             <Check aria-hidden className="size-5 text-muted-foreground" strokeWidth={2} />
           </div>
         )}
@@ -78,16 +79,16 @@ export function AppSettings({ pushKey }: { pushKey: string | null }) {
           <div className={ROW}>
             <div className="min-w-0">
               <p id="push-label" className={LABEL}>
-                Notifications
+                {tr("Notifications", "Notificações")}
               </p>
               <p className={HINT}>
                 {push === "unsupported"
                   ? ios && !installed
-                    ? "Add Pulse to your Home Screen first, then turn this on."
-                    : "This browser can’t show notifications."
+                    ? tr("Add Pulse to your Home Screen first, then turn this on.", "Adicione o Pulse à Tela de Início primeiro e depois ative isto.")
+                    : tr("This browser can’t show notifications.", "Este navegador não consegue mostrar notificações.")
                   : push === "denied"
-                    ? "Blocked in this browser’s settings."
-                    : "Recovery ready, and when Pulse can’t sync."}
+                    ? tr("Blocked in this browser’s settings.", "Bloqueado nos ajustes deste navegador.")
+                    : tr("Recovery ready, and when Pulse can’t sync.", "Recuperação pronta e quando o Pulse não consegue sincronizar.")}
               </p>
             </div>
             {push !== "unsupported" && push !== "denied" && (

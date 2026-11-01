@@ -4,6 +4,8 @@ import { journalTags, reports } from "../db/schema";
 import { finite, loadDays, none, ok, type QueryCtx, toStrain } from "./common";
 import { latestReport } from "./home";
 import type { DriverItem, KeyStat, Metric, ReportVM, StackedSegment } from "./types";
+import { displayLabel } from "@/lib/behaviors"
+import { lazy, tr } from "@/lib/locale-context"
 
 const readReport = async (ctx: QueryCtx, period: string) => {
   const [r] = await ctx.db
@@ -24,12 +26,12 @@ const neighbour = async (ctx: QueryCtx, pattern: string, period: string, dir: -1
   return r?.period ?? null;
 };
 
-const BALANCE = {
-  LOAD_SWEET_SPOT: { status: "balanced", word: "Balanced", line: "Your strain matched your recovery most days." },
-  LOAD_BUILDING_FAST: { status: "overreaching", word: "Overreaching", line: "Your load rose faster than your body is used to. Watch your Recovery." },
-  LOAD_SPIKING: { status: "overreaching", word: "Overreaching", line: "Your load jumped well above your usual. Injury and illness risk rise." },
-  LOAD_RAMPING_DOWN: { status: "undertrained", word: "Undertrained", line: "Your load dropped below your usual. Fitness slowly fades if this lasts." },
-} as const;
+const BALANCE = lazy(() => ({
+  LOAD_SWEET_SPOT: { status: "balanced", word: tr("Balanced", "Equilibrado"), line: tr("Your strain matched your recovery most days.", "Seu esforço combinou com a sua recuperação na maioria dos dias.") },
+  LOAD_BUILDING_FAST: { status: "overreaching", word: tr("Overreaching", "Sobrecarregado"), line: tr("Your load rose faster than your body is used to. Watch your Recovery.", "Sua carga subiu mais rápido do que o seu corpo está acostumado. Fique de olho na sua Recuperação.") },
+  LOAD_SPIKING: { status: "overreaching", word: tr("Overreaching", "Sobrecarregado"), line: tr("Your load jumped well above your usual. Injury and illness risk rise.", "Sua carga saltou bem acima do seu normal. O risco de lesão e doença aumenta.") },
+  LOAD_RAMPING_DOWN: { status: "undertrained", word: tr("Undertrained", "Subtreinado"), line: tr("Your load dropped below your usual. Fitness slowly fades if this lasts.", "Sua carga caiu abaixo do seu normal. O condicionamento diminui aos poucos se isso durar.") },
+} as const));
 
 /** Reports `/reports/[period]` (spec §7.13); null for a period with no data. */
 export async function getReport(period: string, ctx: QueryCtx): Promise<ReportVM | null> {
@@ -59,9 +61,9 @@ export async function getReport(period: string, ctx: QueryCtx): Promise<ReportVM
   const pa = prevReport?.averages;
 
   const bands: StackedSegment[] = [
-    { key: "green", label: "Green (67-100%)", count: r.bands.green, color: "recovery-green" },
-    { key: "yellow", label: "Yellow (34-66%)", count: r.bands.yellow, color: "recovery-yellow" },
-    { key: "red", label: "Red (0-33%)", count: r.bands.red, color: "recovery-red" },
+    { key: "green", label: tr("Green (67-100%)", "Verde (67-100%)"), count: r.bands.green, color: "recovery-green" },
+    { key: "yellow", label: tr("Yellow (34-66%)", "Amarelo (34-66%)"), count: r.bands.yellow, color: "recovery-yellow" },
+    { key: "red", label: tr("Red (0-33%)", "Vermelho (0-33%)"), count: r.bands.red, color: "recovery-red" },
   ];
   const scored = r.bands.green + r.bands.yellow + r.bands.red;
 
@@ -102,28 +104,28 @@ export async function getReport(period: string, ctx: QueryCtx): Promise<ReportVM
     latestWeek: latestWeek?.period ?? null,
     latestMonth: latestMonth?.period ?? null,
     dials: [
-      { key: "sleep", label: "Avg sleep", metric: avg(a.sleepPerf), delta: r.deltas.sleepPerf },
-      { key: "recovery", label: "Avg recovery", metric: avg(a.recovery), delta: r.deltas.recovery },
-      { key: "strain", label: "Avg strain", metric: avg(a.strain), delta: r.deltas.strain },
+      { key: "sleep", label: tr("Avg sleep", "Sono médio"), metric: avg(a.sleepPerf), delta: r.deltas.sleepPerf },
+      { key: "recovery", label: tr("Avg recovery", "Recuperação média"), metric: avg(a.recovery), delta: r.deltas.recovery },
+      { key: "strain", label: tr("Avg strain", "Esforço médio"), metric: avg(a.strain), delta: r.deltas.strain },
     ],
     insight: insightOf(r, word, inTarget, withTarget),
     bands: scored ? ok(bands) : none("no_data"),
     averages: [
       stat("recovery", "Recovery", a.recovery, pa?.recovery, "%", "up"),
-      stat("strain", "Day strain", a.strain, pa?.strain, undefined, "neutral"),
-      stat("sleepPerf", "Sleep performance", a.sleepPerf, pa?.sleepPerf, "%", "up"),
-      stat("sleepHours", "Hours of sleep", a.sleepHours, pa?.sleepHours, "h", "up"),
-      stat("consistency", "Sleep consistency", r.sleepConsistency, prevReport?.sleepConsistency, "%", "up"),
-      stat("hrv", "Heart rate variability", a.hrv, pa?.hrv, "ms", "up"),
-      stat("rhr", "Resting heart rate", a.rhr, pa?.rhr, "bpm", "down"),
+      stat("strain", tr("Day strain", "Esforço do dia"), a.strain, pa?.strain, undefined, "neutral"),
+      stat("sleepPerf", tr("Sleep performance", "Desempenho do sono"), a.sleepPerf, pa?.sleepPerf, "%", "up"),
+      stat("sleepHours", tr("Hours of sleep", "Horas de sono"), a.sleepHours, pa?.sleepHours, "h", "up"),
+      stat("consistency", tr("Sleep consistency", "Consistência do sono"), r.sleepConsistency, prevReport?.sleepConsistency, "%", "up"),
+      stat("hrv", tr("Heart rate variability", "Variabilidade da frequência cardíaca"), a.hrv, pa?.hrv, "ms", "up"),
+      stat("rhr", tr("Resting heart rate", "Frequência cardíaca de repouso"), a.rhr, pa?.rhr, "bpm", "down"),
     ],
     trainingBalance: r.trainingBalance && tb ? ok({ status: tb.status, word: tb.word, acwr: r.trainingBalance.acwr, line: tb.line }) : none("no_data"),
     topImpacts: impacts,
     bestWorst:
       r.best && r.worst && scored >= 2
         ? [
-            { label: "Best day", day: r.best.day, recovery: r.best.recovery, strain: strainOf(r.best.day) },
-            { label: "Worst day", day: r.worst.day, recovery: r.worst.recovery, strain: strainOf(r.worst.day) },
+            { label: tr("Best day", "Melhor dia"), day: r.best.day, recovery: r.best.recovery, strain: strainOf(r.best.day) },
+            { label: tr("Worst day", "Pior dia"), day: r.worst.day, recovery: r.worst.recovery, strain: strainOf(r.worst.day) },
           ]
         : null,
   };
@@ -131,18 +133,19 @@ export async function getReport(period: string, ctx: QueryCtx): Promise<ReportVM
 
 async function tagLabels(ctx: QueryCtx) {
   const rows = await ctx.db.select({ tag: journalTags.tag, label: journalTags.label }).from(journalTags).where(eq(journalTags.userId, ctx.userId));
-  return new Map(rows.map((r) => [r.tag, r.label]));
+  return new Map(rows.map((r) => [r.tag, displayLabel(r.tag, r.label)]));
 }
 
 function insightOf(r: Report, word: string, inTarget: number, withTarget: number): string | null {
   if (r.averages.recovery == null) return null;
   const scored = r.bands.green + r.bands.yellow + r.bands.red;
-  const mood = r.bands.red > r.bands.green ? "A demanding" : r.bands.green * 2 >= scored ? "A strong" : "A balanced";
-  const parts = [`${mood} ${word}: ${r.bands.green} green ${r.bands.green === 1 ? "day" : "days"}`];
-  if (withTarget) parts[0] += ` and strain inside your target on ${inTarget} of ${withTarget} days`;
+  const week = word === "week";
+  const mood = r.bands.red > r.bands.green ? tr("A demanding", week ? "Uma semana exigente" : "Um mês exigente") : r.bands.green * 2 >= scored ? tr("A strong", week ? "Uma semana forte" : "Um mês forte") : tr("A balanced", week ? "Uma semana equilibrada" : "Um mês equilibrado");
+  const parts = [tr(`${mood} ${word}: ${r.bands.green} green ${r.bands.green === 1 ? "day" : "days"}`, `${mood}: ${r.bands.green} ${r.bands.green === 1 ? "dia verde" : "dias verdes"}`)];
+  if (withTarget) parts[0] += tr(` and strain inside your target on ${inTarget} of ${withTarget} days`, ` e esforço dentro da meta em ${inTarget} de ${withTarget} dias`);
   parts[0] += ".";
   if (r.deltas.sleepPerf != null && Math.abs(r.deltas.sleepPerf) >= 3) {
-    parts.push(`Sleep performance ${r.deltas.sleepPerf > 0 ? "rose" : "dipped"} ${Math.abs(Math.round(r.deltas.sleepPerf))} points from last ${word}.`);
+    parts.push(tr(`Sleep performance ${r.deltas.sleepPerf > 0 ? "rose" : "dipped"} ${Math.abs(Math.round(r.deltas.sleepPerf))} points from last ${word}.`, `O desempenho do sono ${r.deltas.sleepPerf > 0 ? "subiu" : "caiu"} ${Math.abs(Math.round(r.deltas.sleepPerf))} pontos em relação ${week ? "à semana passada" : "ao mês passado"}.`));
   }
   return parts.join(" ");
 }

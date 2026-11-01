@@ -45,6 +45,9 @@ export function lazy<T extends object>(make: () => T): T {
     get: (_, key) => (make() as Record<PropertyKey, unknown>)[key],
     has: (_, key) => key in make(),
     ownKeys: () => Reflect.ownKeys(make()),
-    getOwnPropertyDescriptor: (_, key) => ({ enumerable: true, configurable: true, value: (make() as Record<PropertyKey, unknown>)[key] }),
+    getOwnPropertyDescriptor: (_, key) => {
+      const now = make() as Record<PropertyKey, unknown>;
+      return key in now ? { enumerable: true, configurable: true, value: now[key] } : undefined;
+    },
   });
 }

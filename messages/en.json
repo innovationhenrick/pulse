@@ -152,6 +152,45 @@
     },
     "trends": {
       "title": "Trends"
+    },
+    "nap": {
+      "title": "Nap",
+      "description": "A nap's time asleep, stages and heart rate."
+    },
+    "journal": {
+      "title": "Journal"
+    },
+    "behaviourInsights": {
+      "title": "Behaviour insights"
+    },
+    "more": {
+      "title": "More"
+    },
+    "yourData": {
+      "title": "Your data"
+    },
+    "behaviours": {
+      "title": "Behaviours"
+    },
+    "howItWorks": {
+      "title": "How Pulse works"
+    },
+    "settings": {
+      "title": "Settings"
+    },
+    "onboarding": {
+      "title": "Your profile"
+    },
+    "activities": {
+      "title": "Activities",
+      "description": "Every workout, newest first, grouped by day with its Strain."
+    },
+    "activity": {
+      "title": "Activity",
+      "description": "Activity strain, heart rate, zones and recovery after the workout."
+    },
+    "reports": {
+      "title": "Reports"
     }
   }
 }

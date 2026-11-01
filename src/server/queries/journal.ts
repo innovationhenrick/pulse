@@ -2,10 +2,11 @@ import type { ImpactMetric, TagImpact } from "@/core/algorithms/journalImpact";
 import type { JournalImpactRow } from "../pipeline";
 import { addDays } from "../time";
 import { and, desc, eq, gte, isNotNull, lte } from "drizzle-orm";
-import { behavior, questionOf } from "@/lib/behaviors";
+import { behavior, displayLabel, questionOf } from "@/lib/behaviors";
 import { dailyScores, journalEntries, journalNotes, journalTags } from "../db/schema";
 import { finite, loadDays, meanSd, type QueryCtx, todayOf } from "./common";
 import type { BehavioursVM, ImpactMetricKey, JournalInsightsVM, JournalTag, JournalVM } from "./types";
+import { tr } from "@/lib/locale-context"
 
 
 /** Every tag, hidden ones included, in check-in order (position inside a group, then insertion order). */
@@ -16,7 +17,7 @@ async function tagsOf(ctx: QueryCtx): Promise<JournalTag[]> {
     .from(t)
     .where(eq(t.userId, ctx.userId))
     .orderBy(t.position, t.seq);
-  return rows.map((r) => ({ tag: r.tag, label: r.label, question: questionOf(r.tag, r.label), section: behavior(r.tag)?.section ?? "custom", isDefault: r.isDefault, hidden: r.hidden }));
+  return rows.map((r) => ({ tag: r.tag, label: displayLabel(r.tag, r.label), question: questionOf(r.tag, r.label), section: behavior(r.tag)?.section ?? "custom", isDefault: r.isDefault, hidden: r.hidden }));
 }
 
 /** More › Behaviours and Select Behaviors: every tag, hidden ones included. */
@@ -69,9 +70,12 @@ export async function getJournal(day: string, ctx: QueryCtx): Promise<JournalVM>
   const teaser = strongest
     ? {
         ready: true,
-        text: `Your strongest effect so far: ${(label.get(strongest.tag) ?? strongest.tag).toLowerCase()} ${strongest.effects.recovery.delta! < 0 ? "lowers" : "raises"} next-day Recovery by ${Math.abs(Math.round(strongest.effects.recovery.delta!))}%.`,
+        text: tr(
+          `Your strongest effect so far: ${(label.get(strongest.tag) ?? strongest.tag).toLowerCase()} ${strongest.effects.recovery.delta! < 0 ? "lowers" : "raises"} next-day Recovery by ${Math.abs(Math.round(strongest.effects.recovery.delta!))}%.`,
+          `Seu efeito mais forte até agora: ${(label.get(strongest.tag) ?? strongest.tag).toLowerCase()} ${strongest.effects.recovery.delta! < 0 ? "reduz" : "aumenta"} a Recuperação do dia seguinte em ${Math.abs(Math.round(strongest.effects.recovery.delta!))}%.`,
+        ),
       }
-    : { ready: false, text: "Insights appear after 5 days with and 5 without a behaviour." };
+    : { ready: false, text: tr("Insights appear after 5 days with and 5 without a behaviour.", "Os insights aparecem depois de 5 dias com e 5 dias sem um comportamento.") };
 
   const history: JournalVM["history"] = [];
   for (let d = today; d >= addDays(today, -29); d = addDays(d, -1)) {

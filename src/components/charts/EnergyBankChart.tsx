@@ -118,7 +118,7 @@ function Chart({ e }: { e: EnergySeries }) {
 export function EnergyBankChart({ data }: EnergyBankChartProps) {
   const empty = (
     <div className="grid place-items-center">
-      <EmptyState body="Energy Bank starts once you wake up." />
+      <EmptyState body={tr("Energy Bank starts once you wake up.", "O Banco de Energia começa quando você acorda.")} />
     </div>
   )
   return (

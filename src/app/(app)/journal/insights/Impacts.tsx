@@ -10,14 +10,15 @@ import type { ImpactMetricKey, JournalInsightsVM } from "@/server/queries/types"
 import { DriverList } from "@/components/metrics/DriverList"
 import { ResponsiveSheet } from "@/components/shells/ResponsiveSheet"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { tr } from "@/lib/locale-context"
 
 const METRICS: { key: ImpactMetricKey; label: string; word: string }[] = [
-  { key: "recovery", label: "Recovery", word: "Recovery" },
-  { key: "hrv", label: "HRV", word: "HRV" },
-  { key: "sleep", label: "Sleep", word: "sleep performance" },
+  { key: "recovery", get label() { return tr("Recovery", "Recuperação") }, get word() { return tr("Recovery", "Recuperação") } },
+  { key: "hrv", get label() { return tr("HRV", "VFC") }, get word() { return tr("HRV", "VFC") } },
+  { key: "sleep", get label() { return tr("Sleep", "Sono") }, get word() { return tr("sleep performance", "desempenho do sono") } },
 ]
 const metricWord = (m: ImpactMetricKey) => METRICS.find((x) => x.key === m)!.word
-const FOOTER = "Effects are differences in averages, not proof of cause. Change one habit at a time to see what it really does."
+const footer = () => tr("Effects are differences in averages, not proof of cause. Change one habit at a time to see what it really does.", "Os efeitos são diferenças entre médias, não prova de causa. Mude um hábito por vez para ver o que ele realmente faz.")
 
 /** Recovery / HRV / Sleep, kept in `?m=` with router.replace (spec §7.12). */
 export function MetricToggle({ metric }: { metric: ImpactMetricKey }) {
@@ -30,7 +31,7 @@ export function MetricToggle({ metric }: { metric: ImpactMetricKey }) {
       value={metric}
       onValueChange={(v) => v && router.replace(`${pathname}${withParam(params.toString(), "m", v === "recovery" ? null : v)}`, { scroll: false })}
       spacing={0}
-      aria-label="Outcome"
+      aria-label={tr("Outcome", "Resultado")}
       className="gap-0.5 rounded-lg bg-muted p-0.5"
     >
       {METRICS.map((m) => (
@@ -71,20 +72,20 @@ export function ImpactList({ vm }: { vm: JournalInsightsVM }) {
         }}
         outcome={metricWord(vm.metric)}
       />
-      <ResponsiveSheet open={!!current} onOpenChange={(o) => !o && setOpen(null)} title={item?.label ?? "Behaviour"}>
+      <ResponsiveSheet open={!!current} onOpenChange={(o) => !o && setOpen(null)} title={item?.label ?? tr("Behaviour", "Comportamento")}>
         {item && (
           <div className="space-y-4">
             <div>
               <p className={cn("font-numeric text-4xl leading-10 font-bold tracking-[-0.01em] tabular-nums", tone)}>{fx(item.delta)}</p>
-              <p className="text-[15px] leading-[22px] text-foreground-secondary">next-day {metricWord(vm.metric)}</p>
+              <p className="text-[15px] leading-[22px] text-foreground-secondary">{tr(`next-day ${metricWord(vm.metric)}`, `${metricWord(vm.metric)} do dia seguinte`)}</p>
             </div>
             <dl className="divide-y divide-border text-[15px] leading-[22px]">
               {[
-                ["Days with", String(item.yes ?? "--")],
-                ["Days without", String(item.no ?? "--")],
-                ["90% confidence", item.ci ? `${fx(item.ci[0], false)} to ${fx(item.ci[1], false)}` : "--"],
-                ["Average with", avg(item.avgWith)],
-                ["Average without", avg(item.avgWithout)],
+                [tr("Days with", "Dias com"), String(item.yes ?? "--")],
+                [tr("Days without", "Dias sem"), String(item.no ?? "--")],
+                [tr("90% confidence", "Confiança de 90%"), item.ci ? `${fx(item.ci[0], false)} ${tr("to", "a")} ${fx(item.ci[1], false)}` : "--"],
+                [tr("Average with", "Média com"), avg(item.avgWith)],
+                [tr("Average without", "Média sem"), avg(item.avgWithout)],
               ].map(([k, v]) => (
                 <div key={k} className="flex min-h-11 items-center justify-between gap-3">
                   <dt className="text-foreground-secondary">{k}</dt>
@@ -92,7 +93,7 @@ export function ImpactList({ vm }: { vm: JournalInsightsVM }) {
                 </div>
               ))}
             </dl>
-            <p className="text-xs leading-4 font-medium text-pretty text-muted-foreground">{FOOTER}</p>
+            <p className="text-xs leading-4 font-medium text-pretty text-muted-foreground">{footer()}</p>
           </div>
         )}
       </ResponsiveSheet>

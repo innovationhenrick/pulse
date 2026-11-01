@@ -36,7 +36,7 @@ export type SleepStagesProps = {
 
 // the reference app's order, top to bottom [latest-sleep-stages-1].
 const ORDER: Stage[] = ["awake", "light", "deep", "rem"]
-const EMPTY = "No stage data for this sleep. Fitbit only stages sleeps longer than about 3 hours."
+const empty = () => tr("No stage data for this sleep. Fitbit only stages sleeps longer than about 3 hours.", "Sem dados de fases para este sono. O Fitbit só classifica fases em sonos de mais de cerca de 3 horas.")
 const HERO = "font-numeric text-[32px] leading-9 font-bold tracking-[-0.01em]"
 
 /** the reference app's "Hours of sleep" [latest-sleep-stages-1]: time asleep, the arrow against the prior 30 nights and their mean under it. */
@@ -123,7 +123,7 @@ function Rows({ night, selected, onSelect, restorative }: { night: SleepStagesNi
         {tab === "breakdown" ? (
           <span className={cn(LABEL, "flex items-baseline gap-2 text-foreground-secondary")}>
             <span aria-hidden className={cn("h-4 w-3.5 self-center", RANGE_BOX)} />
-            Typical range
+            {tr("Typical range", "Faixa típica")}
           </span>
         ) : (
           <h3 className={cn(LABEL, "text-foreground-secondary")}>{tr("Stages", "Fases")}</h3>
@@ -212,10 +212,10 @@ export function SleepStages({ hours, hr, data, restorative }: SleepStagesProps) 
             <MetricState
               metric={data}
               skeleton={<StageRowsSkeleton />}
-              empty={<EmptyState body={EMPTY} />}
+              empty={<EmptyState body={empty()} />}
               renderReason={(r) => <ReasonPlaceholder reason={r} size="md" />}
             >
-              {(night) => (night.segments.length ? <Rows night={night} selected={selected} onSelect={setSelected} restorative={restorative} /> : <EmptyState body={EMPTY} />)}
+              {(night) => (night.segments.length ? <Rows night={night} selected={selected} onSelect={setSelected} restorative={restorative} /> : <EmptyState body={empty()} />)}
             </MetricState>
           </div>
         </div>

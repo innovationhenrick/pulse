@@ -4,6 +4,7 @@ import { TickScaleSkeleton } from "@/components/metrics/TickScale"
 import { DetailShell } from "@/components/shells/DetailShell"
 import { SectionShell } from "@/components/shells/SectionShell"
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton"
+import { tr } from "@/lib/locale-context"
 
 /**
  * Fitness loading (spec §7.10, §5.19): no date row; the VO2 max hero with Percentile beside it on laptop, the VO2 max
@@ -12,7 +13,7 @@ import { Skeleton, SkeletonText } from "@/components/ui/skeleton"
 export default function Loading() {
   return (
     <DetailShell loading
-      title="Fitness"
+      title={tr("Fitness", "Condicionamento")}
       hero={
         <div aria-hidden className="flex flex-col items-center gap-2 py-4 text-center">
           <SkeletonText className="w-[4ch] font-numeric text-[64px] leading-none font-bold md:text-[72px]" />
@@ -24,7 +25,7 @@ export default function Loading() {
         </div>
       }
       summary={
-        <SectionShell variant="card" title="Percentile">
+        <SectionShell variant="card" title={tr("Percentile", "Percentil")}>
           <div aria-hidden>
             <TickScaleSkeleton variant="marker" />
             <div className={`${CAPTION} mt-2 grid grid-cols-5 text-center`}>
@@ -39,12 +40,12 @@ export default function Loading() {
         </SectionShell>
       }
       primary={
-        <SectionShell variant="card" title="VO2 max trend">
+        <SectionShell variant="card" title={tr("VO2 max trend", "Tendência do VO2 máx.")}>
           <TrendChartSkeleton />
         </SectionShell>
       }
       secondary={[
-        <SectionShell key="load" variant="card" title="Training load">
+        <SectionShell key="load" variant="card" title={tr("Training load", "Carga de treino")}>
           <div aria-hidden className="space-y-4">
             <p className="flex items-center gap-3">
               <SkeletonText className="w-[4ch] font-numeric text-4xl leading-10 font-bold" />
@@ -57,7 +58,7 @@ export default function Loading() {
             </div>
           </div>
         </SectionShell>,
-        <SectionShell key="ffs" variant="card" title="Fitness, fatigue and form">
+        <SectionShell key="ffs" variant="card" title={tr("Fitness, fatigue and form", "Condicionamento, fadiga e forma")}>
           <div aria-hidden>
             <Skeleton className="h-[220px] rounded-lg bg-muted/60" />
             <p className={`${CAPTION} mt-2`}>Fitness is your 42-day load, fatigue your 7-day load, form the difference.</p>

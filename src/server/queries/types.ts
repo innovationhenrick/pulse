@@ -235,7 +235,7 @@ export type ActivityVM = {
   maxHr: number;
   /** How the zones are set: five on heart-rate reserve from the day's resting and max heart rate. */
   zoneNote: string;
-  hrr: Metric<{ value: number; tone: ChipTone; label: "Good" | "Typical" | "Low" }>;
+  hrr: Metric<{ value: number; tone: ChipTone; label: string }>;
 };
 
 // ── Sleep ────────────────────────────────────────────────────────────────────
@@ -487,7 +487,7 @@ export type ReportVM = {
   averages: KeyStat[];
   trainingBalance: Metric<{ status: "balanced" | "overreaching" | "undertrained"; word: string; acwr: number; line: string }>;
   topImpacts: DriverItem[];
-  bestWorst: { label: "Best day" | "Worst day"; day: string; recovery: number; strain: number | null }[] | null;
+  bestWorst: { label: string; day: string; recovery: number; strain: number | null }[] | null;
 };
 
 // ── More and Settings ────────────────────────────────────────────────────────
@@ -510,7 +510,7 @@ export type ShellStatusVM = {
 export type SettingsVM = {
   mode: "demo" | "google";
   source: {
-    label: "Demo data" | "Google Health";
+    label: string;
     status: "demo" | "not_connected" | "not_linked" | "no_device" | "connected" | "revoked";
     /** The grant predates scopes Pulse now asks for (logging to Google, 2026-10): Settings offers a reconnect. */
     needsPermissions?: boolean;

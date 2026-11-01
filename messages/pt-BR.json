@@ -152,6 +152,45 @@
     },
     "trends": {
       "title": "Tendências"
+    },
+    "nap": {
+      "title": "Cochilo",
+      "description": "O tempo dormindo, as fases e a frequência cardíaca de um cochilo."
+    },
+    "journal": {
+      "title": "Diário"
+    },
+    "behaviourInsights": {
+      "title": "Insights de comportamento"
+    },
+    "more": {
+      "title": "Mais"
+    },
+    "yourData": {
+      "title": "Seus dados"
+    },
+    "behaviours": {
+      "title": "Comportamentos"
+    },
+    "howItWorks": {
+      "title": "Como o Pulse funciona"
+    },
+    "settings": {
+      "title": "Ajustes"
+    },
+    "onboarding": {
+      "title": "Seu perfil"
+    },
+    "activities": {
+      "title": "Atividades",
+      "description": "Todos os treinos, do mais recente ao mais antigo, agrupados por dia com o seu Esforço."
+    },
+    "activity": {
+      "title": "Atividade",
+      "description": "Esforço da atividade, frequência cardíaca, zonas e recuperação depois do treino."
+    },
+    "reports": {
+      "title": "Relatórios"
     }
   }
 }

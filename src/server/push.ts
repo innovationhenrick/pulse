@@ -5,10 +5,11 @@ import webpush from "web-push";
 import { BAND_WORD, recoveryBand } from "@/lib/bands";
 import { getConfig } from "./config";
 import { type Db } from "./db";
-import { coachSettings, dailyScores, pushSubscriptions } from "./db/schema";
+import { coachSettings, dailyScores, profile, pushSubscriptions } from "./db/schema";
 import { coachAccess } from "./coach/store";
 import { userTimeZone } from "./profile";
 import { localDay, localMinutes } from "./time";
+import { INTL_TAG, setFormatLocale, tr } from "@/lib/locale-context"
 
 export type PushPayload = { title: string; body: string; url: string; tag: string };
 type Sub = { endpoint: string; p256dh: string; auth: string };
@@ -67,6 +68,15 @@ async function claim(db: Db, userId: number, column: "lastRecoveryDay" | "lastSy
     .returning({ endpoint: pushSubscriptions.endpoint, p256dh: pushSubscriptions.p256dh, auth: pushSubscriptions.auth });
 }
 
+/**
+ * Puts the formatters (BAND_WORD, tr) in the account's language for the lines about to be built. Called right before
+ * the text is made, with no await between: the worker has no request, so the language is a plain variable here.
+ */
+async function speak(db: Db, userId: number) {
+  const [p] = await db.select({ locale: profile.locale }).from(profile).where(eq(profile.userId, userId));
+  setFormatLocale(INTL_TAG[p?.locale ?? "en"]);
+}
+
 /** After a run: "Recovery ready" once per local day, when today's recovery score exists. */
 export async function notifyRecovery(db: Db, userId: number, now = Math.floor(Date.now() / 1000)) {
   if (!getConfig().vapid) return;
@@ -82,7 +92,8 @@ export async function notifyRecovery(db: Db, userId: number, now = Math.floor(Da
     const subs = await claim(db, userId, "lastRecoveryDay", day);
     if (!subs.length) return;
     const value = Math.round(r.value);
-    await sendPush(db, userId, { title: "Recovery ready", body: `${value}%: ${BAND_WORD[recoveryBand(value)]}`, url: "/recovery", tag: "recovery" }, subs);
+    await speak(db, userId);
+    await sendPush(db, userId, { title: tr("Recovery ready", "Recuperação pronta"), body: `${value}%: ${BAND_WORD[recoveryBand(value)]}`, url: "/recovery", tag: "recovery" }, subs);
   } catch (err) {
     console.error(`[push] user ${userId} recovery alert: ${err instanceof Error ? err.message : String(err)}`);
   }
@@ -95,7 +106,8 @@ export async function notifySyncProblem(db: Db, userId: number, now = Math.floor
     const tz = (await userTimeZone(db, userId)) ?? "UTC";
     const subs = await claim(db, userId, "lastSyncAlertDay", localDay(now, tz));
     if (!subs.length) return;
-    await sendPush(db, userId, { title: "Pulse can’t sync", body: "Google access was lost. Open Settings to reconnect.", url: "/settings", tag: "sync" }, subs);
+    await speak(db, userId);
+    await sendPush(db, userId, { title: tr("Pulse can’t sync", "O Pulse não consegue sincronizar"), body: tr("Google access was lost. Open Settings to reconnect.", "O acesso ao Google foi perdido. Abra os Ajustes para reconectar."), url: "/settings", tag: "sync" }, subs);
   } catch (err) {
     console.error(`[push] user ${userId} sync alert: ${err instanceof Error ? err.message : String(err)}`);
   }
@@ -127,7 +139,8 @@ export async function notifyBrief(db: Db, userId: number, now = Math.floor(Date.
       .returning({ userId: coachSettings.userId });
     if (!claimed) return;
     const value = Math.round(r.value);
-    await sendPush(db, userId, { title: "Your brief is ready", body: `Recovery ${value}%: ${BAND_WORD[recoveryBand(value)]}. Tap for today’s brief.`, url: "/coach?brief=1", tag: "brief" });
+    await speak(db, userId);
+    await sendPush(db, userId, { title: tr("Your brief is ready", "Seu resumo está pronto"), body: tr(`Recovery ${value}%: ${BAND_WORD[recoveryBand(value)]}. Tap for today’s brief.`, `Recuperação ${value}%: ${BAND_WORD[recoveryBand(value)]}. Toque para ver o resumo de hoje.`), url: "/coach?brief=1", tag: "brief" });
   } catch (err) {
     console.error(`[push] user ${userId} brief alert: ${err instanceof Error ? err.message : String(err)}`);
   }

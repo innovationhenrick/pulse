@@ -5,6 +5,7 @@ import { PageShell } from "@/components/shells/PageShell"
 import { SectionShell } from "@/components/shells/SectionShell"
 import { Card } from "@/components/ui/card"
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton"
+import { tr } from "@/lib/locale-context"
 
 /**
  * Journal (spec §7.11, §5.19): strip, then Log, Check-in, the day's log, Insights, This week, History on phone; from 1280 px
@@ -58,7 +59,7 @@ export default function Loading() {
         <SectionShell variant="section" title="This week">
           <Skeleton className="h-[25rem] rounded-2xl" />
         </SectionShell>
-        <SectionShell variant="section" title="History">
+        <SectionShell variant="section" title={tr("History", "Histórico")}>
           <Card className="gap-0 px-4 py-1 xl:px-5">
             <ul className="divide-y divide-border">
               {Array.from({ length: 7 }, (_, i) => (

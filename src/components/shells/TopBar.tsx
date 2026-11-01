@@ -139,7 +139,7 @@ export function DemoChip() {
           className="h-6 gap-1 rounded-full border-border px-2.5 text-[11px] font-bold tracking-[0.1em] text-foreground-secondary uppercase outline-none hover:bg-foreground/8 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <FlaskConical aria-hidden strokeWidth={1.75} className="size-3!" />
-          Demo data
+          {tr("Demo data", "Dados de demonstração")}
         </Badge>
       </TooltipTrigger>
       <TooltipContent side="top">{tr("You’re looking at generated demo data.", "Você está vendo dados de demonstração gerados.")}</TooltipContent>

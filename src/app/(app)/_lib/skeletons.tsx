@@ -20,13 +20,14 @@ import { Card, CARD_MATERIAL } from "@/components/ui/card"
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton"
 import { ENERGY_INFO, STRAIN_RECOVERY_INFO, TONIGHT_INFO } from "./info"
 import { CAPTION, LABEL, LEGEND, STAT_ICON } from "./view"
+import { lazy, tr } from "@/lib/locale-context"
 
 const rows = (n: number, Row: (i: number) => React.ReactNode) => Array.from({ length: n }, (_, i) => <Fragment key={i}>{Row(i)}</Fragment>)
 
-const SUMMARY: Record<string, string[]> = {
-  Strain: ["Strain Target", "Heart rate zones 1-3", "Heart rate zones 4-5", "Strength activity time", "Steps"],
-  Sleep: ["Hours vs. needed", "Sleep consistency", "Sleep efficiency"],
-}
+const SUMMARY: Record<string, string[]> = lazy(() => ({
+  Strain: [tr("Strain Target", "Meta de Esforço"), tr("Heart rate zones 1-3", "Zonas de frequência cardíaca 1-3"), tr("Heart rate zones 4-5", "Zonas de frequência cardíaca 4-5"), tr("Strength activity time", "Tempo de treino de força"), tr("Steps", "Passos")],
+  Sleep: [tr("Hours vs. needed", "Horas vs. necessárias"), tr("Sleep consistency", "Consistência do sono"), tr("Sleep efficiency", "Eficiência do sono")],
+}))
 
 function CardSkeleton({ title, className, children }: { title: string; className?: string; children: React.ReactNode }) {
   return (
@@ -43,7 +44,7 @@ function MonitorLineSkeleton() {
       <Skeleton className="size-7 rounded-md" />
       <span className="min-w-0 flex-1">
         <SkeletonText className={`${LABEL} w-24`} />
-        {/* A phone's half-width card wraps the status word ("Within range") onto a second line. */}
+        {/* A phone's half-width card wraps the status word (tr("Within range", "Dentro da faixa")) onto a second line. */}
         <SkeletonText className={`${LABEL} w-12 md:hidden`} />
         <SkeletonText className={`${CAPTION} w-16`} />
       </span>
@@ -61,7 +62,7 @@ const BannerSkeleton = () => <Skeleton className="h-14 rounded-2xl" />
 export function HomeSkeleton({ stats = DASHBOARD_DEFAULT }: { stats?: DashboardKey[] }) {
   return (
     <PageShell loading
-      title="Home"
+      title={tr("Home", "Início")}
       layout="home"
       slots={{
         top: (
@@ -89,10 +90,10 @@ export function HomeSkeleton({ stats = DASHBOARD_DEFAULT }: { stats?: DashboardK
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 xl:col-start-2 xl:row-start-1 xl:grid-cols-1 xl:gap-4">
-                <SectionShell variant="card" title="Health Monitor" info={false} href="/health/monitor" level={2}>
+                <SectionShell variant="card" title={tr("Health Monitor", "Monitor de saúde")} info={false} href="/health/monitor" level={2}>
                   <MonitorLineSkeleton />
                 </SectionShell>
-                <SectionShell variant="card" title="Stress Monitor" info={false} href="/health/stress" level={2}>
+                <SectionShell variant="card" title={tr("Stress Monitor", "Monitor de estresse")} info={false} href="/health/stress" level={2}>
                   <MonitorLineSkeleton />
                 </SectionShell>
               </div>
@@ -102,17 +103,17 @@ export function HomeSkeleton({ stats = DASHBOARD_DEFAULT }: { stats?: DashboardK
         main: (
           <SectionShell
             variant="section"
-            title="My Day"
+            title={tr("My Day", "Meu dia")}
             className="xl:flex xl:h-full xl:flex-col"
             action={<span aria-hidden className="block size-[34px] rounded-[10px] bg-foreground/90" />}
           >
             <div className="flex flex-col gap-3 xl:flex-1 xl:gap-4">
               <BannerSkeleton />
-              <SectionShell variant="card" title="Today’s activities" action={ICON_SLOT}>
+              <SectionShell variant="card" title={tr("Today’s activities", "Atividades de hoje")} action={ICON_SLOT}>
                 <TimelineSkeleton />
                 <Skeleton className="mt-3 h-12 rounded-xl" />
               </SectionShell>
-              <SectionShell variant="card" title="My journal" action={ICON_SLOT}>
+              <SectionShell variant="card" title={tr("My journal", "Meu diário")} action={ICON_SLOT}>
                 <div className="grid grid-cols-7 pt-1">
                   {rows(7, () => (
                     <div className="flex min-h-16 flex-col items-center justify-center gap-2">
@@ -124,7 +125,7 @@ export function HomeSkeleton({ stats = DASHBOARD_DEFAULT }: { stats?: DashboardK
                 <Skeleton className="mt-3 h-12 rounded-xl" />
               </SectionShell>
               <div className="grid grid-cols-1 gap-3 xl:flex-1 xl:grid-cols-2 xl:gap-4">
-                <SectionShell variant="card" title="Energy Bank" info={ENERGY_INFO} fill>
+                <SectionShell variant="card" title={tr("Energy Bank", "Banco de Energia")} info={ENERGY_INFO} fill>
                   <div className="flex flex-1 flex-col gap-4">
                     <div className="space-y-1.5">
                       <TickScaleSkeleton />
@@ -138,7 +139,7 @@ export function HomeSkeleton({ stats = DASHBOARD_DEFAULT }: { stats?: DashboardK
                     <div className="space-y-1">{rows(3, () => <SkeletonText className={`${CAPTION} w-28`} />)}</div>
                   </div>
                 </SectionShell>
-                <SectionShell variant="card" title="Tonight’s sleep" info={TONIGHT_INFO} action={ICON_SLOT} fill>
+                <SectionShell variant="card" title={tr("Tonight’s sleep", "Sono desta noite")} info={TONIGHT_INFO} action={ICON_SLOT} fill>
                   <div className="flex flex-1 flex-col gap-4">
                     <Skeleton className="my-auto h-[60px] rounded-lg bg-muted/60" />
                     <Skeleton className="mt-auto h-11 rounded-lg" />
@@ -150,7 +151,7 @@ export function HomeSkeleton({ stats = DASHBOARD_DEFAULT }: { stats?: DashboardK
           </SectionShell>
         ),
         aside: (
-          <SectionShell variant="section" title="My Dashboard" aside="vs. 30-day average" action={ICON_SLOT} className="xl:flex xl:h-full xl:flex-col">
+          <SectionShell variant="section" title={tr("My Dashboard", "Meu painel")} aside="vs. 30-day average" action={ICON_SLOT} className="xl:flex xl:h-full xl:flex-col">
             <ul aria-hidden className="space-y-2">
               {stats.map((key) => (
                 <li key={key}>
@@ -158,7 +159,7 @@ export function HomeSkeleton({ stats = DASHBOARD_DEFAULT }: { stats?: DashboardK
                 </li>
               ))}
             </ul>
-            <SectionShell variant="card" title="Strain & recovery" info={STRAIN_RECOVERY_INFO} fill className="mt-3 xl:mt-4 xl:flex-1">
+            <SectionShell variant="card" title={tr("Strain & recovery", "Esforço e recuperação")} info={STRAIN_RECOVERY_INFO} fill className="mt-3 xl:mt-4 xl:flex-1">
               <div aria-hidden className="flex flex-1 flex-col">
                 <Skeleton className="h-[232px] rounded-lg bg-muted/60 xl:h-auto xl:min-h-[232px] xl:flex-1" />
               </div>
@@ -220,17 +221,17 @@ const statRows = (labels: string[]) => (
 export function RecoverySkeleton() {
   return (
     <DialDetail
-      title="Recovery"
+      title={tr("Recovery", "Recuperação")}
       dial="recovery"
       action
       summary={
         <>
-          {statRows(["Heart rate variability", "Resting heart rate", "Respiratory rate", "Sleep performance"])}
-          <p className={LEGEND}>Today vs. last 30 days</p>
+          {statRows([tr("Heart rate variability", "Variabilidade da frequência cardíaca"), tr("Resting heart rate", "Frequência cardíaca de repouso"), tr("Respiratory rate", "Frequência respiratória"), tr("Sleep performance", "Desempenho do sono")])}
+          <p className={LEGEND}>{tr("Today vs. last 30 days", "Hoje vs. últimos 30 dias")}</p>
         </>
       }
       primary={null}
-      footer={<WeeklyTrendsSkeleton titles={["Recovery", "Heart Rate Variability", "Resting Heart Rate", "Respiratory Rate", "Sleep Performance"]} />}
+      footer={<WeeklyTrendsSkeleton titles={[tr("Recovery", "Recuperação"), tr("Heart Rate Variability", "Variabilidade da frequência cardíaca"), tr("Resting Heart Rate", "Frequência cardíaca de repouso"), tr("Respiratory Rate", "Frequência respiratória"), tr("Sleep Performance", "Desempenho do sono")]} />}
       secondary={[]}
     />
   )
@@ -239,32 +240,32 @@ export function RecoverySkeleton() {
 export function StrainSkeleton() {
   return (
     <DialDetail
-      title="Strain"
+      title={tr("Strain", "Esforço")}
       dial="strain"
       action
       summary={
         <>
           {statRows(SUMMARY.Strain)}
-          <p className={LEGEND}>Today vs. prior 30 days</p>
+          <p className={LEGEND}>{tr("Today vs. prior 30 days", "Hoje vs. 30 dias anteriores")}</p>
         </>
       }
       primary={
-        <CardSkeleton title="Heart rate">
+        <CardSkeleton title={tr("Heart rate", "Frequência cardíaca")}>
           <IntradayHrChartSkeleton />
         </CardSkeleton>
       }
       secondary={[
-        <SectionShell key="zones" variant="card" title="Time in zones" level={2} fill className="xl:row-span-2">
+        <SectionShell key="zones" variant="card" title={tr("Time in zones", "Tempo nas zonas")} level={2} fill className="xl:row-span-2">
           <div aria-hidden>
             <ZoneBarsSkeleton variant="rows" />
             <SkeletonText className={`${CAPTION} mt-3 w-56`} />
           </div>
         </SectionShell>,
-        <CardSkeleton key="activities" title="Activities">
+        <CardSkeleton key="activities" title={tr("Activities", "Atividades")}>
           <TimelineSkeleton rows={1} />
         </CardSkeleton>,
       ]}
-      footer={<WeeklyTrendsSkeleton titles={["Strain", "HR Zones 1-3", "HR Zones 4-5", "Steps", "Calories", "Strength Activity Time"]} />}
+      footer={<WeeklyTrendsSkeleton titles={[tr("Strain", "Esforço"), tr("HR Zones 1-3", "Zonas de FC 1-3"), tr("HR Zones 4-5", "Zonas de FC 4-5"), tr("Steps", "Passos"), tr("Calories", "Calorias"), tr("Strength Activity Time", "Tempo de treino de força")]} />}
     />
   )
 }
@@ -291,7 +292,7 @@ function MeasureSkeleton({ rows: labels }: { rows: string[] }) {
 export function SleepSkeleton() {
   return (
     <DialDetail
-      title="Sleep"
+      title={tr("Sleep", "Sono")}
       dial="sleep"
       summary={
         <>
@@ -302,21 +303,21 @@ export function SleepSkeleton() {
         </>
       }
       primary={
-        <SectionShell variant="card" title="Last night’s sleep" aside="vs. prior 30 days" level={2}>
+        <SectionShell variant="card" title={tr("Last night’s sleep", "Sono da noite passada")} aside="vs. prior 30 days" level={2}>
           <SleepStagesSkeleton />
         </SectionShell>
       }
       secondary={[
-        <CardSkeleton key="need" title="Hours vs. needed">
-          <MeasureSkeleton rows={["Healthy minimum", "Recent strain", "Sleep debt"]} />
+        <CardSkeleton key="need" title={tr("Hours vs. needed", "Horas vs. necessárias")}>
+          <MeasureSkeleton rows={[tr("Healthy minimum", "Mínimo saudável"), tr("Recent strain", "Esforço recente"), tr("Sleep debt", "Dívida de sono")]} />
         </CardSkeleton>,
-        <CardSkeleton key="consistency" title="Sleep consistency">
+        <CardSkeleton key="consistency" title={tr("Sleep consistency", "Consistência do sono")}>
           <div className="space-y-4">
             <SkeletonText className="w-24 font-numeric text-4xl leading-10 font-bold" />
             <Skeleton className="h-52 rounded-lg" />
           </div>
         </CardSkeleton>,
-        <CardSkeleton key="efficiency" title="Sleep efficiency">
+        <CardSkeleton key="efficiency" title={tr("Sleep efficiency", "Eficiência do sono")}>
           <div aria-hidden className="space-y-4">
             <SkeletonText className="w-24 font-numeric text-4xl leading-10 font-bold" />
             <Skeleton className="h-3.5 rounded-[3px]" />
@@ -324,7 +325,7 @@ export function SleepSkeleton() {
             <SkeletonText className={`${LABEL} w-32`} />
           </div>
         </CardSkeleton>,
-        <SectionShell key="planner" variant="card" title="Tonight’s sleep" info={TONIGHT_INFO} level={2}>
+        <SectionShell key="planner" variant="card" title={tr("Tonight’s sleep", "Sono desta noite")} info={TONIGHT_INFO} level={2}>
           <div aria-hidden className="space-y-2">
             <div className="divide-y divide-border">
               {rows(4, () => (
@@ -341,7 +342,7 @@ export function SleepSkeleton() {
           </div>
         </SectionShell>,
       ]}
-      footer={<WeeklyTrendsSkeleton titles={["Sleep Performance", "Hours vs. Needed (hours)", "Hours vs. Needed (%)", "Restorative Sleep", "Sleep Consistency", "Time in Bed", "Sleep Efficiency"]} />}
+      footer={<WeeklyTrendsSkeleton titles={[tr("Sleep Performance", "Desempenho do sono"), tr("Hours vs. Needed (hours)", "Horas vs. necessárias (horas)"), tr("Hours vs. Needed (%)", "Horas vs. necessárias (%)"), tr("Restorative Sleep", "Sono restaurador"), tr("Sleep Consistency", "Consistência do sono"), tr("Time in Bed", "Tempo na cama"), tr("Sleep Efficiency", "Eficiência do sono")]} />}
     />
   )
 }
@@ -349,12 +350,12 @@ export function SleepSkeleton() {
 export function ActivitySkeleton() {
   return (
     <DetailShell loading
-      title="Activity"
+      title={tr("Activity", "Atividade")}
       align="start"
       hero={
         <div aria-hidden className="w-full space-y-2">
           <div className="flex flex-wrap items-end gap-x-10 gap-y-3">
-            {["Activity strain", "Duration"].map((l) => (
+            {[tr("Activity strain", "Esforço da atividade"), tr("Duration", "Duração")].map((l) => (
               <div key={l}>
                 <SkeletonText className="w-[3ch] font-numeric text-[34px] leading-none font-bold" />
                 <p className={`${LABEL} mt-2 text-foreground-secondary`}>{l}</p>
@@ -374,18 +375,18 @@ export function ActivitySkeleton() {
         </div>
       }
       secondary={[
-        <SectionShell key="stats" variant="section" title="Key statistics" aside="vs. 30-day average" level={2} className="flex flex-col">
+        <SectionShell key="stats" variant="section" title={tr("Key statistics", "Estatísticas principais")} aside="vs. 30-day average" level={2} className="flex flex-col">
           <div aria-hidden className="grid flex-1 grid-cols-2 gap-3 md:grid-cols-3 xl:gap-4">
             {[
-              ["avgHr", "Average heart rate"],
-              ["maxHr", "Max heart rate"],
-              ["calories", "Calories"],
+              ["avgHr", tr("Average heart rate", "Frequência cardíaca média")],
+              ["maxHr", tr("Max heart rate", "Frequência cardíaca máxima")],
+              ["calories", tr("Calories", "Calorias")],
             ].map(([k, l]) => (
               <KeyStatRowSkeleton key={k} variant="tile" label={l} icon={STAT_ICON[k]} />
             ))}
           </div>
         </SectionShell>,
-        <SectionShell key="hrr" variant="section" title="Heart rate recovery" level={2} className="flex flex-col">
+        <SectionShell key="hrr" variant="section" title={tr("Heart rate recovery", "Recuperação da frequência cardíaca")} level={2} className="flex flex-col">
           <Card aria-hidden className="flex-1 justify-center gap-0 p-4 xl:p-5">
             <Skeleton className="h-24 rounded-lg bg-muted/60" />
           </Card>

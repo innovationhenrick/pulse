@@ -5,6 +5,7 @@ import { KeyStatRowSkeleton } from "@/components/metrics/KeyStatRow"
 import { Card } from "@/components/ui/card"
 import { VitalTilesSkeleton } from "./VitalTiles"
 import { STAT_ICON } from "../../_lib/view"
+import { tr } from "@/lib/locale-context"
 
 /**
  * Health Monitor loading (spec §7.8, §5.19): the date row, the count hero, the five vital tiles with the note, then
@@ -13,7 +14,7 @@ import { STAT_ICON } from "../../_lib/view"
 export default function Loading() {
   return (
     <DetailShell loading
-      title="Health Monitor"
+      title={tr("Health Monitor", "Monitor de saúde")}
       dateSwitcher={{ mode: "day" }}
       hero={
         <div aria-hidden className="flex flex-col items-center gap-3 py-4 text-center">
@@ -23,16 +24,16 @@ export default function Loading() {
         </div>
       }
       primary={
-        <SectionShell variant="section" title="Last night’s readings">
+        <SectionShell variant="section" title={tr("Last night’s readings", "Medições da noite passada")}>
           <VitalTilesSkeleton />
         </SectionShell>
       }
       footer={
         <div className="grid grid-cols-1 items-start gap-8 xl:grid-cols-2 xl:gap-6">
-          <SectionShell variant="section" title="Heart rhythm">
+          <SectionShell variant="section" title={tr("Heart rhythm", "Ritmo cardíaco")}>
             <Skeleton className="h-14 w-full rounded-2xl" />
           </SectionShell>
-          <SectionShell variant="section" title="Measurements">
+          <SectionShell variant="section" title={tr("Measurements", "Medições")}>
             <Card className="gap-0 px-4 py-1 ring-0">
               <div className="divide-y divide-border">
                 <KeyStatRowSkeleton variant="row" label="Weight" icon={STAT_ICON.weight} />

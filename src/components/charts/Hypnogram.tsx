@@ -138,7 +138,7 @@ export function HypnogramChart({ night }: { night: HypnogramNight }) {
 export function Hypnogram({ data }: HypnogramProps) {
   const empty = (
     <div className="grid place-items-center">
-      <EmptyState body="No stage data for this sleep. Fitbit only stages sleeps longer than about 3 hours." />
+      <EmptyState body={tr("No stage data for this sleep. Fitbit only stages sleeps longer than about 3 hours.", "Sem dados de fases para este sono. O Fitbit só classifica fases em sonos de mais de cerca de 3 horas.")} />
     </div>
   )
   return (

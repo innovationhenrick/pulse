@@ -70,7 +70,7 @@ function Rows({ zones, note, noteLink }: { zones: ZoneRow[]; note?: string; note
       <div aria-hidden className="mb-2 flex items-baseline justify-between px-1">
         <span className={cn(LABEL, "flex items-baseline gap-1.5 text-muted-foreground", !typical && "invisible")}>
           <span className="size-2.5 self-center rounded-[2px] bg-(image:--pattern-hatch) ring-1 ring-border" />
-          Typical range
+          {tr("Typical range", "Faixa típica")}
         </span>
         <span className={cn(LABEL, "flex items-baseline gap-2 text-muted-foreground")}>
           Duration
@@ -196,7 +196,7 @@ export function ZoneBarsSkeleton({ variant }: { variant: "rows" | "stacked" }) {
         {["Zone 5", "Zone 4", "Zone 3", "Zone 2", "Zone 1", "Zone 0"].map((k) => (
           <div key={k} className="space-y-2 rounded-lg bg-secondary px-3 py-2.5">
             <div className="flex items-center gap-3">
-              <span className={LABEL}>{k}</span>
+              <span className={LABEL}>{tr(k, k.replace("Zone", "Zona"))}</span>
               <SkeletonText className={cn(LABEL, "w-20")} />
               <SkeletonText className="ml-auto w-[7ch] font-numeric text-lg leading-6 font-bold" />
             </div>

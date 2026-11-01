@@ -82,7 +82,7 @@ function Count({ count }: { count: MonitorVM["count"] }) {
         <span className="text-[0.55em] text-foreground-secondary">/{v?.total ?? 5}</span>
       </p>
       <p aria-hidden className="text-xs leading-4 font-bold tracking-[0.1em] uppercase">
-        Metrics within range
+        {tr("Metrics within range", "Métricas dentro da faixa")}
       </p>
       {chip && <StatusChip tone={chip.tone}>{chip.text()}</StatusChip>}
       {reason && <p className="max-w-[36ch] text-xs leading-4 font-medium text-muted-foreground">{reason.long}</p>}

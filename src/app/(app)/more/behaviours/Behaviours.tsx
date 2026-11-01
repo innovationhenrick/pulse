@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { BehaviorPicker, saveSelection, shownOf } from "./SelectBehaviors"
+import { tr } from "@/lib/locale-context"
 
 /**
  * More › Behaviours (U21, journal-behavior-picker-*): choose what the journal asks from the catalogue and your own behaviours,
@@ -44,7 +45,7 @@ export function Behaviours({ vm }: { vm: BehavioursVM }) {
     const e = await saveSelection(selected)
     setSaving(false)
     if (e) return void toast.error(e)
-    toast.success("Behaviours saved")
+    toast.success(tr("Behaviours saved", "Comportamentos salvos"))
     router.refresh()
   }
 
@@ -52,36 +53,36 @@ export function Behaviours({ vm }: { vm: BehavioursVM }) {
     e.preventDefault()
     const name = label.trim()
     if (!name) return
-    if (name.length > 32) return invalid("Use 32 characters or fewer.")
-    if (vm.tags.some((t) => t.label.toLowerCase() === name.toLowerCase())) return invalid("That behaviour already exists.")
+    if (name.length > 32) return invalid(tr("Use 32 characters or fewer.", "Use 32 caracteres ou menos."))
+    if (vm.tags.some((t) => t.label.toLowerCase() === name.toLowerCase())) return invalid(tr("That behaviour already exists.", "Esse comportamento já existe."))
     setAdding(true)
     const r = await addCustomTag({ label: name }).catch(() => ({ ok: false as const, error: "network" }))
     setAdding(false)
-    if (!r.ok) return invalid(r.error.startsWith("Tag already exists") ? "That behaviour already exists." : r.error.startsWith("Too many") ? "You’ve reached the behaviour limit." : "Couldn’t add it. Try again.")
+    if (!r.ok) return invalid(r.error.startsWith("Tag already exists") ? tr("That behaviour already exists.", "Esse comportamento já existe.") : r.error.startsWith("Too many") ? tr("You’ve reached the behaviour limit.", "Você atingiu o limite de comportamentos.") : tr("Couldn’t add it. Try again.", "Não foi possível adicionar. Tente de novo."))
     setAddError(null)
     setLabel("")
-    toast.success(`${name} added`)
+    toast.success(tr(`${name} added`, `${name} adicionado`))
     router.refresh()
   }
 
   return (
     <div className="mx-auto flex w-full max-w-[640px] flex-col gap-6">
       <p className="max-w-[65ch] text-[15px] leading-[22px] text-pretty text-foreground-secondary">
-        Choose what your journal asks. A behaviour you leave out keeps its past answers, and they still count in your insights.
+        {tr("Choose what your journal asks. A behaviour you leave out keeps its past answers, and they still count in your insights.", "Escolha o que o seu diário pergunta. Um comportamento que você deixa de fora mantém as respostas passadas, e elas continuam valendo nos seus insights.")}
       </p>
       <BehaviorPicker tags={vm.tags} initial={initial} selected={selected} onChange={setSelected} />
       {/* Pinned over the list once something changed, clear of the round action at the phone's foot. */}
       {(dirty || saving) && (
         <div className="sticky bottom-[max(calc(env(safe-area-inset-bottom)+84px),96px)] z-10 animate-in fade-in-0 slide-in-from-bottom-2 duration-200 ease-out-expo md:bottom-6">
           <Button size="sheet" className="w-full shadow-lg" onClick={save} disabled={saving}>
-            {saving ? "Saving…" : "Save behaviours"}
+            {saving ? tr("Saving…", "Salvando…") : tr("Save behaviours", "Salvar comportamentos")}
           </Button>
         </div>
       )}
-      <SectionShell variant="card" level={2} title="Your own">
+      <SectionShell variant="card" level={2} title={tr("Your own", "Os seus")}>
         <form onSubmit={add} className="space-y-2" noValidate>
           <Label htmlFor="new-behaviour" className="text-[15px] leading-[22px] font-medium">
-            Add a behaviour
+            {tr("Add a behaviour", "Adicionar um comportamento")}
           </Label>
           <div className="flex gap-2">
             <Input
@@ -94,7 +95,7 @@ export function Behaviours({ vm }: { vm: BehavioursVM }) {
                 setLabel(e.target.value)
                 setAddError(null)
               }}
-              placeholder="e.g. Cold shower…"
+              placeholder={tr("e.g. Cold shower…", "ex.: Banho frio…")}
               autoComplete="off"
               maxLength={32}
               aria-invalid={!!addError}
@@ -102,8 +103,8 @@ export function Behaviours({ vm }: { vm: BehavioursVM }) {
               className="h-11 min-w-0 flex-1 text-base"
             />
             {/* "Add" fits beside the field on a phone; the name says what it adds (label in name). */}
-            <Button type="submit" variant="secondary" size="touch" disabled={adding || !label.trim()} aria-label={adding ? undefined : "Add behaviour"}>
-              {adding ? "Adding…" : "Add"}
+            <Button type="submit" variant="secondary" size="touch" disabled={adding || !label.trim()} aria-label={adding ? undefined : tr("Add behaviour", "Adicionar comportamento")}>
+              {adding ? tr("Adding…", "Adicionando…") : tr("Add", "Adicionar")}
             </Button>
           </div>
           {addError && (

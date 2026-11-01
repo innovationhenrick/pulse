@@ -22,8 +22,13 @@ import { CAPTION, hrSeries, statProps } from "../../_lib/view"
 import { ActivityMenu } from "./ActivityMenu"
 import { CoachGlance } from "./CoachGlance"
 import { WorkoutBanner } from "./WorkoutBanner"
+import { tr } from "@/lib/locale-context"
+import { getTranslations } from "next-intl/server"
 
-export const metadata = { title: "Activity", description: "Activity strain, heart rate, zones and recovery after the workout." }
+export async function generateMetadata() {
+  const t = await getTranslations("meta.activity")
+  return { title: t("title"), description: t("description") }
+}
 
 /** Activity `/activity/[id]` (spec §7.4). No date switcher; back falls back to that day's Strain. */
 export default async function ActivityPage({ params }: PageProps<"/activity/[id]">) {
@@ -65,22 +70,22 @@ export default async function ActivityPage({ params }: PageProps<"/activity/[id]
           <div className="space-y-6">
             <section aria-labelledby="hr-title">
               <h2 id="hr-title" className="sr-only">
-                Heart rate
+                {tr("Heart rate", "Frequência cardíaca")}
               </h2>
               <IntradayHrChart variant="activity" data={hrSeries(vm.hr, vm.maxHr)} />
             </section>
             <section aria-labelledby="zones-title">
               <h2 id="zones-title" className="sr-only">
-                Time in zones
+                {tr("Time in zones", "Tempo nas zonas")}
               </h2>
-              <ZoneBars variant="rows" data={vm.zones} note={vm.zoneNote} noteLink={{ label: "View heart-rate settings", href: HR_SETTINGS }} emptyCopy="No heart-rate zones for this activity." />
+              <ZoneBars variant="rows" data={vm.zones} note={vm.zoneNote} noteLink={{ label: tr("View heart-rate settings", "Ver ajustes de frequência cardíaca"), href: HR_SETTINGS }} emptyCopy={tr("No heart-rate zones for this activity.", "Sem zonas de frequência cardíaca para esta atividade.")} />
             </section>
           </div>
         )
       }
       secondary={[
         tiles.length > 0 && (
-          <SectionShell key="stats" variant="section" title="Key statistics" aside="vs. 30-day average" level={2} className={cn("flex flex-col", noHr && "xl:col-span-2")}>
+          <SectionShell key="stats" variant="section" title={tr("Key statistics", "Estatísticas principais")} aside={tr("vs. 30-day average", "vs. média de 30 dias")} level={2} className={cn("flex flex-col", noHr && "xl:col-span-2")}>
             {/* Phone: one scrolling row, the next tile peeking at the edge (activity-weightlifting-key-stats), bleeding to the edges. From md the
                 tiles wrap into a grid instead, so a half-width column never hides a tile behind a scrollbar-less scroll. */}
             <ul className="-mx-4 flex flex-1 snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] md:overflow-visible md:px-0 md:pb-0">
@@ -95,7 +100,7 @@ export default async function ActivityPage({ params }: PageProps<"/activity/[id]
         // A titled section like Key statistics beside it, so both columns carry a heading and their cards start and end
         // on one line on laptop (SYM8). Without heart rate there is nothing to recover from, and the notice says why.
         !noHr && (
-          <SectionShell key="hrr" variant="section" title="Heart rate recovery" level={2} className="flex flex-col">
+          <SectionShell key="hrr" variant="section" title={tr("Heart rate recovery", "Recuperação da frequência cardíaca")} level={2} className="flex flex-col">
             <Card className="flex-1 justify-center gap-0 p-4 xl:p-5">
               <HeartRateRecovery hrr={vm.hrr} />
             </Card>
@@ -103,7 +108,7 @@ export default async function ActivityPage({ params }: PageProps<"/activity/[id]
         ),
       ].filter(Boolean)}
       // With the coach set up, its pill takes the insight's place (activity-weightlifting-detail-top, spec §11 R44); without it, the templated insight.
-      footer={coach ? <CoachGlance id={vm.id} question={`Tell me about my ${vm.name.toLowerCase()} on ${dayLabel(vm.day, today).toLowerCase()}.`} /> : vm.insight && <InsightCard body={vm.insight} />}
+      footer={coach ? <CoachGlance id={vm.id} question={tr(`Tell me about my ${vm.name.toLowerCase()} on ${dayLabel(vm.day, today).toLowerCase()}.`, `Fale sobre o meu treino (${vm.name.toLowerCase()}) de ${dayLabel(vm.day, today).toLowerCase()}.`)} /> : vm.insight && <InsightCard body={vm.insight} />}
     />
   )
 }
@@ -121,9 +126,9 @@ function Hero({ vm }: { vm: ActivityVM }) {
   return (
     <div className="w-full space-y-2">
       <div className="flex flex-wrap items-end gap-x-10 gap-y-4">
-        <HeroStat label="Activity strain" value={formatValue("decimal1", s)} average={vm.strainAverage} format="decimal1" valueClass={s === null ? "text-muted-foreground" : "text-strain-text"} raw={s} />
+        <HeroStat label={tr("Activity strain", "Esforço da atividade")} value={formatValue("decimal1", s)} average={vm.strainAverage} format="decimal1" valueClass={s === null ? "text-muted-foreground" : "text-strain-text"} raw={s} />
         {vm.steps ? (
-          <HeroStat label="Activity steps" value={formatValue("grouped", vm.steps.value)} average={vm.steps.average} format="grouped" raw={vm.steps.value} />
+          <HeroStat label={tr("Activity steps", "Passos da atividade")} value={formatValue("grouped", vm.steps.value)} average={vm.steps.average} format="grouped" raw={vm.steps.value} />
         ) : (
           FEATURES.muscularLoad && vm.split && <CardioMuscular split={vm.split} />
         )}
@@ -142,7 +147,7 @@ function HeroStat({ label, value, raw, average, format, valueClass }: { label: s
         <span className={cn("font-numeric text-[34px] leading-none font-bold tabular-nums", valueClass)}>{value}</span>
         {dir && average !== null && (
           <StatusChip tone="neutral" delta={dir}>
-            <span className="sr-only">30-day average for this kind of activity </span>
+            <span className="sr-only">{tr("30-day average for this kind of activity", "Média de 30 dias para este tipo de atividade")} </span>
             {formatValue(format, average)}
           </StatusChip>
         )}
@@ -156,10 +161,10 @@ function HeroStat({ label, value, raw, average, format, valueClass }: { label: s
 function CardioMuscular({ split }: { split: NonNullable<ActivityVM["split"]> }) {
   const cardio = Math.round(split.cardio * 100)
   return (
-    <div className="min-w-48 flex-1" role="img" aria-label={`Cardio ${cardio} percent, muscular ${100 - cardio} percent`}>
+    <div className="min-w-48 flex-1" role="img" aria-label={tr(`Cardio ${cardio} percent, muscular ${100 - cardio} percent`, `Cardio ${cardio} por cento, muscular ${100 - cardio} por cento`)}>
       <p aria-hidden className={cn(STAT_LABEL, "flex justify-between")}>
-        <span>Cardio</span>
-        <span>Muscular</span>
+        <span>{tr("Cardio", "Cardio")}</span>
+        <span>{tr("Muscular", "Muscular")}</span>
       </p>
       <div aria-hidden className="relative mt-1.5 h-4 overflow-hidden rounded-[3px] bg-strain">
         <div className="absolute inset-y-0 left-0 bg-strain-deep" style={{ width: `${cardio}%` }} />
@@ -175,19 +180,19 @@ function CardioMuscular({ split }: { split: NonNullable<ActivityVM["split"]> }) 
 
 /** The one band-off notice: what is missing and why. */
 function noHrCopy(reason: string | null | undefined) {
-  const what = "heart rate, zones or strain for this activity"
-  return reason === "band_not_worn" ? `Band not worn, so there's no ${what}.` : `Too little heart-rate data to show ${what}.`
+  const what = tr("heart rate, zones or strain for this activity", "frequência cardíaca, zonas ou esforço desta atividade")
+  return reason === "band_not_worn" ? tr(`Band not worn, so there's no ${what}.`, `Pulseira não usada, então não há ${what}.`) : tr(`Too little heart-rate data to show ${what}.`, `Poucos dados de frequência cardíaca para mostrar ${what}.`)
 }
 
 function HeartRateRecovery({ hrr }: { hrr: ActivityVM["hrr"] }) {
-  if (hrr.value === null) return <ReasonPlaceholder reason="insufficient_hr_data" size="md" copy="Not enough heart-rate data after the workout." />
+  if (hrr.value === null) return <ReasonPlaceholder reason="insufficient_hr_data" size="md" copy={tr("Not enough heart-rate data after the workout.", "Dados de frequência cardíaca insuficientes depois do treino.")} />
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
         <ValueUnit value={formatValue("int", hrr.value.value)} unit="bpm" className="font-numeric text-4xl leading-10 font-bold tracking-[-0.01em]" />
         <StatusChip tone={hrr.value.tone}>{hrr.value.label}</StatusChip>
       </div>
-      <p className={`${CAPTION} max-w-[65ch] text-pretty`}>Drop in the first 60 seconds after you stopped. Above 20 is typical for fit adults.</p>
+      <p className={`${CAPTION} max-w-[65ch] text-pretty`}>{tr("Drop in the first 60 seconds after you stopped. Above 20 is typical for fit adults.", "Queda nos primeiros 60 segundos depois que você parou. Acima de 20 é típico em adultos condicionados.")}</p>
     </div>
   )
 }

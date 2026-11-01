@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { GLASS } from "@/components/shells/AppNav"
 import { panelStore } from "@/components/shells/panelStore"
 import { Button } from "@/components/ui/button"
+import { tr } from "@/lib/locale-context"
 
 export type SectionId = "account" | "source" | "app" | "coach"
 export type SettingsSection = { id: SectionId; label: string; node: React.ReactNode }
@@ -70,18 +71,18 @@ export function SettingsLayout({ sections, initial = null }: { sections: Setting
   return (
     <div data-settings={open ? "open" : "closed"}>
       {open ? (
-        <aside data-fixed-panel aria-label="Settings sections" className={cn(GLASS, "fixed top-[calc(var(--inset-top)+12px)] bottom-3 left-[112px] z-30 hidden w-[272px] flex-col rounded-[28px] p-3 xl:flex")}>
+        <aside data-fixed-panel aria-label={tr("Settings sections", "Seções dos Ajustes")} className={cn(GLASS, "fixed top-[calc(var(--inset-top)+12px)] bottom-3 left-[112px] z-30 hidden w-[272px] flex-col rounded-[28px] p-3 xl:flex")}>
           <div className="flex h-14 shrink-0 items-center justify-between gap-1 pl-3">
-            <h2 className="text-[15px] leading-5 font-semibold">Settings</h2>
-            <Button variant="ghost" size="icon-lg" aria-label="Collapse sections" aria-expanded onClick={() => panel.set(false)} className={PANEL_BTN}>
+            <h2 className="text-[15px] leading-5 font-semibold">{tr("Settings", "Ajustes")}</h2>
+            <Button variant="ghost" size="icon-lg" aria-label={tr("Collapse sections", "Recolher seções")} aria-expanded onClick={() => panel.set(false)} className={PANEL_BTN}>
               <PanelLeftClose aria-hidden strokeWidth={1.6} className="size-[18px]" />
             </Button>
           </div>
           <ul className="flex flex-col gap-1">{sections.map((s) => item(s, false))}</ul>
         </aside>
       ) : (
-        <aside data-fixed-panel aria-label="Settings sections" className={cn(GLASS, "fixed top-[calc(var(--inset-top)+12px)] bottom-3 left-[112px] z-30 hidden w-16 flex-col items-center gap-1 rounded-[28px] py-3 xl:flex")}>
-          <Button variant="ghost" size="icon-touch" aria-label="Expand sections" aria-expanded={false} onClick={() => panel.set(true)} className={PANEL_BTN}>
+        <aside data-fixed-panel aria-label={tr("Settings sections", "Seções dos Ajustes")} className={cn(GLASS, "fixed top-[calc(var(--inset-top)+12px)] bottom-3 left-[112px] z-30 hidden w-16 flex-col items-center gap-1 rounded-[28px] py-3 xl:flex")}>
+          <Button variant="ghost" size="icon-touch" aria-label={tr("Expand sections", "Expandir seções")} aria-expanded={false} onClick={() => panel.set(true)} className={PANEL_BTN}>
             <PanelLeftOpen aria-hidden strokeWidth={1.6} />
           </Button>
           <div aria-hidden className="my-1 h-px w-8 bg-foreground/8" />

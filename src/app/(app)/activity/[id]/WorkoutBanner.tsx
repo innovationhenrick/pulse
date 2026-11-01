@@ -3,6 +3,7 @@
 import * as React from "react"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { tr } from "@/lib/locale-context"
 
 const KEY = "pulse:workout-banner-dismissed"
 const dismissed = () => {
@@ -33,14 +34,14 @@ export function WorkoutBanner() {
     } catch {}
   }
   return (
-    <aside aria-label="Get more from your workouts" className="relative rounded-2xl bg-linear-to-r from-insight-from to-insight-to p-px">
+    <aside aria-label={tr("Get more from your workouts", "Aproveite mais os seus treinos")} className="relative rounded-2xl bg-linear-to-r from-insight-from to-insight-to p-px">
       <div className="rounded-[15px] bg-card p-4 pr-12">
-        <p className="text-[17px] leading-6 font-semibold">Get more from your workouts</p>
+        <p className="text-[17px] leading-6 font-semibold">{tr("Get more from your workouts", "Aproveite mais os seus treinos")}</p>
         <p className="mt-1 text-[15px] leading-[22px] text-pretty text-foreground-secondary">
-          Strain counts your heart rate. Log your sets and Pulse adds the muscular load too.
+          {tr("Strain counts your heart rate. Log your sets and Pulse adds the muscular load too.", "O Esforço conta a sua frequência cardíaca. Registre suas séries e o Pulse soma também a carga muscular.")}
         </p>
       </div>
-      <Button variant="ghost" size="icon-touch" aria-label="Dismiss" onClick={close} className="absolute top-1 right-1">
+      <Button variant="ghost" size="icon-touch" aria-label={tr("Dismiss", "Dispensar")} onClick={close} className="absolute top-1 right-1">
         <X aria-hidden strokeWidth={2} className="size-5" />
       </Button>
     </aside>

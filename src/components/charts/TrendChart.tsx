@@ -251,7 +251,7 @@ function Trend({ points, p }: { points: TrendPoint[]; p: TrendChartProps }) {
 
       {values.length === 0 ? (
         <div className="grid h-[200px] place-items-center">
-          <EmptyState body="No data in this range yet." />
+          <EmptyState body={tr("No data in this range yet.", "Ainda sem dados neste período.")} />
         </div>
       ) : (
         <ChartFigure summary={summary} config={{ value: { label: p.label, color: colorFor(p.colorBy, avg ?? 0) } }} className="h-[200px]">
@@ -393,7 +393,7 @@ function StackLegend({ series, point, format }: { series: readonly TrendSeries[]
       {point?.value != null && !parts ? (
         <span className="inline-flex items-center gap-1.5">
           <span aria-hidden className="size-2 rounded-[2px] border border-dashed" style={{ borderColor: UNSPLIT }} />
-          No breakdown for this day
+          {tr("No breakdown for this day", "Sem detalhamento para este dia")}
         </span>
       ) : (
         [...series].reverse().map((s) => (
@@ -410,7 +410,7 @@ function StackLegend({ series, point, format }: { series: readonly TrendSeries[]
 
 export function TrendChart(p: TrendChartProps) {
   return (
-    <MetricState metric={p.data} skeleton={<TrendChartSkeleton ranges={p.ranges} day={p.headline === "day"} legend={!!p.stack} />} empty={<EmptyState body="No data in this range yet." />}>
+    <MetricState metric={p.data} skeleton={<TrendChartSkeleton ranges={p.ranges} day={p.headline === "day"} legend={!!p.stack} />} empty={<EmptyState body={tr("No data in this range yet.", "Ainda sem dados neste período.")} />}>
       {(points) => (
         <React.Suspense fallback={<TrendChartSkeleton ranges={p.ranges} day={p.headline === "day"} legend={!!p.stack} />}>
           <Trend points={points} p={p} />

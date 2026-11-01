@@ -4,7 +4,7 @@ import type { GoodDirection } from "./bands"
 import { EXTRA_METRICS, type ExtraKey } from "./extraMetrics"
 import type { FormatKey } from "./format"
 import { metricHref } from "./url"
-import { tr } from "./locale-context"
+import { lazy, tr } from "./locale-context"
 
 export const DASHBOARD_GROUPS = [
   { key: "recovery", get label() { return tr("Recovery & sleep", "Recuperação e sono") } },
@@ -64,14 +64,14 @@ const ALL: { key: DashboardKey; label: string; group: DashboardGroup }[] = [
   ...CORE,
   ...SCORED,
   STRESS,
-  ...BODY_METRICS.map((m) => ({ key: m.key, label: m.label, group: "body" as const })),
-  ...EXTRA_METRICS.map((m) => ({ key: m.key, label: m.label, group: m.group })),
+  ...BODY_METRICS.map((m) => ({ key: m.key, get label() { return m.label }, group: "body" as const })),
+  ...EXTRA_METRICS.map((m) => ({ key: m.key, get label() { return m.label }, group: m.group })),
 ]
 
 /** Every metric, in editor order: by group, then catalogue order within it. */
 export const DASHBOARD_METRICS = DASHBOARD_GROUPS.flatMap((g) => ALL.filter((m) => m.group === g.key))
 
-export const DASHBOARD_LABEL = Object.fromEntries(ALL.map((m) => [m.key, m.label])) as Record<DashboardKey, string>
+export const DASHBOARD_LABEL = lazy(() => Object.fromEntries(ALL.map((m) => [m.key, m.label]))) as Record<DashboardKey, string>
 
 export const isDashboardKey = (k: string): k is DashboardKey => Object.hasOwn(DASHBOARD_LABEL, k)
 

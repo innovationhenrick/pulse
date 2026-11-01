@@ -8,6 +8,7 @@ import { ScoreDialSkeleton } from "@/components/metrics/ScoreDial"
 import { DetailShell } from "@/components/shells/DetailShell"
 import { SectionShell } from "@/components/shells/SectionShell"
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton"
+import { tr } from "@/lib/locale-context"
 
 const DIALS = [
   ["sleep", "Avg sleep"],
@@ -54,7 +55,7 @@ export default function Loading() {
         </SectionShell>
       }
       secondary={[
-        <SectionShell key="avg" variant="card" title="Averages" className="xl:row-span-2" aside={<SkeletonText className={`${CAPTION} w-20`} />}>
+        <SectionShell key="avg" variant="card" title={tr("Averages", "Médias")} className="xl:row-span-2" aside={<SkeletonText className={`${CAPTION} w-20`} />}>
           <div aria-hidden className="divide-y divide-border">
             {AVERAGES.map((l) => (
               <KeyStatRowSkeleton key={l} variant="row" label={l} />

@@ -90,7 +90,9 @@ export const TREND_METRICS: readonly TrendMetric[] = [
   ...EXTRA_METRICS.map((m): TrendMetric => ({
     key: m.key,
     group: EXTRA_GROUP[m.key],
-    label: m.label,
+    get label() {
+      return m.label;
+    },
     ...("unit" in m && { unit: m.unit }),
     format: m.format,
     colorBy: "single",

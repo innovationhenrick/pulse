@@ -5,8 +5,11 @@ import { currentUser } from "@/server/auth"
 import { getDb } from "@/server/db"
 import { getProfile } from "@/server/profile"
 import { Onboarding } from "./Onboarding"
+import { getTranslations } from "next-intl/server"
 
-export const metadata: Metadata = { title: "Your profile" }
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getTranslations("meta.onboarding"))("title") }
+}
 
 /** First run `/onboarding` (U19): the (app) layout sends a signed-in user here until they have a profile. */
 export default async function OnboardingPage() {

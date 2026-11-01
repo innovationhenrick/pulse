@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { CAPTION, LABEL } from "./view"
 
 import type { HomeVM } from "@/server/queries/types"
+import { tr } from "@/lib/locale-context"
 
 type PlanVM = NonNullable<HomeVM["plan"]>
 
@@ -17,21 +18,21 @@ type PlanVM = NonNullable<HomeVM["plan"]>
 export function MyPlan({ plan, children }: { plan: PlanVM; children?: React.ReactNode }) {
   const pct = Math.round(plan.done * 100)
   return (
-    <SectionShell variant="section" title="My Plan">
+    <SectionShell variant="section" title={tr("My Plan", "Meu plano")}>
       <Collapsible className={cn(CARD_MATERIAL, "p-4 xl:p-5")}>
         <CollapsibleTrigger className="group/plan flex w-full items-start justify-between gap-3 rounded-md text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
           <span className="min-w-0">
             <span className={cn(LABEL, "block")}>{plan.title}</span>
             <span className={cn(CAPTION, "block text-foreground-secondary")}>
-              <span className="font-numeric tabular-nums">{plan.daysLeft}</span> {plan.daysLeft === 1 ? "day" : "days"} left
+              <span className="font-numeric tabular-nums">{plan.daysLeft}</span> {tr(`${plan.daysLeft === 1 ? "day" : "days"} left`, `${plan.daysLeft === 1 ? "dia restante" : "dias restantes"}`)}
             </span>
           </span>
           <ChevronDown aria-hidden strokeWidth={1.75} className="size-5 shrink-0 text-foreground-secondary transition-[rotate] duration-200 ease-standard group-data-[state=open]/plan:rotate-180" />
         </CollapsibleTrigger>
         <p className={cn(LABEL, "mt-3")}>
-          <span className="font-numeric text-base tabular-nums">{pct}%</span> accomplished
+          <span className="font-numeric text-base tabular-nums">{pct}%</span> {tr("accomplished", "concluído")}
         </p>
-        <Progress value={pct} aria-label={`${plan.title}: ${pct}% accomplished`} className="mt-2 h-1 bg-dial-track" />
+        <Progress value={pct} aria-label={tr(`${plan.title}: ${pct}% accomplished`, `${plan.title}: ${pct}% concluído`)} className="mt-2 h-1 bg-dial-track" />
         {children && <CollapsibleContent className="pt-3">{children}</CollapsibleContent>}
       </Collapsible>
     </SectionShell>

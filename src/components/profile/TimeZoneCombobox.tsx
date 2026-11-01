@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Check, ChevronDown, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { tr } from "@/lib/locale-context"
 
 /** Old names some browsers still report (ICU keeps them canonical), mapped to today's names. */
 const RENAMED: Record<string, string> = {
@@ -152,7 +153,7 @@ export function TimeZoneCombobox({
           aria-activedescendant={open && matches[active] ? `${id}-opt-${matches[active].id}` : undefined}
           autoComplete="off"
           spellCheck={false}
-          placeholder={open || !value ? "Search city or GMT offset" : describeZone(value)}
+          placeholder={open || !value ? tr("Search city or GMT offset", "Buscar cidade ou fuso GMT") : describeZone(value)}
           value={open ? query : value ? describeZone(value) : ""}
           onFocus={() => !open && show(true)}
           onClick={() => !open && show(true)}
@@ -172,7 +173,7 @@ export function TimeZoneCombobox({
         <button
           type="button"
           tabIndex={-1}
-          aria-label={open ? "Close time zones" : "Show time zones"}
+          aria-label={open ? tr("Close time zones", "Fechar fusos horários") : tr("Show time zones", "Mostrar fusos horários")}
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => {
             show(!open)
@@ -188,11 +189,11 @@ export function TimeZoneCombobox({
           ref={list}
           id={listId}
           role="listbox"
-          aria-label="Time zones"
+          aria-label={tr("Time zones", "Fusos horários")}
           onMouseDown={(e) => e.preventDefault()}
           className="max-h-[152px] snap-y scroll-pt-1 overflow-y-auto overscroll-none rounded-xl bg-field p-1 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-top-1"
         >
-          {matches.length === 0 && <li className="px-3 py-3 text-[15px] leading-5 text-muted-foreground">No time zone matches “{query}”.</li>}
+          {matches.length === 0 && <li className="px-3 py-3 text-[15px] leading-5 text-muted-foreground">{tr(`No time zone matches “${query}”.`, `Nenhum fuso horário corresponde a “${query}”.`)}</li>}
           {matches.map((z, i) => {
             const selected = z.id === canonicalZone(value)
             return (

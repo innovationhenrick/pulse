@@ -18,6 +18,8 @@ import { ScoreDial } from "@/components/metrics/ScoreDial"
 import { DetailShell } from "@/components/shells/DetailShell"
 import { EmptyState } from "@/components/shells/EmptyState"
 import { SectionShell } from "@/components/shells/SectionShell"
+import { tr } from "@/lib/locale-context"
+import { getTranslations } from "next-intl/server"
 
 const WEEK = /^\d{4}-W\d{2}$/
 const MONTH = /^\d{4}-\d{2}$/
@@ -28,7 +30,8 @@ const SEGMENT =
 
 export async function generateMetadata({ params }: PageProps<"/reports/[period]">) {
   const { period } = await params
-  return { title: `${WEEK.test(period) ? "Weekly" : "Monthly"} report` }
+  await getTranslations("meta")
+  return { title: WEEK.test(period) ? tr("Weekly report", "Relatório semanal") : tr("Monthly report", "Relatório mensal") }
 }
 
 const FORMAT: Record<string, { format: FormatKey; unit?: string; scale?: number }> = {
@@ -52,7 +55,7 @@ function PeriodSwitcher({ vm }: { vm: ReportVM }) {
   const unit = vm.kind
   const step = (to: string | null, dir: "prev" | "next") => {
     const Icon = dir === "prev" ? ChevronLeft : ChevronRight
-    const label = `${dir === "prev" ? "Previous" : "Next"} ${unit}`
+    const label = unit === "week" ? (dir === "prev" ? tr("Previous week", "Semana anterior") : tr("Next week", "Próxima semana")) : dir === "prev" ? tr("Previous month", "Mês anterior") : tr("Next month", "Próximo mês")
     return to ? (
       <Link href={`/reports/${to}`} replace className={STEP} aria-label={label}>
         <Icon aria-hidden className="size-[18px]" strokeWidth={2} />
@@ -88,15 +91,15 @@ function KindToggle({ kind, week, month }: { kind: "week" | "month"; week: strin
       <span className={cn(SEGMENT, "text-muted-foreground opacity-40")}>{label}</span>
     )
   return (
-    <nav aria-label="Report period" className="inline-flex gap-0.5 rounded-lg bg-muted p-0.5">
-      {item("week", "Week", week)}
-      {item("month", "Month", month)}
+    <nav aria-label={tr("Report period", "Período do relatório")} className="inline-flex gap-0.5 rounded-lg bg-muted p-0.5">
+      {item("week", tr("Week", "Semana"), week)}
+      {item("month", tr("Month", "Mês"), month)}
     </nav>
   )
 }
 
 function Dials({ vm }: { vm: ReportVM }) {
-  const word = vm.kind === "week" ? "last week" : "last month"
+  const word = vm.kind === "week" ? tr("last week", "a semana passada") : tr("last month", "o mês passado")
   return (
     <div className="flex w-full items-start justify-center gap-5 sm:gap-8">
       {vm.dials.map((dl) => {
@@ -132,7 +135,7 @@ function Averages({ stats, word }: { stats: KeyStat[]; word: string }) {
             unit={f.unit}
             format={f.format}
             average={s.average === null ? null : s.average * k}
-            averageLabel={`${word}'s average`}
+            averageLabel={tr(`${word}'s average`, `média d${word}`)}
             direction={s.direction}
           />
         )
@@ -149,7 +152,7 @@ export default async function ReportPage({ params }: PageProps<"/reports/[period
   const ctx = await userCtx()
   const today = todayOf(ctx)
   const vm = await getReport(period, ctx)
-  const title = isWeek ? "Weekly report" : "Monthly report"
+  const title = isWeek ? tr("Weekly report", "Relatório semanal") : tr("Monthly report", "Relatório mensal")
 
   if (!vm) {
     const latest = await latestReport(ctx, isWeek ? "week" : "month")
@@ -158,15 +161,15 @@ export default async function ReportPage({ params }: PageProps<"/reports/[period
         title={title}
         hero={
           <EmptyState
-            body={`No data for this ${isWeek ? "week" : "month"}.`}
-            action={latest ? { label: `Latest ${isWeek ? "week" : "month"}`, href: `/reports/${latest.period}` } : undefined}
+            body={tr(`No data for this ${isWeek ? "week" : "month"}.`, `Sem dados para ${isWeek ? "esta semana" : "este mês"}.`)}
+            action={latest ? { label: tr(`Latest ${isWeek ? "week" : "month"}`, isWeek ? "Última semana" : "Último mês"), href: `/reports/${latest.period}` } : undefined}
           />
         }
       />
     )
   }
 
-  const word = vm.kind === "week" ? "last week" : "last month"
+  const word = vm.kind === "week" ? tr("last week", "a semana passada") : tr("last month", "o mês passado")
   return (
     <DetailShell
       title={title}
@@ -182,11 +185,11 @@ export default async function ReportPage({ params }: PageProps<"/reports/[period
       }
       insight={vm.insight && <InsightCard body={vm.insight} />}
       primary={
-        <SectionShell variant="card" title="Recovery breakdown" aside={<span className={CAPTION}>Days</span>}>
+        <SectionShell variant="card" title={tr("Recovery breakdown", "Recuperação por faixa")} aside={<span className={CAPTION}>{tr("Days", "Dias")}</span>}>
           <ZoneBars
             variant="stacked"
             unit="days"
-            emptyCopy="No days with Recovery in this period."
+            emptyCopy={tr("No days with Recovery in this period.", "Nenhum dia com Recuperação neste período.")}
             data={vm.bands.value ? { ...vm.bands, value: vm.bands.value.map((b) => ({ ...b, color: b.color as DataColor })) } : null}
           />
         </SectionShell>
@@ -194,36 +197,36 @@ export default async function ReportPage({ params }: PageProps<"/reports/[period
       secondary={[
         // On laptop Averages spans two rows with Training balance and Best and worst beside it, and the journal effects
         // take the full row under them (U18 R-01). Without a best and worst day there is nothing to stack, so no span.
-        <SectionShell key="avg" variant="card" title="Averages" className={vm.bestWorst ? "xl:row-span-2" : undefined} aside={<span className={CAPTION}>vs. {word}</span>}>
+        <SectionShell key="avg" variant="card" title={tr("Averages", "Médias")} className={vm.bestWorst ? "xl:row-span-2" : undefined} aside={<span className={CAPTION}>vs. {word}</span>}>
           <Averages stats={vm.averages} word={word} />
         </SectionShell>,
-        <SectionShell key="balance" variant="card" title="Training balance">
+        <SectionShell key="balance" variant="card" title={tr("Training balance", "Equilíbrio de treino")}>
           {vm.trainingBalance.value ? (
             <div className="space-y-1">
               <p className={cn("font-numeric text-xl leading-6 font-bold", BALANCE_TONE[vm.trainingBalance.value.status])}>{vm.trainingBalance.value.word}</p>
-              <p className={cn(CAPTION, "tabular-nums")}>Training load (ACWR) {formatValue("decimal2", vm.trainingBalance.value.acwr)}</p>
+              <p className={cn(CAPTION, "tabular-nums")}>{tr("Training load (ACWR)", "Carga de treino (ACWR)")} {formatValue("decimal2", vm.trainingBalance.value.acwr)}</p>
               <p className="pt-2 text-[15px] leading-[22px] text-pretty text-foreground-secondary">{vm.trainingBalance.value.line}</p>
             </div>
           ) : (
-            <EmptyState body="Not enough data for a training balance." className="py-4" />
+            <EmptyState body={tr("Not enough data for a training balance.", "Dados insuficientes para um equilíbrio de treino.")} className="py-4" />
           )}
         </SectionShell>,
-        <SectionShell key="journal" variant="card" title="Top journal effects" className={vm.bestWorst ? "xl:col-span-2" : undefined} action={{ label: "View all", href: "/journal/insights" }}>
+        <SectionShell key="journal" variant="card" title={tr("Top journal effects", "Principais efeitos do diário")} className={vm.bestWorst ? "xl:col-span-2" : undefined} action={{ label: tr("View all", "Ver todos"), href: "/journal/insights" }}>
           {vm.topImpacts.length ? (
             <DriverList variant="impact" unit="%" data={{ value: vm.topImpacts.slice(0, 3), reason: null, provisional: false }} />
           ) : (
-            <EmptyState body="No journal effects yet." className="py-4" />
+            <EmptyState body={tr("No journal effects yet.", "Ainda sem efeitos do diário.")} className="py-4" />
           )}
         </SectionShell>,
         ...(vm.bestWorst
           ? [
-              <SectionShell key="best" variant="card" title="Best and worst day">
+              <SectionShell key="best" variant="card" title={tr("Best and worst day", "Melhor e pior dia")}>
                 <ul className="divide-y divide-border">
                   {vm.bestWorst.map((b) => (
                     <li key={b.label}>
                       <Link
                         href={dayHref("/", b.day, today)}
-                        aria-label={`${b.label}: ${formatDay(b.day, DAY.long)}, Recovery ${Math.round(b.recovery)} percent${b.strain === null ? "" : `, strain ${formatValue("decimal1", b.strain)}`}`}
+                        aria-label={tr(`${b.label}: ${formatDay(b.day, DAY.long)}, Recovery ${Math.round(b.recovery)} percent${b.strain === null ? "" : `, strain ${formatValue("decimal1", b.strain)}`}`, `${b.label}: ${formatDay(b.day, DAY.long)}, Recuperação ${Math.round(b.recovery)} por cento${b.strain === null ? "" : `, esforço ${formatValue("decimal1", b.strain)}`}`)}
                         className="-mx-2 flex min-h-16 items-center gap-3 rounded-lg px-2 py-2 transition-[background-color] duration-150 ease-standard outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-accent"
                       >
                         <span aria-hidden className="min-w-0 flex-1">
@@ -234,7 +237,7 @@ export default async function ReportPage({ params }: PageProps<"/reports/[period
                           <ScoreDial variant="recovery" size="sm" value={b.recovery} />
                           <span className="w-12 text-right">
                             <span className="block font-numeric text-xl leading-6 font-bold text-strain-text tabular-nums">{formatValue("decimal1", b.strain)}</span>
-                            <span className={CAPTION}>Strain</span>
+                            <span className={CAPTION}>{tr("Strain", "Esforço")}</span>
                           </span>
                         </span>
                         <ChevronRight aria-hidden className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.75} />

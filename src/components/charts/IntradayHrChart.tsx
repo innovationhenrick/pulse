@@ -234,7 +234,7 @@ function Chart({ hr, variant }: { hr: HrSeries; variant: "day" | "activity" }) {
 export function IntradayHrChart({ data, variant = "day" }: IntradayHrChartProps) {
   const empty = (
     <div className="grid place-items-center">
-      <EmptyState body="No heart-rate data for this day." />
+      <EmptyState body={tr("No heart-rate data for this day.", "Sem dados de frequência cardíaca para este dia.")} />
     </div>
   )
   return (

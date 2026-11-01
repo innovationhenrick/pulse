@@ -6,6 +6,7 @@ import { ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Mark } from "@/components/brand/Mark"
 import { GLASS } from "@/components/shells/AppNav"
+import { tr } from "@/lib/locale-context"
 
 /** Pulse's mark in an indigo ring, as the coach's own empty state draws it. */
 function CoachGlyph() {
@@ -52,12 +53,12 @@ export function CoachGlance({ id, question }: { id: string; question: string }) 
     <div className="sticky bottom-[max(calc(env(safe-area-inset-bottom)+12px),24px)] z-20 mr-[68px] md:mr-0">
       <Link
         href={`/coach?q=${encodeURIComponent(question)}`}
-        aria-label={s.text ? `Coach: ${s.text} Ask the coach about this workout.` : "Coach is analyzing this workout. Ask the coach about it."}
+        aria-label={s.text ? tr(`Coach: ${s.text} Ask the coach about this workout.`, `Coach: ${s.text} Pergunte ao coach sobre este treino.`) : tr("Coach is analyzing this workout. Ask the coach about it.", "O coach está analisando este treino. Pergunte a ele sobre isso.")}
         className={cn(GLASS, "flex min-h-14 items-center gap-3 rounded-[28px] py-2 pr-3 pl-2 outline-none transition-[scale] duration-150 ease-standard focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.98]")}
       >
         <CoachGlyph />
         <span aria-hidden className={cn("min-w-0 flex-1 text-[15px] leading-5 font-medium", s.text ? "line-clamp-2 text-pretty" : "animate-pulse text-foreground-secondary motion-reduce:animate-none")}>
-          {s.text ?? "Analyzing…"}
+          {s.text ?? tr("Analyzing…", "Analisando…")}
         </span>
         <ChevronUp aria-hidden strokeWidth={2} className="size-5 shrink-0 text-foreground-secondary" />
       </Link>

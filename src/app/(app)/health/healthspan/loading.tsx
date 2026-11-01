@@ -7,6 +7,7 @@ import { TickScaleSkeleton } from "@/components/metrics/TickScale"
 import { DetailShell } from "@/components/shells/DetailShell"
 import { SectionShell } from "@/components/shells/SectionShell"
 import { SkeletonText } from "@/components/ui/skeleton"
+import { tr } from "@/lib/locale-context"
 
 /** A contributor card: `n` healthspan rows sharing the card's height, as ContributorCard spreads them. */
 function Contributors({ title, n, className }: { title: string; n: number; className?: string }) {
@@ -42,7 +43,7 @@ export default function Loading() {
         </div>
       }
       summary={
-        <SectionShell variant="card" title="Pace of Aging">
+        <SectionShell variant="card" title={tr("Pace of Aging", "Ritmo de envelhecimento")}>
           <div aria-hidden>
             <TickScaleSkeleton variant="marker" />
             <SkeletonText className={`${CAPTION} mt-3 w-64`} />
@@ -52,14 +53,14 @@ export default function Loading() {
       }
       insight={<InsightCardSkeleton title />}
       primary={
-        <SectionShell variant="card" title={`${ageLabel()} history`}>
+        <SectionShell variant="card" title={tr(`${ageLabel()} history`, `Histórico da ${ageLabel()}`)}>
           <TrendChartSkeleton />
         </SectionShell>
       }
       secondary={[
-        <Contributors key="sleep" title="Sleep" n={2} />,
-        <Contributors key="strain" title="Strain" n={4} className="xl:row-span-2" />,
-        <Contributors key="fitness" title="Fitness" n={3} />,
+        <Contributors key="sleep" title={tr("Sleep", "Sono")} n={2} />,
+        <Contributors key="strain" title={tr("Strain", "Esforço")} n={4} className="xl:row-span-2" />,
+        <Contributors key="fitness" title={tr("Fitness", "Condicionamento")} n={3} />,
       ]}
     />
   )

@@ -134,7 +134,7 @@ export function StressChart({ data, variant }: StressChartProps) {
   const empty =
     variant === "full" ? (
       <div className="grid place-items-center">
-        <EmptyState body="No still minutes to score yet today. Stress is measured only while you are not moving." />
+        <EmptyState body={tr("No still minutes to score yet today. Stress is measured only while you are not moving.", "Ainda sem minutos de repouso para pontuar hoje. O estresse só é medido quando você não está se movendo.")} />
       </div>
     ) : (
       <p className="flex h-11 items-center text-xs leading-4 font-medium text-muted-foreground">{tr("No still minutes yet", "Ainda sem minutos de repouso")}</p>

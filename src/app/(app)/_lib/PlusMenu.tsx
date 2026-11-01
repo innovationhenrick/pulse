@@ -9,6 +9,7 @@ import { InfoDialogContent } from "@/components/shells/InfoDialog"
 import { openSheet } from "@/components/shells/SheetTrigger"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, MENU_ITEM, MENU_PANEL } from "@/components/ui/dropdown-menu"
 import { ADD_ACTIVITY_INFO } from "./info"
+import { tr } from "@/lib/locale-context"
 
 type Entry = { key: string; label: string; icon: LucideIcon; shown: boolean; onSelect: () => void }
 
@@ -23,11 +24,11 @@ const GLYPH =
 export function PlusMenu({ label }: { label: string }) {
   const [info, setInfo] = React.useState(false)
   const entries: Entry[] = [
-    { key: "start", label: "Start activity", icon: Timer, shown: FEATURES.startActivity, onSelect: () => openSheet("start-activity") },
-    { key: "add", label: "Add activity", icon: Plus, shown: true, onSelect: () => (FEATURES.logActivity ? openSheet("add-activity") : setInfo(true)) },
-    { key: "strength", label: "Strength trainer", icon: Dumbbell, shown: FEATURES.strengthTrainer, onSelect: () => openSheet("strength") },
-    { key: "journal", label: "Complete your journal", icon: NotebookPen, shown: true, onSelect: () => openSheet("checkin") },
-    { key: "live", label: "Share live", icon: Camera, shown: FEATURES.liveShare, onSelect: () => openSheet("live") },
+    { key: "start", label: tr("Start activity", "Iniciar atividade"), icon: Timer, shown: FEATURES.startActivity, onSelect: () => openSheet("start-activity") },
+    { key: "add", label: tr("Add activity", "Adicionar atividade"), icon: Plus, shown: true, onSelect: () => (FEATURES.logActivity ? openSheet("add-activity") : setInfo(true)) },
+    { key: "strength", label: tr("Strength trainer", "Treinador de força"), icon: Dumbbell, shown: FEATURES.strengthTrainer, onSelect: () => openSheet("strength") },
+    { key: "journal", label: tr("Complete your journal", "Complete seu diário"), icon: NotebookPen, shown: true, onSelect: () => openSheet("checkin") },
+    { key: "live", label: tr("Share live", "Compartilhar ao vivo"), icon: Camera, shown: FEATURES.liveShare, onSelect: () => openSheet("live") },
   ]
 
   return (

@@ -25,6 +25,8 @@ import {
 } from "./common";
 import { TREND_METRICS } from "./trends";
 import type { GoodDirection, KeyStat, Metric } from "./types";
+import { metricText } from "./metricPt"
+import { tr } from "@/lib/locale-context"
 
 export type VitalDetailKey = "hrv" | "rhr" | "resp" | "spo2" | "skin";
 export type DetailKey = "steps" | "calories" | VitalDetailKey | BodyKey | ExtraKey;
@@ -167,7 +169,7 @@ export type MetricDetailVM = {
 const SPAN = RANGE_DAYS["1y"];
 const DAY_FROM = 7 * 60;
 const DAY_TO = 22 * 60;
-const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const weekdays = () => [1, 2, 3, 4, 5, 6, 7].map((d) => formatDay(`2026-01-${String(d + 4).padStart(2, "0")}`, { weekday: "short" }));
 
 export async function getMetricDetail(key: DetailKey, day: string, ctx: QueryCtx): Promise<MetricDetailVM> {
   const m = defOf(key);
@@ -205,8 +207,8 @@ export async function getMetricDetail(key: DetailKey, day: string, ctx: QueryCtx
     format: m.format,
     direction: m.direction,
     group: m.group,
-    about: m.about,
-    source: SOURCE[m.group],
+    about: metricText(m.about),
+    source: metricText(SOURCE[m.group]),
     day,
     today,
     value: value === null ? none(detailReason(key, rows.get(day), isToday)) : ok(value),
@@ -326,7 +328,7 @@ const BUILD: Record<Exclude<SectionKind, "outliers">, (s: SectionCtx, key: Detai
       sums[w].n++;
     }
     if (sums.every((x) => !x.n)) return null;
-    return { kind: "weekday", weeks: 12, days: sums.map((x, i) => ({ label: WEEKDAYS[i], value: x.n ? x.sum / x.n : null })) };
+    return { kind: "weekday", weeks: 12, days: sums.map((x, i) => ({ label: weekdays()[i], value: x.n ? x.sum / x.n : null })) };
   },
 
   weekly: (s) => {
@@ -355,13 +357,13 @@ const BUILD: Record<Exclude<SectionKind, "outliers">, (s: SectionCtx, key: Detai
     rows:
       key === "azm"
         ? [
-            stat(s, "zones13", "Light and moderate zones", (r) => r.metrics?.lightModerateMin, "up"),
-            stat(s, "zones45", "Vigorous and peak zones", (r) => r.metrics?.vigorousPeakMin, "up"),
+            stat(s, "zones13", tr("Light and moderate zones", "Zonas leve e moderada"), (r) => r.metrics?.lightModerateMin, "up"),
+            stat(s, "zones45", tr("Vigorous and peak zones", "Zonas vigorosa e de pico"), (r) => r.metrics?.vigorousPeakMin, "up"),
           ]
         : [
-            stat(s, "active_minutes", "Active minutes", (r) => r.extra.active_minutes, "up"),
-            stat(s, "light_minutes", "Light activity", (r) => r.extra.light_minutes, "up"),
-            stat(s, "sedentary_minutes", "Sedentary time", (r) => r.extra.sedentary_minutes, "down"),
+            stat(s, "active_minutes", tr("Active minutes", "Minutos ativos"), (r) => r.extra.active_minutes, "up"),
+            stat(s, "light_minutes", tr("Light activity", "Atividade leve"), (r) => r.extra.light_minutes, "up"),
+            stat(s, "sedentary_minutes", tr("Sedentary time", "Tempo sedentário"), (r) => r.extra.sedentary_minutes, "down"),
           ],
   }),
 
@@ -386,12 +388,12 @@ const BUILD: Record<Exclude<SectionKind, "outliers">, (s: SectionCtx, key: Detai
     return {
       kind: "balance",
       rows: [
-        stat(s, "calories_in", "Eaten", (x) => x.extra.calories_in, "none", opts),
-        stat(s, "calories", "Burned", (x) => x.metrics?.calories, "none", opts),
+        stat(s, "calories_in", tr("Eaten", "Consumidas"), (x) => x.extra.calories_in, "none", opts),
+        stat(s, "calories", tr("Burned", "Gastas"), (x) => x.metrics?.calories, "none", opts),
         {
           key: "balance",
-          label: "Difference",
-          caption: "Eaten minus burned",
+          label: tr("Difference", "Diferença"),
+          caption: tr("Eaten minus burned", "Consumidas menos gastas"),
           metric: finite(eaten) && finite(burned) ? ok(eaten - burned) : none("no_data"),
           average: null,
           direction: "none",
@@ -406,20 +408,20 @@ const BUILD: Record<Exclude<SectionKind, "outliers">, (s: SectionCtx, key: Detai
     const r = s.rows.get(s.day);
     const g = { protein: r?.extra.protein, carbs: r?.extra.carbs, fat: r?.extra.fat };
     const kcal = (finite(g.protein) ? g.protein * 4 : 0) + (finite(g.carbs) ? g.carbs * 4 : 0) + (finite(g.fat) ? g.fat * 9 : 0);
-    const share = (v: number | undefined, per: number) => (finite(v) && kcal > 0 ? `${Math.round(((v * per) / kcal) * 100)}% of macro calories` : undefined);
+    const share = (v: number | undefined, per: number) => (finite(v) && kcal > 0 ? tr(`${Math.round(((v * per) / kcal) * 100)}% of macro calories`, `${Math.round(((v * per) / kcal) * 100)}% das calorias dos macronutrientes`) : undefined);
     const row = (key: "protein" | "carbs" | "fat", label: string, per: number): KeyStat => ({
       ...stat(s, key, label, (x) => x.extra[key], "none", { unit: "g", format: "int" }),
       ...(share(g[key], per) && { caption: share(g[key], per) }),
     });
-    const rows = [row("protein", "Protein", 4), row("carbs", "Carbohydrates", 4), row("fat", "Fat", 9)];
+    const rows = [row("protein", tr("Protein", "Proteína"), 4), row("carbs", tr("Carbohydrates", "Carboidratos"), 4), row("fat", tr("Fat", "Gordura"), 9)];
     // Protein's reference: 0.8 g per kg of the latest weight on or before the day.
     let weight: number | null = null;
     for (let k = 0; k < 2 * SPAN && weight === null; k++) weight = s.rows.get(addDays(s.day, -k))?.metrics?.weightKg ?? null;
     if (weight)
       rows.push({
         key: "protein_target",
-        label: "Protein reference",
-        caption: `${PROTEIN_G_PER_KG} g per kg at ${weight.toFixed(1)} kg`,
+        label: tr("Protein reference", "Referência de proteína"),
+        caption: tr(`${PROTEIN_G_PER_KG} g per kg at ${weight.toFixed(1)} kg`, `${PROTEIN_G_PER_KG} g por kg com ${weight.toFixed(1)} kg`),
         metric: ok(weight * PROTEIN_G_PER_KG),
         average: null,
         direction: "none",
@@ -442,8 +444,8 @@ const BUILD: Record<Exclude<SectionKind, "outliers">, (s: SectionCtx, key: Detai
       const before = latest && items.find((x) => x.day <= addDays(latest.day, -n));
       return {
         key: `change${n}`,
-        label: `Change over ${n} days`,
-        ...(before && { caption: `Since ${formatDay(before.day, DAY.monthDay)}` }),
+        label: tr(`Change over ${n} days`, `Variação em ${n} dias`),
+        ...(before && { caption: tr(`Since ${formatDay(before.day, DAY.monthDay)}`, `Desde ${formatDay(before.day, DAY.monthDay)}`) }),
         metric: before ? ok(latest.value - before.value) : none("no_data"),
         average: null,
         direction: "none",

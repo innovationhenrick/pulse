@@ -5,6 +5,7 @@ import { DetailShell } from "@/components/shells/DetailShell"
 import { SectionShell } from "@/components/shells/SectionShell"
 import { SkeletonText } from "@/components/ui/skeleton"
 import { METRIC_GRID } from "./sections"
+import { tr } from "@/lib/locale-context"
 
 /** Metric detail: the hero's label and value, the History card and its stats with their real labels (spec §5.19). */
 export default function Loading() {
@@ -22,7 +23,7 @@ export default function Loading() {
       }
       primary={
         <div aria-hidden className={METRIC_GRID}>
-          <SectionShell variant="card" level={2} title="History">
+          <SectionShell variant="card" level={2} title={tr("History", "Histórico")}>
             <TrendChartSkeleton chip ranges={RANGES} />
           </SectionShell>
           <SectionShell variant="card" level={2} title="Last 30 days">

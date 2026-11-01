@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { tr } from "@/lib/locale-context"
 
 type Tab = "all" | BehaviorCategory | "custom"
 type Item = { key: string; label: string; question: string; category: BehaviorCategory | "custom" }
@@ -34,15 +35,15 @@ export function BehaviorPicker({ tags, initial, selected, onChange }: { tags: Be
   const [tab, setTab] = React.useState<Tab>("all")
   const items = itemsOf(tags)
   const tabs: { key: Tab; label: string }[] = [
-    { key: "all", label: "All" },
+    { key: "all", label: tr("All", "Todos") },
     ...BEHAVIOR_CATEGORIES,
-    ...(items.some((i) => i.category === "custom") ? [{ key: "custom" as const, label: "Yours" }] : []),
+    ...(items.some((i) => i.category === "custom") ? [{ key: "custom" as const, label: tr("Yours", "Seus") }] : []),
   ]
   const q = query.trim().toLowerCase()
   const shown = items.filter((i) => (tab === "all" || i.category === tab) && (!q || i.label.toLowerCase().includes(q) || i.question.toLowerCase().includes(q)))
   const groups = [
-    { key: "selected", title: "Selected", rows: shown.filter((i) => initial.has(i.key)) },
-    { key: "not-selected", title: "Not selected", rows: shown.filter((i) => !initial.has(i.key)) },
+    { key: "selected", title: tr("Selected", "Selecionados"), rows: shown.filter((i) => initial.has(i.key)) },
+    { key: "not-selected", title: tr("Not selected", "Não selecionados"), rows: shown.filter((i) => !initial.has(i.key)) },
   ]
   const toggle = (key: string, on: boolean) => {
     const next = new Set(selected)
@@ -59,15 +60,15 @@ export function BehaviorPicker({ tags, initial, selected, onChange }: { tags: Be
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search for behaviours"
-          aria-label="Search for behaviours"
+          placeholder={tr("Search for behaviours", "Buscar comportamentos")}
+          aria-label={tr("Search for behaviours", "Buscar comportamentos")}
           autoComplete="off"
           className="h-12 rounded-xl bg-foreground/[0.06] pl-11 text-base"
         />
       </div>
       {/* Category tabs in one scrolling row, the chosen one underlined (journal-behavior-picker-all-top, journal-behavior-picker-lifestyle-top). */}
       <div className="mt-3 overflow-x-auto overscroll-x-contain [mask-image:linear-gradient(to_right,black_calc(100%-32px),transparent)] [scrollbar-width:none] max-md:-mx-4">
-        <ToggleGroup type="single" value={tab} onValueChange={(v) => v && setTab(v as Tab)} aria-label="Category" spacing={0} className="w-max gap-1 pr-8 max-md:px-4">
+        <ToggleGroup type="single" value={tab} onValueChange={(v) => v && setTab(v as Tab)} aria-label={tr("Category", "Categoria")} spacing={0} className="w-max gap-1 pr-8 max-md:px-4">
           {tabs.map((t) => (
             <ToggleGroupItem
               key={t.key}
@@ -79,7 +80,7 @@ export function BehaviorPicker({ tags, initial, selected, onChange }: { tags: Be
           ))}
         </ToggleGroup>
       </div>
-      {shown.length === 0 && <p className="py-8 text-center text-[15px] leading-[22px] text-foreground-secondary">No behaviours match “{query.trim()}”.</p>}
+      {shown.length === 0 && <p className="py-8 text-center text-[15px] leading-[22px] text-foreground-secondary">{tr(`No behaviours match “${query.trim()}”.`, `Nenhum comportamento corresponde a “${query.trim()}”.`)}</p>}
       {groups.map(
         (g) =>
           g.rows.length > 0 && (
@@ -118,7 +119,7 @@ export function BehaviorPicker({ tags, initial, selected, onChange }: { tags: Be
 /** Saves a selection; the error copy the two hosts show. */
 export async function saveSelection(selected: Set<string>): Promise<string | null> {
   const r = await saveBehaviors({ tags: [...selected] }).catch(() => ({ ok: false as const, error: "network" }))
-  return r.ok ? null : r.error.startsWith("Too many") ? "That’s more behaviours than Pulse can track. Choose fewer." : "Couldn’t save. Check your connection and try again."
+  return r.ok ? null : r.error.startsWith("Too many") ? tr("That’s more behaviours than Pulse can track. Choose fewer.", "São mais comportamentos do que o Pulse consegue acompanhar. Escolha menos.") : tr("Couldn’t save. Check your connection and try again.", "Não foi possível salvar. Verifique sua conexão e tente de novo.")
 }
 
 /** The Journal's pencil (journal-behavior-picker-all-top): Select Behaviors over the journal. `onSaved` reloads the journal's questions. */
@@ -145,12 +146,12 @@ export function SelectBehaviorsSheet({ open, onOpenChange, onSaved }: { open: bo
     loadBehaviours()
       .then((r) => {
         if (!live) return
-        if (!r.ok) return setError("Couldn’t load your behaviours.")
+        if (!r.ok) return setError(tr("Couldn’t load your behaviours.", "Não foi possível carregar seus comportamentos."))
         setTags(r.data.tags)
         setInitial(shownOf(r.data.tags))
         setSelected(shownOf(r.data.tags))
       })
-      .catch(() => live && setError("Couldn’t load your behaviours."))
+      .catch(() => live && setError(tr("Couldn’t load your behaviours.", "Não foi possível carregar seus comportamentos.")))
     return () => {
       live = false
     }
@@ -169,7 +170,7 @@ export function SelectBehaviorsSheet({ open, onOpenChange, onSaved }: { open: bo
     <ResponsiveSheet
       open={open}
       onOpenChange={onOpenChange}
-      title="Select behaviours"
+      title={tr("Select behaviours", "Selecionar comportamentos")}
       size="tall"
       footer={
         <>
@@ -179,7 +180,7 @@ export function SelectBehaviorsSheet({ open, onOpenChange, onSaved }: { open: bo
             </Alert>
           )}
           <Button size="sheet" variant="outline-pill" onClick={save} disabled={saving || !tags}>
-            {saving ? "Saving…" : "Save behaviours"}
+            {saving ? tr("Saving…", "Salvando…") : tr("Save behaviours", "Salvar comportamentos")}
           </Button>
         </>
       }
@@ -191,7 +192,7 @@ export function SelectBehaviorsSheet({ open, onOpenChange, onSaved }: { open: bo
           {error}
         </p>
       ) : (
-        <div role="status" aria-label="Loading" className="grid place-items-center py-16">
+        <div role="status" aria-label={tr("Loading", "Carregando")} className="grid place-items-center py-16">
           <LoaderCircle aria-hidden className="size-5 animate-spin text-muted-foreground motion-reduce:animate-none" strokeWidth={2} />
         </div>
       )}

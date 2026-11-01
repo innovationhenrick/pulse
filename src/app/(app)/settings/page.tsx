@@ -12,6 +12,8 @@ import { getSettings } from "@/server/queries/settings"
 import { DetailShell } from "@/components/shells/DetailShell"
 import { OAuthToast } from "./SettingsClient"
 import { SettingsView } from "./SettingsView"
+import { tr } from "@/lib/locale-context"
+import { getTranslations } from "next-intl/server"
 
 /** From 1280 px the app nav stays the 88 px rail (AppNav) and the sections panel sits beside it: the coach's frame (coach/page.tsx), keyed on `data-settings`. */
 const FRAME = "xl:-ml-[144px] xl:has-data-[settings=closed]:pl-[76px] xl:has-data-[settings=open]:pl-[284px]"
@@ -19,7 +21,9 @@ const FRAME = "xl:-ml-[144px] xl:has-data-[settings=closed]:pl-[76px] xl:has-dat
 /** The request time; relative sync ages are computed against it on the server. */
 const requestTime = () => Date.now()
 
-export const metadata = { title: "Settings" }
+export async function generateMetadata() {
+  return { title: (await getTranslations("meta.settings"))("title") }
+}
 
 /** Settings `/settings` (spec §7.14, journeys 9 and 10). Google's callback lands here with `?oauth=`. */
 export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
@@ -39,7 +43,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/setting
   return (
     <div className={FRAME}>
     <DetailShell
-      title="Settings"
+      title={tr("Settings", "Ajustes")}
       primary={
         <>
           <OAuthToast />

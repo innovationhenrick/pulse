@@ -1,10 +1,11 @@
 import { DetailShell } from "@/components/shells/DetailShell"
 import { SectionShell } from "@/components/shells/SectionShell"
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton"
+import { tr } from "@/lib/locale-context"
 
 const BODY = "text-[15px] leading-[22px]"
 const ROW = "flex min-h-13 items-center justify-between gap-3 py-2"
-const PROFILE = ["Birth date", "Age", "Sex", "Height", "Max heart rate", "Time zone"]
+const profileLabels = () => [tr("Birth date", "Data de nascimento"), tr("Age", "Idade"), tr("Sex", "Sexo"), tr("Height", "Altura"), tr("Max heart rate", "Frequência cardíaca máxima"), tr("Time zone", "Fuso horário")]
 
 /** A name and status line beside a 56 px disc (Account) or 44 px tile (Data source). */
 function Identity({ tile }: { tile: string }) {
@@ -31,14 +32,14 @@ export default function Loading() {
   return (
     <div className="xl:-ml-[144px] xl:pl-[284px]">
     <DetailShell loading
-      title="Settings"
+      title={tr("Settings", "Ajustes")}
       primary={
         <div aria-hidden className="mx-auto flex w-full max-w-[640px] flex-col gap-3 md:gap-4">
-          <SectionShell variant="card" level={2} title="Account">
+          <SectionShell variant="card" level={2} title={tr("Account", "Conta")}>
             <Identity tile="size-14 rounded-full" />
             <Buttons />
           </SectionShell>
-          <SectionShell variant="card" level={2} title="Data source">
+          <SectionShell variant="card" level={2} title={tr("Data source", "Fonte de dados")}>
             <Identity tile="size-11 rounded-xl" />
             {/* The status body (demo, not connected) and the Data types row (a connected source) take about the same
                 height, and a connected source shows only the row, so the skeleton shows the row. */}
@@ -48,9 +49,9 @@ export default function Loading() {
               <SkeletonText className="w-24 text-[13px] leading-[18px]" />
             </div>
           </SectionShell>
-          <SectionShell variant="card" level={2} title="Profile" action={<Skeleton className="h-5 w-14 rounded-full" />}>
+          <SectionShell variant="card" level={2} title={tr("Profile", "Perfil")} action={<Skeleton className="h-5 w-14 rounded-full" />}>
             <dl className="divide-y divide-border">
-              {PROFILE.map((k) => (
+              {profileLabels().map((k) => (
                 <div key={k} className={ROW}>
                   <dt className={BODY}>{k}</dt>
                   <SkeletonText className={`${BODY} w-24`} />
