@@ -4,12 +4,14 @@ import { isAdmin } from "@/server/admin"
 import { currentUser } from "@/server/auth"
 import { getConfig } from "@/server/config"
 import { getDb } from "@/server/db"
+import { requestLocale } from "@/server/locale"
 
 /**
  * The admin dashboard's gate, for the layout and every page: signed in (else sign-in), an admin of a Google
  * instance (else 404, so the dashboard's existence isn't advertised). Server Actions check again themselves.
  */
 export const adminGate = cache(async () => {
+  await requestLocale() // fills the request language before any page text goes through tr()
   const user = await currentUser()
   if (!user) redirect("/login")
   const db = getDb()

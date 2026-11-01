@@ -8,43 +8,44 @@ import type { ActionResult } from "@/server/actions/journal"
 import type { SignupMode } from "@/server/admin"
 import type { CoachMode } from "@/server/coach/store"
 import { cn } from "@/lib/utils"
+import { tr } from "@/lib/locale-context"
 import { Switch } from "@/components/ui/switch"
 import { BTN } from "./ui"
 
 /** Runs an action and toasts its error; a dropped connection is an error too, never a thrown error screen. */
 export const run = async <T,>(p: Promise<ActionResult<T>>): Promise<{ data: T } | null> => {
-  const r = await p.catch((): ActionResult<T> => ({ ok: false, error: "Couldn’t reach Pulse. Try again." }))
+  const r = await p.catch((): ActionResult<T> => ({ ok: false, error: tr("Couldn’t reach Pulse. Try again.", "Não foi possível conectar ao Pulse. Tente de novo.") }))
   if (r.ok) return r
   toast.error(r.error)
   return null
 }
 
-const CHOICES = {
+const choices = () => ({
   signup: {
-    label: "Who can create an account",
+    label: tr("Who can create an account", "Quem pode criar uma conta"),
     options: [
-      { value: "invite", title: "Invite only", body: "People need a link from Invites. Recommended." },
-      { value: "open", title: "Open to anyone", body: "Anyone who can reach this server can sign up." },
-      { value: "closed", title: "Closed", body: "No new accounts, not even with a link. Existing people still sign in." },
+      { value: "invite", title: tr("Invite only", "Somente por convite"), body: tr("People need a link from Invites. Recommended.", "É preciso um link de Convites. Recomendado.") },
+      { value: "open", title: tr("Open to anyone", "Aberto a todos"), body: tr("Anyone who can reach this server can sign up.", "Quem alcançar este servidor pode se cadastrar.") },
+      { value: "closed", title: tr("Closed", "Fechado"), body: tr("No new accounts, not even with a link. Existing people still sign in.", "Sem novas contas, nem com link. Quem já tem conta continua entrando.") },
     ],
     save: (v: string) => setSignupModeAction(v as SignupMode),
-    saved: "Sign-up updated.",
+    saved: tr("Sign-up updated.", "Cadastro atualizado."),
   },
   coach: {
-    label: "Who can use the AI coach",
+    label: tr("Who can use the AI coach", "Quem pode usar o coach de IA"),
     options: [
-      { value: "off", title: "Off", body: "Nobody sees the coach. The round P button opens the check-in." },
-      { value: "everyone", title: "Everyone", body: "Every account can set it up with its own provider key." },
-      { value: "chosen", title: "Chosen people", body: "Only people you switch on in People, plus owners." },
+      { value: "off", title: tr("Off", "Desligado"), body: tr("Nobody sees the coach. The round P button opens the check-in.", "Ninguém vê o coach. O botão redondo P abre o check-in.") },
+      { value: "everyone", title: tr("Everyone", "Todos"), body: tr("Every account can set it up with its own provider key.", "Toda conta pode configurá-lo com a própria chave de provedor.") },
+      { value: "chosen", title: tr("Chosen people", "Pessoas escolhidas"), body: tr("Only people you switch on in People, plus owners.", "Só as pessoas que você ativar em Pessoas, além dos donos.") },
     ],
     save: (v: string) => setCoachModeAction(v as CoachMode),
-    saved: "Coach access updated.",
+    saved: tr("Coach access updated.", "Acesso ao coach atualizado."),
   },
-}
+})
 
 /** A server-wide setting as a set of described choices; saved as soon as one is picked. */
-export function ModeChoice({ kind, value }: { kind: keyof typeof CHOICES; value: string }) {
-  const { label, options, save, saved } = CHOICES[kind]
+export function ModeChoice({ kind, value }: { kind: keyof ReturnType<typeof choices>; value: string }) {
+  const { label, options, save, saved } = choices()[kind]
   const [current, setCurrent] = React.useState(value)
   const [pending, start] = React.useTransition()
   const pick = (v: string) => {
@@ -93,7 +94,7 @@ export function CoachSwitch({ id, name, allowed }: { id: number; name: string; a
     <Switch
       checked={on}
       disabled={pending}
-      aria-label={`Coach for ${name}`}
+      aria-label={tr(`Coach for ${name}`, `Coach para ${name}`)}
       onCheckedChange={(v) => {
         setOn(v)
         start(async () => {
@@ -111,13 +112,13 @@ export function RevokeInvite({ id, label, expired }: { id: number; label: string
     <button
       type="button"
       disabled={pending}
-      aria-label={`${expired ? "Remove" : "Revoke"} ${label}`}
-      onClick={() => start(async () => void ((await run(revokeInviteAction(id))) && toast.success(expired ? "Invite removed." : "Invite revoked. Its link no longer works.")))}
+      aria-label={`${expired ? tr("Remove", "Remover") : tr("Revoke", "Revogar")} ${label}`}
+      onClick={() => start(async () => void ((await run(revokeInviteAction(id))) && toast.success(expired ? tr("Invite removed.", "Convite removido.") : tr("Invite revoked. Its link no longer works.", "Convite revogado. O link não funciona mais."))))}
       // Phones: icon only, a 40 px square at the end of the row (the label stays as the accessible name).
       className={cn(expired ? BTN.outline : BTN.danger, "max-md:size-10 max-md:px-0 max-md:[&_svg]:size-4")}
     >
       {expired ? <Trash2 aria-hidden /> : <Ban aria-hidden />}
-      <span className="max-md:sr-only">{pending ? (expired ? "Removing…" : "Revoking…") : expired ? "Remove" : "Revoke"}</span>
+      <span className="max-md:sr-only">{pending ? (expired ? tr("Removing…", "Removendo…") : tr("Revoking…", "Revogando…")) : expired ? tr("Remove", "Remover") : tr("Revoke", "Revogar")}</span>
     </button>
   )
 }

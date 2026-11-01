@@ -7,6 +7,7 @@ import { z } from "zod";
 import { requestUser } from "@/server/auth";
 import { answerApprovals, settlePending } from "@/server/coach/approvals";
 import { coachHistory } from "@/server/coach/history";
+import { requestLocale } from "@/server/locale";
 import { coachInstructions } from "@/server/coach/instructions";
 import { allowRequest, claimChat, coachModel, loadChat, saveChat } from "@/server/coach/store";
 import { coachTexts } from "@/server/coach/texts";
@@ -91,7 +92,7 @@ export async function POST(req: Request) {
   const history = await coachHistory(messages, m.model, texts, req.signal);
   const result = streamText({
     model: m.model,
-    instructions: coachInstructions(ctx, texts, m.instructions),
+    instructions: coachInstructions(ctx, texts, m.instructions, await requestLocale()),
     messages: history.modelMessages,
     tools,
     toolApproval: coachApproval,

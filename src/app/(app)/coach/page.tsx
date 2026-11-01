@@ -9,6 +9,8 @@ import { coachSuggestions } from "@/server/coach/suggestions"
 import { Coach, CoachBarActions } from "./Coach"
 import { CoachViewport } from "@/components/shells/CoachViewport"
 import { Consent, ProviderForm } from "./CoachSetup"
+import { tr } from "@/lib/locale-context"
+import { requestLocale } from "@/server/locale"
 
 export const metadata = { title: "Coach" }
 
@@ -16,6 +18,7 @@ const FRAME = "xl:-ml-[144px] xl:has-data-[chats=closed]:pl-[76px] xl:has-data-[
 
 export default async function CoachPage({ searchParams }: { searchParams: Promise<{ c?: string; q?: string; brief?: string }> }) {
   await connection()
+  await requestLocale()
   const ctx = await userCtx()
   const { db, userId, now, timeZone } = ctx
   if (!(await coachAccess(db, userId))) notFound()
@@ -32,8 +35,8 @@ export default async function CoachPage({ searchParams }: { searchParams: Promis
                 <Consent />
               ) : (
                 <div className="space-y-4">
-                  <h2 className="text-[22px] leading-7 font-bold text-balance">Connect your AI provider</h2>
-                  <p className="text-[15px] leading-[22px] text-pretty text-foreground-secondary">The coach runs on your own account with a provider, so you pay them directly for what you use.</p>
+                  <h2 className="text-[22px] leading-7 font-bold text-balance">{tr("Connect your AI provider", "Conecte seu provedor de IA")}</h2>
+                  <p className="text-[15px] leading-[22px] text-pretty text-foreground-secondary">{tr("The coach runs on your own account with a provider, so you pay them directly for what you use.", "O coach roda na sua própria conta em um provedor, então você paga diretamente a ele pelo que usar.")}</p>
                   <ProviderForm providers={providerOptions()} current={setup} />
                 </div>
               )}
@@ -54,7 +57,7 @@ export default async function CoachPage({ searchParams }: { searchParams: Promis
         contained
         title="Coach"
         action={<CoachBarActions chatCount={chatCount} chatOpen={(saved?.length ?? 0) > 0} />}
-        primary={<Coach key={id} id={id} initial={saved ?? []} groups={groups} next={next} prefill={brief === "1" && !saved ? "Today's brief" : (q ?? "").slice(0, 500)} auto={brief === "1" && !saved} suggestions={suggestions} />}
+        primary={<Coach key={id} id={id} initial={saved ?? []} groups={groups} next={next} prefill={brief === "1" && !saved ? tr("Today's brief", "Resumo de hoje") : (q ?? "").slice(0, 500)} auto={brief === "1" && !saved} suggestions={suggestions} />}
       />
     </CoachViewport>
   )

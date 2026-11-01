@@ -96,7 +96,7 @@ Pulse reads your data through the Google Health API, so it needs an OAuth client
 5. Under **Audience**, add yourself as a **test user**, again with the Google account your Fitbit uses.
 6. Go to **Credentials › Create Credentials › OAuth client ID**:
    - **Application type**: Web application, with any name.
-   - **Authorized redirect URIs**: `https://<your-host>/oauth/callback`
+   - **Authorized redirect URIs**: `https://<your-host>/oauth/callback`, and `https://<your-host>/api/coach/login/google/callback` if members should sign in to the coach with Google (Gemini on their own account). That also needs the **Generative Language API** enabled on the same Cloud project
 7. Click **Create** and copy the client ID and client secret for the next step.
 
 > While the app is in **Testing**, Google expires the grant every 7 days and you have to connect Google again.

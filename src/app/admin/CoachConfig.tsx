@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { saveCoachTextAction } from "@/server/actions/admin"
 import type { TextVersion } from "@/server/coach/texts"
 import { cn } from "@/lib/utils"
+import { tr } from "@/lib/locale-context"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { run } from "./AdminClient"
@@ -45,12 +46,12 @@ export function TextEditor({ field, versions, now, rows = 3, mono, hint }: { fie
           {field.label}
         </label>
         <span className="flex min-w-0 items-center gap-1">
-          {isDefault ? <Pill>Default</Pill> : <Pill tone="coach">Edited{latest ? ` ${relative(latest.createdAt * 1000, now).toLowerCase()}${latest.by ? ` by ${latest.by}` : ""}` : ""}</Pill>}
+          {isDefault ? <Pill>{tr("Default", "Padrão")}</Pill> : <Pill tone="coach">{tr("Edited", "Editado")}{latest ? ` ${relative(latest.createdAt * 1000, now).toLowerCase()}${latest.by ? tr(` by ${latest.by}`, ` por ${latest.by}`) : ""}` : ""}</Pill>}
           {versions.length > 0 && (
             <Button type="button" variant="ghost" onClick={() => setHistory(true)} className="h-8 gap-1.5 rounded-lg px-2 text-[13px] font-medium text-muted-foreground hover:text-foreground pointer-coarse:h-10">
               <History aria-hidden className="size-4" />
               {versions.length}
-              <span className="sr-only">{versions.length === 1 ? "version" : "versions"} of {field.label}</span>
+              <span className="sr-only">{tr(`${versions.length === 1 ? "version" : "versions"} of ${field.label}`, `${versions.length === 1 ? "versão" : "versões"} de ${field.label}`)}</span>
             </Button>
           )}
         </span>
@@ -77,19 +78,19 @@ export function TextEditor({ field, versions, now, rows = 3, mono, hint }: { fie
         </span>
         <span className="ml-auto flex items-center gap-1.5">
           {!isDefault && !dirty && (
-            <Button type="button" variant="ghost" disabled={pending} onClick={() => save(field.def, "Back to the default.")} className="h-9 gap-1.5 rounded-lg px-3 text-[13px] font-medium text-muted-foreground hover:text-foreground pointer-coarse:h-10">
+            <Button type="button" variant="ghost" disabled={pending} onClick={() => save(field.def, tr("Back to the default.", "De volta ao padrão."))} className="h-9 gap-1.5 rounded-lg px-3 text-[13px] font-medium text-muted-foreground hover:text-foreground pointer-coarse:h-10">
               <RotateCcw aria-hidden className="size-3.5" />
-              Reset to default
+              {tr("Reset to default", "Restaurar padrão")}
             </Button>
           )}
           {dirty && (
             <>
               <Button type="button" variant="ghost" disabled={pending} onClick={() => setValue(field.current)} className="h-9 rounded-lg px-3 text-[13px] font-medium pointer-coarse:h-10">
-                Discard
+                {tr("Discard", "Descartar")}
               </Button>
-              <Button type="button" disabled={pending || over || !value.trim()} onClick={() => save(value.trim(), "Saved. The coach uses it from the next message.")} className="h-9 rounded-lg px-4 text-[13px] font-semibold pointer-coarse:h-10">
+              <Button type="button" disabled={pending || over || !value.trim()} onClick={() => save(value.trim(), tr("Saved. The coach uses it from the next message.", "Salvo. O coach usa a partir da próxima mensagem."))} className="h-9 rounded-lg px-4 text-[13px] font-semibold pointer-coarse:h-10">
                 {pending && <LoaderCircle aria-hidden className="animate-spin motion-reduce:animate-none" />}
-                Save
+                {tr("Save", "Salvar")}
               </Button>
             </>
           )}
@@ -99,8 +100,8 @@ export function TextEditor({ field, versions, now, rows = 3, mono, hint }: { fie
       <Dialog open={history} onOpenChange={setHistory}>
         <DialogContent className="max-h-[85svh] overflow-y-auto ring-1 ring-border sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{field.label}: versions</DialogTitle>
-            <DialogDescription>Newest first. Restoring saves that text again as the newest version.</DialogDescription>
+            <DialogTitle>{tr(`${field.label}: versions`, `${field.label}: versões`)}</DialogTitle>
+            <DialogDescription>{tr("Newest first. Restoring saves that text again as the newest version.", "Mais recente primeiro. Restaurar salva esse texto de novo como a versão mais recente.")}</DialogDescription>
           </DialogHeader>
           <ol className="grid gap-3">
             {versions.map((v, i) => (
@@ -109,11 +110,11 @@ export function TextEditor({ field, versions, now, rows = 3, mono, hint }: { fie
                   <span className="text-[13px] text-muted-foreground">
                     {relative(v.createdAt * 1000, now)}
                     {v.by && ` · ${v.by}`}
-                    {i === 0 && " · in use"}
+                    {i === 0 && tr(" · in use", " · em uso")}
                   </span>
                   {i > 0 && v.body !== field.current && (
-                    <Button type="button" variant="secondary" disabled={pending} onClick={() => save(v.body, "Version restored.")} className="h-8 rounded-lg px-3 text-[13px] font-medium pointer-coarse:h-10">
-                      Restore
+                    <Button type="button" variant="secondary" disabled={pending} onClick={() => save(v.body, tr("Version restored.", "Versão restaurada."))} className="h-8 rounded-lg px-3 text-[13px] font-medium pointer-coarse:h-10">
+                      {tr("Restore", "Restaurar")}
                     </Button>
                   )}
                 </div>

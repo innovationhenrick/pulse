@@ -4,6 +4,7 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { Mark } from "@/components/brand/Mark"
 import { AdminBreadcrumb, AdminSidebar, AdminTabs } from "./AdminNav"
+import { tr } from "@/lib/locale-context"
 import { adminGate } from "./gate"
 
 export const metadata: Metadata = { title: { default: "Admin", template: "%s · Admin · Pulse" }, manifest: null }
@@ -23,7 +24,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   return (
     <div className="min-h-svh bg-background text-foreground">
       <a href="#admin-main" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground">
-        Skip to content
+        {tr("Skip to content", "Pular para o conteúdo")}
       </a>
 
       <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-border bg-card lg:flex">
@@ -33,7 +34,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           </span>
           <span className="min-w-0">
             <span className="block text-[14px] leading-5 font-semibold">Pulse</span>
-            <span className="block text-[12px] leading-4 text-muted-foreground">Admin dashboard</span>
+            <span className="block text-[12px] leading-4 text-muted-foreground">{tr("Admin dashboard", "Painel de administração")}</span>
           </span>
         </Link>
         <div className="flex-1 overflow-y-auto px-3 py-2">
@@ -59,7 +60,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             </span>
             <Link href="/" className={BACK}>
               <ArrowLeft aria-hidden className="size-4" strokeWidth={2} />
-              <span className="hidden sm:inline">Back to Pulse</span>
+              <span className="hidden sm:inline">{tr("Back to Pulse", "Voltar ao Pulse")}</span>
               <span className="sm:hidden">Pulse</span>
             </Link>
           </div>

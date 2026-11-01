@@ -2,12 +2,17 @@ import Link from "next/link"
 import { Bot, FileText, Wrench } from "lucide-react"
 import { coachTexts, DEFAULTS, maxFor, PLACEHOLDERS, textHistory, TOOL_DOCS, type TextVersion } from "@/server/coach/texts"
 import { cn } from "@/lib/utils"
+import { lazy, tr } from "@/lib/locale-context"
 import { CurrentInViewList } from "../AdminNav"
 import { TextEditor, type TextField } from "../CoachConfig"
+import { requestLocale } from "@/server/locale"
 import { adminGate } from "../gate"
 import { PageHeader, Panel } from "../ui"
 
-export const metadata = { title: "AI coach" }
+export const generateMetadata = async () => {
+  await requestLocale()
+  return { title: tr("AI coach", "Coach de IA") }
+}
 
 const requestTime = () => Date.now()
 
@@ -16,11 +21,11 @@ const requestTime = () => Date.now()
  * versioned in the database. Parameter types and what each tool reads are shown, not editable: they live in code.
  */
 /** The coach's prose texts, above the tools. */
-const PROSE = {
-  instructions: { label: "Instructions", description: "Keep the safety rules: no numbers without a tool, honest missing data, not medical advice.", rows: 18 },
-  summary_instructions: { label: "Conversation summaries", description: "Preserve user preferences and earlier decisions. Measurements must be fetched fresh.", rows: 18 },
-  workout_glance: { label: "Workout glance", description: "The one-line take on a workout, shown on its screen. The workout's numbers are added after it.", rows: 6 },
-} as const
+const PROSE = lazy(() => ({
+    instructions: { label: tr("Instructions", "Instruções"), description: tr("Keep the safety rules: no numbers without a tool, honest missing data, not medical advice.", "Mantenha as regras de segurança: nenhum número sem uma ferramenta, dados ausentes sempre declarados, nada de aconselhamento médico."), rows: 18 },
+    summary_instructions: { label: tr("Conversation summaries", "Resumos de conversa"), description: tr("Preserve user preferences and earlier decisions. Measurements must be fetched fresh.", "Preserve as preferências da pessoa e as decisões anteriores. As medições devem ser buscadas de novo."), rows: 18 },
+    workout_glance: { label: tr("Workout glance", "Resumo do treino"), description: tr("The one-line take on a workout, shown on its screen. The workout's numbers are added after it.", "A leitura em uma linha de um treino, mostrada na tela dele. Os números do treino vêm depois."), rows: 6 },
+  }))
 
 export default async function CoachConfigPage({ searchParams }: { searchParams: Promise<{ item?: string }> }) {
   const { db } = await adminGate()
@@ -42,16 +47,16 @@ export default async function CoachConfigPage({ searchParams }: { searchParams: 
 
   const items = [...Object.entries(PROSE).map(([id, p]) => ({ id, label: p.label, icon: FileText })), ...tools.map(([name]) => ({ id: name, label: name, icon: Wrench }))]
   const doc = selected in PROSE ? null : TOOL_DOCS[selected]
-  const prose = PROSE[selected as keyof typeof PROSE]
+  const proseItem = PROSE[selected as keyof typeof PROSE]
 
   return (
     <>
       <PageHeader
-        title="AI coach"
-        description="How the coach talks and how it describes its tools to the model. Edits apply from the next message for everyone, and every save is kept as a version. What each tool can read is fixed in code."
+        title={tr("AI coach", "Coach de IA")}
+        description={tr("How the coach talks and how it describes its tools to the model. Edits apply from the next message for everyone, and every save is kept as a version. What each tool can read is fixed in code.", "Como o coach fala e como descreve suas ferramentas ao modelo. As edições valem a partir da próxima mensagem para todos, e cada salvamento vira uma versão. O que cada ferramenta pode ler é fixo no código.")}
       />
       <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-6">
-        <nav aria-label="Coach settings" className="min-w-0 rounded-xl bg-card p-2 shadow-card ring-1 ring-border lg:sticky lg:top-20 lg:self-start">
+        <nav aria-label={tr("Coach settings", "Configurações do coach")} className="min-w-0 rounded-xl bg-card p-2 shadow-card ring-1 ring-border lg:sticky lg:top-20 lg:self-start">
           <CurrentInViewList className="flex scroll-px-2 gap-1 overflow-x-auto [scrollbar-width:none] max-lg:-m-2 max-lg:p-2 max-lg:[mask-image:linear-gradient(to_left,transparent,black_32px)] lg:grid lg:overflow-visible">
             {items.map(({ id, label, icon: Icon }, i) => {
               const on = id === selected
@@ -71,7 +76,7 @@ export default async function CoachConfigPage({ searchParams }: { searchParams: 
                     <span className="flex-1">{label}</span>
                     {edited(id) && (
                       <span className="size-1.5 rounded-full bg-coach">
-                        <span className="sr-only">(edited)</span>
+                        <span className="sr-only">{tr("(edited)", "(editado)")}</span>
                       </span>
                     )}
                   </Link>
@@ -82,12 +87,12 @@ export default async function CoachConfigPage({ searchParams }: { searchParams: 
         </nav>
 
         {doc === null ? (
-          <Panel className="min-w-0" title={prose.label} description={prose.description}>
-            {editor(field(selected, prose.label), {
-              rows: prose.rows,
+          <Panel className="min-w-0" title={proseItem.label} description={proseItem.description}>
+            {editor(field(selected, proseItem.label), {
+              rows: proseItem.rows,
               hint: (selected === "instructions" || selected === "summary_instructions") && (
                 <>
-                  Placeholders:{" "}
+                  {tr("Placeholders:", "Marcadores:")}{" "}
                   {Object.entries(PLACEHOLDERS).map(([k, v], i) => (
                     <span key={k}>
                       {i > 0 && ", "}
@@ -107,15 +112,15 @@ export default async function CoachConfigPage({ searchParams }: { searchParams: 
                 </span>
                 <div className="min-w-0">
                   <h2 className="font-mono text-[16px] leading-6 font-semibold">{selected}</h2>
-                  <p className="text-[13px] leading-[18px] text-muted-foreground">Read-only tool: looks up the signed-in person’s own data, nobody else’s.</p>
+                  <p className="text-[13px] leading-[18px] text-muted-foreground">{tr("Read-only tool: looks up the signed-in person’s own data, nobody else’s.", "Ferramenta somente de leitura: consulta os dados de quem está conectado, de mais ninguém.")}</p>
                 </div>
               </div>
-              <div className="mt-5">{editor(field(`tool.${selected}`, "Description"), { rows: 3 })}</div>
+              <div className="mt-5">{editor(field(`tool.${selected}`, tr("Description", "Descrição")), { rows: 3 })}</div>
             </Panel>
 
-            <Panel title="Parameters" description={Object.keys(doc.params).length ? "Types are fixed in code; the descriptions tell the model how to fill them in." : undefined}>
+            <Panel title={tr("Parameters", "Parâmetros")} description={Object.keys(doc.params).length ? tr("Types are fixed in code; the descriptions tell the model how to fill them in.", "Os tipos são fixos no código; as descrições dizem ao modelo como preenchê-los.") : undefined}>
               {Object.keys(doc.params).length === 0 ? (
-                <p className="text-[14px] text-muted-foreground">This tool takes no parameters.</p>
+                <p className="text-[14px] text-muted-foreground">{tr("This tool takes no parameters.", "Esta ferramenta não recebe parâmetros.")}</p>
               ) : (
                 <div className="grid gap-4">
                   {Object.entries(doc.params).map(([p, v]) => (
@@ -124,7 +129,7 @@ export default async function CoachConfigPage({ searchParams }: { searchParams: 
                         <code className="font-mono text-[14px] font-semibold">{p}</code>
                         <span className="rounded bg-foreground/[0.06] px-1.5 py-0.5 font-mono text-[12px] text-foreground-secondary">{v.type}</span>
                       </p>
-                      {editor(field(`tool.${selected}.${p}`, "Description"), { rows: 2 })}
+                      {editor(field(`tool.${selected}.${p}`, tr("Description", "Descrição")), { rows: 2 })}
                     </div>
                   ))}
                 </div>

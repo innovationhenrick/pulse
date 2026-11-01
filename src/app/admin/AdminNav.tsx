@@ -5,26 +5,26 @@ import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
 import { Bot, ChevronRight, LayoutDashboard, MailPlus, ShieldCheck, Users, type LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { tr } from "@/lib/locale-context"
 
 type Page = { href: string; label: string; icon: LucideIcon }
-export const ADMIN_GROUPS: { label: string; pages: Page[] }[] = [
-  { label: "General", pages: [{ href: "/admin", label: "Overview", icon: LayoutDashboard }] },
+const groups = (): { label: string; pages: Page[] }[] => [
+  { label: tr("General", "Geral"), pages: [{ href: "/admin", label: tr("Overview", "Visão geral"), icon: LayoutDashboard }] },
   {
-    label: "Manage",
+    label: tr("Manage", "Gerenciar"),
     pages: [
-      { href: "/admin/people", label: "People", icon: Users },
-      { href: "/admin/invites", label: "Invites", icon: MailPlus },
+      { href: "/admin/people", label: tr("People", "Pessoas"), icon: Users },
+      { href: "/admin/invites", label: tr("Invites", "Convites"), icon: MailPlus },
     ],
   },
   {
-    label: "Configure",
+    label: tr("Configure", "Configurar"),
     pages: [
-      { href: "/admin/access", label: "Access", icon: ShieldCheck },
-      { href: "/admin/coach", label: "AI coach", icon: Bot },
+      { href: "/admin/access", label: tr("Access", "Acesso"), icon: ShieldCheck },
+      { href: "/admin/coach", label: tr("AI coach", "Coach de IA"), icon: Bot },
     ],
   },
 ]
-const PAGES = ADMIN_GROUPS.flatMap((g) => g.pages)
 
 const isCurrent = (pathname: string, href: string) => (href === "/admin" ? pathname === href : pathname.startsWith(href))
 
@@ -33,7 +33,7 @@ export function AdminSidebar() {
   const pathname = usePathname()
   return (
     <nav aria-label="Admin" className="grid gap-5">
-      {ADMIN_GROUPS.map((g) => (
+      {groups().map((g) => (
         <div key={g.label}>
           <p className="px-2 pb-1.5 text-[12px] leading-4 font-medium text-muted-foreground">{g.label}</p>
           <ul className="grid gap-0.5">
@@ -65,9 +65,9 @@ export function AdminSidebar() {
 /** The top bar's trail: Admin › current page. */
 export function AdminBreadcrumb() {
   const pathname = usePathname()
-  const page = PAGES.find((p) => isCurrent(pathname, p.href))
+  const page = groups().flatMap((g) => g.pages).find((p) => isCurrent(pathname, p.href))
   return (
-    <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-[14px]">
+    <nav aria-label={tr("Breadcrumb", "Trilha de navegação")} className="flex min-w-0 items-center gap-1.5 text-[14px]">
       <Link href="/admin" className="inline-flex h-10 shrink-0 items-center text-muted-foreground outline-none hover:text-foreground focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring/50">
         Admin
       </Link>
@@ -104,7 +104,7 @@ export function AdminTabs() {
   return (
     <nav ref={ref} aria-label="Admin" className={cn("-mx-4 scroll-px-4 overflow-x-auto px-4 [scrollbar-width:none] sm:-mx-6 sm:scroll-px-6 sm:px-6", SCROLL_FADE)}>
       <ul className="flex w-max gap-1">
-        {PAGES.map(({ href, label }) => {
+        {groups().flatMap((g) => g.pages).map(({ href, label }) => {
           const on = isCurrent(pathname, href)
           return (
             <li key={href}>

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import type { LogOutput } from "@/server/coach/logTools"
 import { Button } from "@/components/ui/button"
 import { CARD_MATERIAL } from "@/components/ui/card"
+import { tr } from "@/lib/locale-context"
 
 type Input = Record<string, unknown> & { at?: string }
 
@@ -23,8 +24,8 @@ const ENTRY: Record<LogToolName, (i: Input) => [LogType, unknown]> = {
 export function logPreview(name: LogToolName, input: Input): { title: string; detail: string; when: string } {
   const [type, data] = ENTRY[name](input)
   const d = describeEntry(type, data)
-  const fat = name === "log_weight" && typeof input.fatPct === "number" ? `, ${input.fatPct}% body fat` : ""
-  const when = name === "log_period" ? `${input.start} to ${input.end}` : input.at ? input.at.replace("T", " at ") : "Now"
+  const fat = name === "log_weight" && typeof input.fatPct === "number" ? tr(`, ${input.fatPct}% body fat`, `, ${input.fatPct}% de gordura corporal`) : ""
+  const when = name === "log_period" ? tr(`${input.start} to ${input.end}`, `${input.start} a ${input.end}`) : input.at ? input.at.replace("T", tr(" at ", " às ")) : tr("Now", "Agora")
   return { title: d.title, detail: d.detail + fat, when }
 }
 
@@ -49,36 +50,36 @@ function Status({ tone, children }: { tone: "done" | "off" | "live"; children: R
  * answered by moving on), then what happened to it.
  */
 export function LogConfirm({ name, part, onAnswer }: { name: LogToolName; part: LogPart; onAnswer?: (id: string, approved: boolean) => void }) {
-  if (part.state === "input-streaming" || part.state === "input-available") return <Status tone="live">Preparing the entry…</Status>
+  if (part.state === "input-streaming" || part.state === "input-available") return <Status tone="live">{tr("Preparing the entry…", "Preparando o registro…")}</Status>
   const p = logPreview(name, (part.input ?? {}) as Input)
   const line = `${p.title} · ${p.detail}`
   if (part.state === "output-available") {
     const out = part.output as LogOutput
-    if (!out.logged) return <Status tone="off">Not logged: {out.error === RECONNECT ? "reconnect Google in Settings to allow logging." : out.error}</Status>
-    return <Status tone="done">Logged {line}</Status>
+    if (!out.logged) return <Status tone="off">{tr("Not logged: ", "Não registrado: ")}{out.error === RECONNECT ? tr("reconnect Google in Settings to allow logging.", "reconecte o Google em Ajustes para permitir registros.") : out.error}</Status>
+    return <Status tone="done">{tr(`Logged ${line}`, `Registrado: ${line}`)}</Status>
   }
-  if (part.state === "output-error") return <Status tone="off">Couldn’t log {line}.</Status>
-  if (part.state === "output-denied" || (part.state === "approval-responded" && !part.approval?.approved)) return <Status tone="off">Not logged: {line}</Status>
-  if (part.state === "approval-responded") return <Status tone="live">Logging {line}…</Status>
+  if (part.state === "output-error") return <Status tone="off">{tr(`Couldn’t log ${line}.`, `Não foi possível registrar ${line}.`)}</Status>
+  if (part.state === "output-denied" || (part.state === "approval-responded" && !part.approval?.approved)) return <Status tone="off">{tr(`Not logged: ${line}`, `Não registrado: ${line}`)}</Status>
+  if (part.state === "approval-responded") return <Status tone="live">{tr(`Logging ${line}…`, `Registrando ${line}…`)}</Status>
   if (part.state !== "approval-requested" || !part.approval) return null
   const { id } = part.approval
   return (
-    <div role="group" aria-label={`Log ${p.title}?`} className={cn(CARD_MATERIAL, "px-4 py-3")}>
-      <p className="text-[12px] leading-4 font-semibold text-foreground-secondary">Log this?</p>
+    <div role="group" aria-label={tr(`Log ${p.title}?`, `Registrar ${p.title}?`)} className={cn(CARD_MATERIAL, "px-4 py-3")}>
+      <p className="text-[12px] leading-4 font-semibold text-foreground-secondary">{tr("Log this?", "Registrar isto?")}</p>
       <p className="mt-1 text-[15px] leading-6 font-semibold text-foreground">{p.title}</p>
       <p className="text-[14px] leading-5 text-foreground-secondary">{p.detail}</p>
       <p className="mt-0.5 text-[12px] leading-4 text-muted-foreground">{p.when}</p>
       {onAnswer ? (
         <div className="mt-3 flex gap-2">
           <Button type="button" onClick={() => onAnswer(id, true)} className="h-9 rounded-full px-4 text-[13px] font-semibold pointer-coarse:h-10">
-            Log
+            {tr("Log", "Registrar")}
           </Button>
           <Button type="button" variant="ghost" onClick={() => onAnswer(id, false)} className="h-9 rounded-full px-4 text-[13px] font-semibold pointer-coarse:h-10">
-            Don’t log
+            {tr("Don’t log", "Não registrar")}
           </Button>
         </div>
       ) : (
-        <p className="mt-2 text-[13px] leading-[18px] text-muted-foreground">Not logged.</p>
+        <p className="mt-2 text-[13px] leading-[18px] text-muted-foreground">{tr("Not logged.", "Não registrado.")}</p>
       )}
     </div>
   )

@@ -24,6 +24,7 @@ import type { CoachSuggestion } from "@/core/algorithms/coachSuggestions"
 import { Evidence } from "./Evidence"
 import { LogConfirm, type LogPart } from "./LogConfirm"
 import { isLogTool } from "@/lib/log"
+import { lazy, tr } from "@/lib/locale-context"
 
 type DayDigest = Awaited<ReturnType<typeof dayDigest>>
 type Num = { value: number | null; reason?: string | null }
@@ -32,26 +33,26 @@ const SUGGESTION_ICONS: Record<CoachSuggestion["key"], LucideIcon> = {
   brief: Activity, recovery: Activity, training: Dumbbell, hrv: Activity, sleep: Moon, strain: Dumbbell, sync: Moon,
 }
 
-const RUNNING: Record<string, string> = {
-  get_day: "Looking at your day…",
-  get_sleep: "Reading your sleep and bedtime plan…",
-  get_activity: "Checking workout intensity…",
-  get_trend: "Checking your trends…",
-  get_activities: "Looking at your workouts…",
-  get_journal_impacts: "Reading your journal…",
-  get_health: "Checking your Health Monitor…",
-  get_report: "Reading your report…",
-  get_profile: "Checking your profile…",
-}
+const RUNNING = lazy((): Record<string, string> => ({
+  get_day: tr("Looking at your day…", "Olhando o seu dia…"),
+  get_sleep: tr("Reading your sleep and bedtime plan…", "Lendo seu sono e o plano para dormir…"),
+  get_activity: tr("Checking workout intensity…", "Conferindo a intensidade do treino…"),
+  get_trend: tr("Checking your trends…", "Conferindo suas tendências…"),
+  get_activities: tr("Looking at your workouts…", "Olhando seus treinos…"),
+  get_journal_impacts: tr("Reading your journal…", "Lendo seu diário…"),
+  get_health: tr("Checking your Health Monitor…", "Conferindo seu Monitor de Saúde…"),
+  get_report: tr("Reading your report…", "Lendo seu relatório…"),
+  get_profile: tr("Checking your profile…", "Conferindo seu perfil…"),
+}))
 
-const REASON: Record<string, string> = {
-  calibrating: "Calibrating",
-  no_hrv_last_night: "No HRV",
-  awaiting_sleep_sync: "Syncing",
-  insufficient_hr_data: "Not enough data",
-  band_not_worn: "Not worn",
-  no_data: "No data",
-}
+const REASON = lazy((): Record<string, string> => ({
+  calibrating: tr("Calibrating", "Calibrando"),
+  no_hrv_last_night: tr("No HRV", "Sem VFC"),
+  awaiting_sleep_sync: tr("Syncing", "Sincronizando"),
+  insufficient_hr_data: tr("Not enough data", "Dados insuficientes"),
+  band_not_worn: tr("Not worn", "Não usada"),
+  no_data: tr("No data", "Sem dados"),
+}))
 
 const MAX: Record<MiniRingVariant, number> = { recovery: 100, sleep: 100, strain: 21 }
 
@@ -75,20 +76,20 @@ function DayCard({ d }: { d: DayDigest }) {
   return (
     <div className={cn(CARD_MATERIAL, "p-2")}>
       <div className="grid grid-cols-3 gap-2">
-        <Stat variant="recovery" label="Recovery" m={d.recovery} unit="%" />
-        <Stat variant="sleep" label="Sleep" m={d.sleep.performance} unit="%" />
-        <Stat variant="strain" label="Strain" m={d.strain} />
+        <Stat variant="recovery" label={tr("Recovery", "Recuperação")} m={d.recovery} unit="%" />
+        <Stat variant="sleep" label={tr("Sleep", "Sono")} m={d.sleep.performance} unit="%" />
+        <Stat variant="strain" label={tr("Strain", "Esforço")} m={d.strain} />
       </div>
       {movers.length > 0 && (
         <div className="px-2 pt-3 pb-1.5">
-          <p className="text-[12px] leading-4 font-medium text-muted-foreground">What moved Recovery</p>
+          <p className="text-[12px] leading-4 font-medium text-muted-foreground">{tr("What moved Recovery", "O que mexeu na Recuperação")}</p>
           <ul className="mt-1.5 divide-y divide-border text-[14px] leading-5">
             {movers.map((c) => (
               <li key={c.label} className="flex items-center justify-between gap-3 py-1.5">
                 <span className="text-foreground-secondary">{c.label}</span>
                 <span className={cn("font-numeric font-semibold tabular-nums", c.points! > 0 ? "text-recovery-green" : "text-recovery-red-text")}>
                   {c.points! > 0 ? "+" : "−"}
-                  {Math.abs(c.points!)} {Math.abs(c.points!) === 1 ? "pt" : "pts"}
+                  {Math.abs(c.points!)} {Math.abs(c.points!) === 1 ? tr("pt", "pt") : tr("pts", "pts")}
                 </span>
               </li>
             ))}
@@ -118,8 +119,8 @@ function PartView({ part, onAnswer }: { part: Part; onAnswer?: Answer }) {
   const name = part.type.slice(5)
   if (isLogTool(name)) return <LogConfirm name={name} part={part as LogPart} onAnswer={onAnswer} />
   const tool = part as Part & { state: string; output?: unknown }
-  if (tool.state === "output-error") return <Caption>Couldn’t read that part of your data.</Caption>
-  if (tool.state !== "output-available") return <Caption live>{RUNNING[name] ?? "Looking at your data…"}</Caption>
+  if (tool.state === "output-error") return <Caption>{tr("Couldn’t read that part of your data.", "Não foi possível ler essa parte dos seus dados.")}</Caption>
+  if (tool.state !== "output-available") return <Caption live>{RUNNING[name] ?? tr("Looking at your data…", "Olhando seus dados…")}</Caption>
   if (name === "get_day") return <div className="space-y-2"><DayCard d={tool.output as DayDigest} /><Evidence name={name} output={tool.output} /></div>
   return <Evidence name={name} output={tool.output} />
 }
@@ -152,7 +153,7 @@ function CopyAnswer({ text }: { text: string }) {
   }, [copied])
   const ICON = "absolute size-4 transition-[opacity,scale,filter] duration-200 ease-standard motion-reduce:transition-none"
   return (
-    <Button type="button" variant="ghost" size="icon-lg" aria-label={copied ? "Copied" : "Copy answer"} onClick={() => navigator.clipboard?.writeText(text).then(() => setCopied(true), () => {})} className={ACTION}>
+    <Button type="button" variant="ghost" size="icon-lg" aria-label={copied ? tr("Copied", "Copiado") : tr("Copy answer", "Copiar resposta")} onClick={() => navigator.clipboard?.writeText(text).then(() => setCopied(true), () => {})} className={ACTION}>
       <Copy aria-hidden strokeWidth={1.75} className={cn(ICON, copied && "scale-25 opacity-0 blur-[4px]")} />
       <Check aria-hidden strokeWidth={2} className={cn(ICON, !copied && "scale-25 opacity-0 blur-[4px]")} />
     </Button>
@@ -179,7 +180,7 @@ function UserMessage({ m, busy, onEdit }: { m: UIMessage; busy: boolean; onEdit:
         className="ml-10 space-y-2 md:ml-16"
       >
         <label htmlFor={editId} className="sr-only">
-          Edit your message
+          {tr("Edit your message", "Editar sua mensagem")}
         </label>
         <textarea
           id={editId}
@@ -202,17 +203,17 @@ function UserMessage({ m, busy, onEdit }: { m: UIMessage; busy: boolean; onEdit:
         />
         <div className="flex justify-end gap-2">
           <Button type="button" variant="ghost" onClick={() => setDraft(null)} className="h-9 rounded-full px-4 text-[13px] font-semibold pointer-coarse:h-10">
-            Cancel
+            {tr("Cancel", "Cancelar")}
           </Button>
           <Button type="submit" disabled={busy || !draft.trim()} className="h-9 rounded-full px-4 text-[13px] font-semibold pointer-coarse:h-10">
-            Save and send
+            {tr("Save and send", "Salvar e enviar")}
           </Button>
         </div>
       </form>
     )
   return (
     <div className="group/msg flex items-start justify-end gap-1 pl-6 md:pl-12">
-      <Button type="button" variant="ghost" size="icon-lg" aria-label="Edit message" disabled={busy} onClick={() => setDraft(text)} className={cn(ACTION, REVEAL, "mt-0.5 shrink-0")}>
+      <Button type="button" variant="ghost" size="icon-lg" aria-label={tr("Edit message", "Editar mensagem")} disabled={busy} onClick={() => setDraft(text)} className={cn(ACTION, REVEAL, "mt-0.5 shrink-0")}>
         <Pencil aria-hidden strokeWidth={1.75} className="size-4" />
       </Button>
       <p className="min-w-0 rounded-[20px] rounded-br-md bg-secondary px-4 py-2.5 text-[15px] leading-6 break-words whitespace-pre-wrap text-foreground">{text}</p>
@@ -231,7 +232,7 @@ function AssistantMessage({ m, done, onRegenerate, onAnswer }: { m: UIMessage; d
         <div className="-ml-2 flex items-center">
           {text && <CopyAnswer text={text} />}
           {onRegenerate && (
-            <Button type="button" variant="ghost" size="icon-lg" aria-label="Regenerate answer" onClick={onRegenerate} className={ACTION}>
+            <Button type="button" variant="ghost" size="icon-lg" aria-label={tr("Regenerate answer", "Gerar resposta de novo")} onClick={onRegenerate} className={ACTION}>
               <RotateCcw aria-hidden strokeWidth={1.75} className="size-4" />
             </Button>
           )}
@@ -241,11 +242,11 @@ function AssistantMessage({ m, done, onRegenerate, onAnswer }: { m: UIMessage; d
   )
 }
 
-const ERRORS: Record<string, string> = {
-  limit: "Slow down a little. Try again in a moment.",
-  key: "Your key stopped working. Add it again in Settings › Coach.",
-  provider: "Your provider refused the request (key, quota or billing). Check your account with them.",
-}
+const ERRORS = lazy((): Record<string, string> => ({
+  limit: tr("Slow down a little. Try again in a moment.", "Vá com calma. Tente de novo em instantes."),
+  key: tr("Your key or sign-in stopped working. Add it again in Settings › Coach.", "Sua chave ou login parou de funcionar. Conecte de novo em Ajustes › Coach."),
+  provider: tr("Your provider refused the request (key, quota or billing). Check your account with them.", "Seu provedor recusou a requisição (chave, cota ou cobrança). Confira sua conta com ele."),
+}))
 
 const chatsPanel = panelStore("pulse:coach-chats-open")
 const usePanelOpen = chatsPanel.use
@@ -260,13 +261,13 @@ export function CoachBarActions({ chatCount, chatOpen }: { chatCount: number; ch
   const btn = "text-foreground-secondary hover:text-foreground"
   return (
     <span className="flex items-center xl:hidden">
-      <Button asChild variant="ghost" size="icon-touch" aria-label={chatCount ? `Chats (${chatCount})` : "Chats"} className={btn}>
+      <Button asChild variant="ghost" size="icon-touch" aria-label={chatCount ? tr(`Chats (${chatCount})`, `Conversas (${chatCount})`) : tr("Chats", "Conversas")} className={btn}>
         <Link href="/coach/chats">
           <History aria-hidden strokeWidth={1.75} />
         </Link>
       </Button>
       {chatOpen && <NewChatButton />}
-      <Button asChild variant="ghost" size="icon-touch" aria-label="Coach settings" className={btn}>
+      <Button asChild variant="ghost" size="icon-touch" aria-label={tr("Coach settings", "Configurações do coach")} className={btn}>
         <Link href="/settings?s=coach">
           <Settings2 aria-hidden strokeWidth={1.6} />
         </Link>
@@ -295,7 +296,7 @@ export function Coach({ id, initial, groups, next, prefill, auto, suggestions }:
       },
     }),
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
-    onError: (e) => setError(ERRORS[/\b(limit|key|provider)\b/.exec(e.message)?.[1] ?? ""] ?? "Couldn’t get an answer. Try again."),
+    onError: (e) => setError(ERRORS[/\b(limit|key|provider)\b/.exec(e.message)?.[1] ?? ""] ?? tr("Couldn’t get an answer. Try again.", "Não foi possível obter uma resposta. Tente de novo.")),
     onFinish: ({ message }) => {
       // Announce completed answers once; saved chats must not be read again on load.
       setAnnounce(plain(message))
@@ -379,7 +380,7 @@ export function Coach({ id, initial, groups, next, prefill, auto, suggestions }:
   const listOpen = usePanelOpen()
   const PANEL_BTN = "rounded-full text-muted-foreground hover:bg-foreground/8 hover:text-foreground"
   const settingsLink = (className: string, size: "icon-lg" | "icon-touch") => (
-    <Button asChild variant="ghost" size={size} aria-label="Coach settings" className={className}>
+    <Button asChild variant="ghost" size={size} aria-label={tr("Coach settings", "Configurações do coach")} className={className}>
       <Link href="/settings?s=coach">
         <Settings2 aria-hidden strokeWidth={1.6} className={size === "icon-lg" ? "size-[18px]" : undefined} />
       </Link>
@@ -388,12 +389,12 @@ export function Coach({ id, initial, groups, next, prefill, auto, suggestions }:
   return (
     <div data-chats={listOpen ? "open" : "closed"} className="flex min-h-0 flex-1 flex-col">
       {listOpen ? (
-        <aside data-fixed-panel aria-label="Chats panel" className={cn(GLASS, "fixed top-[calc(var(--inset-top)+12px)] bottom-3 left-[112px] z-30 hidden w-[272px] flex-col rounded-[28px] p-3 xl:flex")}>
+        <aside data-fixed-panel aria-label={tr("Chats panel", "Painel de conversas")} className={cn(GLASS, "fixed top-[calc(var(--inset-top)+12px)] bottom-3 left-[112px] z-30 hidden w-[272px] flex-col rounded-[28px] p-3 xl:flex")}>
           <div className="flex h-14 shrink-0 items-center justify-between gap-1 pl-3">
-            <h2 className="text-[15px] leading-5 font-semibold">Chats</h2>
+            <h2 className="text-[15px] leading-5 font-semibold">{tr("Chats", "Conversas")}</h2>
             <span className="flex items-center">
               {settingsLink(PANEL_BTN, "icon-lg")}
-              <Button variant="ghost" size="icon-lg" aria-label="Collapse chats" aria-expanded onClick={() => setPanelOpen(false)} className={PANEL_BTN}>
+              <Button variant="ghost" size="icon-lg" aria-label={tr("Collapse chats", "Recolher conversas")} aria-expanded onClick={() => setPanelOpen(false)} className={PANEL_BTN}>
                 <PanelLeftClose aria-hidden strokeWidth={1.6} className="size-[18px]" />
               </Button>
             </span>
@@ -405,8 +406,8 @@ export function Coach({ id, initial, groups, next, prefill, auto, suggestions }:
           </div>
         </aside>
       ) : (
-        <aside data-fixed-panel aria-label="Chats panel" className={cn(GLASS, "fixed top-[calc(var(--inset-top)+12px)] bottom-3 left-[112px] z-30 hidden w-16 flex-col items-center gap-1 rounded-[28px] py-3 xl:flex")}>
-          <Button variant="ghost" size="icon-touch" aria-label="Expand chats" aria-expanded={false} onClick={() => setPanelOpen(true)} className={PANEL_BTN}>
+        <aside data-fixed-panel aria-label={tr("Chats panel", "Painel de conversas")} className={cn(GLASS, "fixed top-[calc(var(--inset-top)+12px)] bottom-3 left-[112px] z-30 hidden w-16 flex-col items-center gap-1 rounded-[28px] py-3 xl:flex")}>
+          <Button variant="ghost" size="icon-touch" aria-label={tr("Expand chats", "Expandir conversas")} aria-expanded={false} onClick={() => setPanelOpen(true)} className={PANEL_BTN}>
             <PanelLeftOpen aria-hidden strokeWidth={1.6} />
           </Button>
           <NewChatButton className={PANEL_BTN} />
@@ -424,7 +425,7 @@ export function Coach({ id, initial, groups, next, prefill, auto, suggestions }:
                   <Mark className="size-5" />
                 </span>
               </span>
-              <h2 className="mt-5 text-[22px] leading-7 font-bold tracking-[-0.01em] text-balance md:text-[26px] md:leading-8">What would you like to know?</h2>
+              <h2 className="mt-5 text-[22px] leading-7 font-bold tracking-[-0.01em] text-balance md:text-[26px] md:leading-8">{tr("What would you like to know?", "O que você quer saber?")}</h2>
               <ul className="mt-8 grid w-full max-w-[600px] gap-2 sm:grid-cols-2">
                 {suggestions.map(({ text, key }) => {
                   const Icon = SUGGESTION_ICONS[key]
@@ -443,11 +444,11 @@ export function Coach({ id, initial, groups, next, prefill, auto, suggestions }:
                 className="mt-3 inline-flex h-10 items-center gap-2 rounded-full px-4 text-[14px] font-medium text-foreground-secondary outline-none transition-[background-color,color,scale] duration-150 ease-standard hover:bg-foreground/[0.05] hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.96]"
               >
                 <NotebookPen aria-hidden className="size-4" strokeWidth={1.75} />
-                Check in for today
+                {tr("Check in for today", "Fazer o check-in de hoje")}
               </SheetTrigger>
             </div>
           ) : (
-            <div role="log" aria-label="Chat with Pulse’s coach" className="mt-2 space-y-7">
+            <div role="log" aria-label={tr("Chat with Pulse’s coach", "Conversa com o coach do Pulse")} className="mt-2 space-y-7">
               {messages.map((m, i) =>
                 m.role === "user" ? (
                   <UserMessage key={m.id} m={m} busy={busy} onEdit={(text) => edit(m.id, text)} />
@@ -455,7 +456,7 @@ export function Coach({ id, initial, groups, next, prefill, auto, suggestions }:
                   <AssistantMessage key={m.id} m={m} done={!busy || i < messages.length - 1} onRegenerate={!busy && m.id === lastAnswer ? () => again(m.id) : undefined} onAnswer={!busy && m.id === lastAnswer ? answer : undefined} />
                 ),
               )}
-              {status === "submitted" && <Caption live>Thinking…</Caption>}
+              {status === "submitted" && <Caption live>{tr("Thinking…", "Pensando…")}</Caption>}
             </div>
           )}
 
@@ -469,7 +470,7 @@ export function Coach({ id, initial, groups, next, prefill, auto, suggestions }:
               <p className="min-w-0 flex-1 py-1 text-[14px] leading-5 text-pretty text-foreground">{error}</p>
               <Button type="button" variant="ghost" disabled={busy} onClick={() => again()} className="h-9 shrink-0 gap-1.5 rounded-full px-3.5 text-[13px] font-semibold hover:bg-foreground/8 pointer-coarse:h-10">
                 <RotateCcw aria-hidden strokeWidth={1.75} className="size-4" />
-                Retry
+                {tr("Retry", "Tentar de novo")}
               </Button>
             </div>
           )}
@@ -487,7 +488,7 @@ export function Coach({ id, initial, groups, next, prefill, auto, suggestions }:
             )}
           >
             <label htmlFor="coach-input" className="sr-only">
-              Ask Coach
+              {tr("Ask Coach", "Pergunte ao Coach")}
             </label>
             <textarea
               id="coach-input"
@@ -503,15 +504,15 @@ export function Coach({ id, initial, groups, next, prefill, auto, suggestions }:
               rows={1}
               maxLength={2000}
               enterKeyHint="send"
-              placeholder="Message Coach"
+              placeholder={tr("Message Coach", "Mensagem para o Coach")}
               className="field-sizing-content max-h-40 min-h-11 min-w-0 flex-1 resize-none bg-transparent py-2.5 pl-3.5 text-[16px] leading-6 text-foreground caret-coach outline-none placeholder:text-muted-foreground"
             />
             {busy ? (
-              <Button type="button" size="icon-touch" variant="secondary" onClick={() => stop()} aria-label="Stop">
+              <Button type="button" size="icon-touch" variant="secondary" onClick={() => stop()} aria-label={tr("Stop", "Parar")}>
                 <Square aria-hidden className="size-3.5 fill-current" />
               </Button>
             ) : (
-              <Button type="submit" size="icon-touch" disabled={!input.trim()} aria-label="Send">
+              <Button type="submit" size="icon-touch" disabled={!input.trim()} aria-label={tr("Send", "Enviar")}>
                 <ArrowUp aria-hidden strokeWidth={2.25} />
               </Button>
             )}

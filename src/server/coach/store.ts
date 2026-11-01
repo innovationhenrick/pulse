@@ -9,7 +9,10 @@ import { coachChats, coachSettings, serverSettings, user } from "../db/schema";
 import { decryptKey, encryptKey } from "./crypto";
 import { mockModel } from "./mock";
 import { daysBetween, localDay } from "../time";
+import { freshBundle } from "./login";
+import { parseBundle, serializeBundle, type LoginBundle } from "./login/bundle";
 import { localModel, providerOf } from "./providers";
+import { tr } from "@/lib/locale-context";
 
 const now = () => Math.floor(Date.now() / 1000);
 
@@ -72,15 +75,18 @@ export async function setPreferences(db: Db, userId: number, p: { instructions?:
   await db.insert(coachSettings).values({ userId, ...values }).onConflictDoUpdate({ target: coachSettings.userId, set: values });
 }
 
-/** Stores the provider and model, and the key encrypted (null for the owner's local model, which needs none). */
-export async function saveProvider(db: Db, userId: number, provider: string, model: string, apiKey: string | null): Promise<void> {
+/**
+ * Stores the provider and model, and the key encrypted (null for the owner's local model, which needs none). For a
+ * sign-in the "key" is the sealed token bundle and `hint` is the account's email, shown in place of the last four.
+ */
+export async function saveProvider(db: Db, userId: number, provider: string, model: string, apiKey: string | null, hint?: string | null): Promise<void> {
   const secret = getConfig().authSecret;
   if (apiKey !== null && !secret) throw new Error("no_secret");
   const values = {
     provider,
     model,
     keyCiphertext: apiKey === null ? null : encryptKey(apiKey, secret!),
-    keyLast4: apiKey === null ? null : apiKey.slice(-4),
+    keyLast4: apiKey === null ? null : hint !== undefined ? hint : apiKey.slice(-4),
     updatedAt: now(),
   };
   await db.insert(coachSettings).values({ userId, ...values }).onConflictDoUpdate({ target: coachSettings.userId, set: values });
@@ -90,7 +96,7 @@ export async function removeProvider(db: Db, userId: number): Promise<void> {
   await db.update(coachSettings).set({ provider: null, model: null, keyCiphertext: null, keyLast4: null, updatedAt: now() }).where(eq(coachSettings.userId, userId));
 }
 
-export type ModelProblem = "no_access" | "no_consent" | "no_key" | "key_unreadable";
+export type ModelProblem = "no_access" | "no_consent" | "no_key" | "key_unreadable" | "sign_in_expired";
 
 /** The model to answer with: the user's provider and key, the owner's local model, or the mock in e2e. */
 export function modelFor(provider: string, model: string, apiKey: string | null): LanguageModel | null {
@@ -98,7 +104,17 @@ export function modelFor(provider: string, model: string, apiKey: string | null)
   if (provider === "local") return cfg.coachLocal ? localModel(cfg.coachLocal.url, cfg.coachLocal.model) : null;
   if (provider === "mock") return cfg.coachMock ? mockModel() : null;
   const p = providerOf(provider);
-  return p && apiKey ? p.create(apiKey, model) : null;
+  if (!p || !apiKey) return null;
+  // A sign-in stores a token bundle, not a key: a blob that is not one is as good as no key.
+  if (p.auth !== "key" && !parseBundle(apiKey)) return null;
+  return p.create(apiKey, model);
+}
+
+/** Stores a refreshed sign-in without touching the provider, model or hint. */
+async function saveRefreshed(db: Db, userId: number, bundle: LoginBundle): Promise<void> {
+  const secret = getConfig().authSecret;
+  if (!secret) return;
+  await db.update(coachSettings).set({ keyCiphertext: encryptKey(serializeBundle(bundle), secret), updatedAt: now() }).where(eq(coachSettings.userId, userId));
 }
 
 export async function coachModel(db: Db, userId: number): Promise<{ model: LanguageModel; provider: string; instructions: string | null } | { problem: ModelProblem }> {
@@ -111,6 +127,19 @@ export async function coachModel(db: Db, userId: number): Promise<{ model: Langu
     const secret = getConfig().authSecret;
     key = secret ? decryptKey(r.keyCiphertext, secret) : null;
     if (key === null) return { problem: "key_unreadable" };
+  }
+  const p = providerOf(r.provider);
+  if (key !== null && p && p.auth !== "key") {
+    // Signed in: make sure the access token is good for this turn, and keep a rotated refresh token.
+    const bundle = parseBundle(key);
+    if (!bundle) return { problem: "key_unreadable" };
+    try {
+      const fresh = await freshBundle(p.auth, bundle);
+      if (fresh.changed) await saveRefreshed(db, userId, fresh.bundle);
+      key = serializeBundle(fresh.bundle);
+    } catch {
+      return { problem: "sign_in_expired" };
+    }
   }
   const model = modelFor(r.provider, r.model, key);
   return model ? { model, provider: r.provider, instructions: r.customInstructions } : { problem: "no_key" };
@@ -144,14 +173,14 @@ export async function listChats(db: Db, userId: number, before?: ChatCursor): Pr
   return { chats, next: rows.length > CHAT_PAGE && last ? { updatedAt: last.updatedAt, id: last.id } : null };
 }
 
-export type ChatGroup = { label: "Today" | "Yesterday" | "Previous 7 days" | "Earlier"; chats: ChatRow[] };
+export type ChatGroup = { label: string; chats: ChatRow[] };
 
 /** Chats grouped by recency in the user's own time zone (server-side, so the page and the browser agree). */
 export function groupChats(chats: ChatRow[], now: number, timeZone: string): ChatGroup[] {
   const today = localDay(now, timeZone);
   const label = (s: number): ChatGroup["label"] => {
     const gap = daysBetween(localDay(s, timeZone), today);
-    return gap <= 0 ? "Today" : gap === 1 ? "Yesterday" : gap <= 7 ? "Previous 7 days" : "Earlier";
+    return gap <= 0 ? tr("Today", "Hoje") : gap === 1 ? tr("Yesterday", "Ontem") : gap <= 7 ? tr("Previous 7 days", "Últimos 7 dias") : tr("Earlier", "Anteriores");
   };
   const out: ChatGroup[] = [];
   for (const c of chats) {
@@ -172,7 +201,7 @@ export async function loadChat(db: Db, userId: number, id: string): Promise<UIMe
 export function titleOf(messages: UIMessage[]): string {
   const first = messages.find((m) => m.role === "user");
   const text = first?.parts.map((p) => (p.type === "text" ? p.text : "")).join(" ").trim().replace(/\s+/g, " ") ?? "";
-  return (text.length > 60 ? `${text.slice(0, 59)}…` : text) || "New chat";
+  return (text.length > 60 ? `${text.slice(0, 59)}…` : text) || tr("New chat", "Nova conversa");
 }
 
 export async function saveChat(db: Db, userId: number, id: string, messages: UIMessage[]): Promise<void> {

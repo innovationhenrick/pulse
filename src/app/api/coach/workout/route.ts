@@ -4,6 +4,7 @@
 import { generateText } from "ai";
 import { z } from "zod";
 import { requestUser } from "@/server/auth";
+import { requestLocale } from "@/server/locale";
 import { coachInstructions } from "@/server/coach/instructions";
 import { allowRequest, coachModel } from "@/server/coach/store";
 import { coachTexts } from "@/server/coach/texts";
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
   try {
     const { text } = await generateText({
       model: m.model,
-      instructions: coachInstructions(ctx, texts, m.instructions),
+      instructions: coachInstructions(ctx, texts, m.instructions, await requestLocale()),
       prompt: `${texts("workout_glance")}\n\n${workoutFacts(activity)}`,
       maxOutputTokens: 80,
       abortSignal: req.signal,

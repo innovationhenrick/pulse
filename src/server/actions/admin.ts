@@ -3,6 +3,7 @@
 // hiding its buttons is not the check.
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { requestLocale } from "../locale";
 import { z } from "zod";
 import { createInvite, deleteAccount, isAdmin, isOwnerEmail, resetPassword, revokeInvite, setRole, setSignupMode, signOutEverywhere, SIGNUP_MODES, type SignupMode } from "../admin";
 import { currentUser, SIGNED_OUT } from "../auth";
@@ -12,17 +13,19 @@ import { getConfig } from "../config";
 import { getDb } from "../db";
 import { user } from "../db/schema";
 import type { ActionResult } from "./journal";
+import { tr } from "@/lib/locale-context";
 
-const NOT_ADMIN = { ok: false as const, error: "Only an admin can do this." };
-const UNKNOWN = { ok: false as const, error: "Unknown account." };
+const notAdmin = () => ({ ok: false as const, error: tr("Only an admin can do this.", "Só um admin pode fazer isso.") });
+const unknown = () => ({ ok: false as const, error: tr("Unknown account.", "Conta desconhecida.") });
 const DONE = { ok: true as const, data: undefined };
 const Id = z.number().int().positive();
 
 /** The signed-in admin's id, or the result to return instead. */
 async function admin(): Promise<number | ActionResult<never>> {
+  await requestLocale(); // fills the request's language so the errors below follow it
   const me = await currentUser();
   if (!me) return SIGNED_OUT;
-  if (getConfig().dataSource !== "google" || !(await isAdmin(getDb(), me.userId))) return NOT_ADMIN;
+  if (getConfig().dataSource !== "google" || !(await isAdmin(getDb(), me.userId))) return notAdmin();
   return me.userId;
 }
 
@@ -36,7 +39,7 @@ async function changeable(id: number): Promise<boolean> {
 export async function setSignupModeAction(mode: SignupMode): Promise<ActionResult> {
   const me = await admin();
   if (typeof me !== "number") return me;
-  if (!SIGNUP_MODES.includes(mode)) return { ok: false, error: "Unknown sign-up mode." };
+  if (!SIGNUP_MODES.includes(mode)) return { ok: false, error: tr("Unknown sign-up mode.", "Modo de cadastro desconhecido.") };
   await setSignupMode(getDb(), mode);
   revalidatePath("/admin");
   return DONE;
@@ -46,7 +49,7 @@ export async function setSignupModeAction(mode: SignupMode): Promise<ActionResul
 export async function setCoachModeAction(mode: CoachMode): Promise<ActionResult> {
   const me = await admin();
   if (typeof me !== "number") return me;
-  if (!COACH_MODES.includes(mode)) return { ok: false, error: "Unknown coach setting." };
+  if (!COACH_MODES.includes(mode)) return { ok: false, error: tr("Unknown coach setting.", "Configuração do coach desconhecida.") };
   await setCoachMode(getDb(), mode);
   revalidatePath("/", "layout"); // the round P button follows access on every screen
   return DONE;
@@ -56,7 +59,7 @@ export async function setCoachModeAction(mode: CoachMode): Promise<ActionResult>
 export async function setCoachAllowedAction(userId: number, allowed: boolean): Promise<ActionResult> {
   const me = await admin();
   if (typeof me !== "number") return me;
-  if (!(await changeable(userId))) return UNKNOWN;
+  if (!(await changeable(userId))) return unknown();
   await setCoachAllowed(getDb(), userId, allowed === true);
   revalidatePath("/admin");
   return DONE;
@@ -69,10 +72,10 @@ export async function setCoachAllowedAction(userId: number, allowed: boolean): P
 export async function saveCoachTextAction(key: string, body: string): Promise<ActionResult> {
   const me = await admin();
   if (typeof me !== "number") return me;
-  if (!Object.hasOwn(DEFAULTS, key)) return { ok: false, error: "Unknown text." };
+  if (!Object.hasOwn(DEFAULTS, key)) return { ok: false, error: tr("Unknown text.", "Texto desconhecido.") };
   const text = String(body).replace(/\r\n/g, "\n").trim();
-  if (!text) return { ok: false, error: "Write something, or reset to the default." };
-  if (text.length > maxFor(key)) return { ok: false, error: `Keep it under ${maxFor(key)} characters.` };
+  if (!text) return { ok: false, error: tr("Write something, or reset to the default.", "Escreva algo ou restaure o padrão.") };
+  if (text.length > maxFor(key)) return { ok: false, error: tr(`Keep it under ${maxFor(key)} characters.`, `Use no máximo ${maxFor(key)} caracteres.`) };
   await saveText(getDb(), key, text, me);
   revalidatePath("/admin/coach");
   return DONE;
@@ -90,7 +93,7 @@ export async function createInviteAction(label: string): Promise<ActionResult<st
 export async function revokeInviteAction(id: number): Promise<ActionResult> {
   const me = await admin();
   if (typeof me !== "number") return me;
-  if (!Id.safeParse(id).success) return { ok: false, error: "Unknown invite." };
+  if (!Id.safeParse(id).success) return { ok: false, error: tr("Unknown invite.", "Convite desconhecido.") };
   await revokeInvite(getDb(), id);
   revalidatePath("/admin");
   return DONE;
@@ -99,7 +102,7 @@ export async function revokeInviteAction(id: number): Promise<ActionResult> {
 export async function setRoleAction(userId: number, role: "user" | "admin"): Promise<ActionResult> {
   const me = await admin();
   if (typeof me !== "number") return me;
-  if ((role !== "user" && role !== "admin") || !(await changeable(userId))) return UNKNOWN;
+  if ((role !== "user" && role !== "admin") || !(await changeable(userId))) return unknown();
   await setRole(getDb(), userId, role);
   revalidatePath("/admin");
   return DONE;
@@ -109,8 +112,8 @@ export async function setRoleAction(userId: number, role: "user" | "admin"): Pro
 export async function signOutEverywhereAction(userId: number): Promise<ActionResult<number>> {
   const me = await admin();
   if (typeof me !== "number") return me;
-  if (userId === me) return { ok: false, error: "Sign yourself out from Settings." };
-  if (!(await changeable(userId))) return UNKNOWN;
+  if (userId === me) return { ok: false, error: tr("Sign yourself out from Settings.", "Saia da sua conta em Ajustes.") };
+  if (!(await changeable(userId))) return unknown();
   const n = await signOutEverywhere(getDb(), userId);
   revalidatePath("/admin/people");
   return { ok: true, data: n };
@@ -125,9 +128,9 @@ export async function resetPasswordAction(userId: number): Promise<ActionResult<
   const me = await admin();
   if (typeof me !== "number") return me;
   const caller = await currentUser();
-  if (!caller || !isOwnerEmail(caller.email)) return { ok: false, error: "Only an owner (ADMIN_EMAILS) can reset passwords." };
-  if (userId === me) return { ok: false, error: "Change your own password from Settings." };
-  if (!(await changeable(userId))) return UNKNOWN;
+  if (!caller || !isOwnerEmail(caller.email)) return { ok: false, error: tr("Only an owner (ADMIN_EMAILS) can reset passwords.", "Só um dono (ADMIN_EMAILS) pode redefinir senhas.") };
+  if (userId === me) return { ok: false, error: tr("Change your own password from Settings.", "Altere sua própria senha em Ajustes.") };
+  if (!(await changeable(userId))) return unknown();
   const temp = await resetPassword(getDb(), userId);
   revalidatePath("/admin/people");
   return { ok: true, data: temp };
@@ -137,9 +140,9 @@ export async function resetPasswordAction(userId: number): Promise<ActionResult<
 export async function deleteAccountAction(userId: number): Promise<ActionResult> {
   const me = await admin();
   if (typeof me !== "number") return me;
-  if (userId === me) return { ok: false, error: "Delete your own account from Settings." };
-  if (!(await changeable(userId))) return UNKNOWN;
-  if ((await deleteAccount(getDb(), userId)) === "admin") return { ok: false, error: "Remove admin from this account first." };
+  if (userId === me) return { ok: false, error: tr("Delete your own account from Settings.", "Exclua sua própria conta em Ajustes.") };
+  if (!(await changeable(userId))) return unknown();
+  if ((await deleteAccount(getDb(), userId)) === "admin") return { ok: false, error: tr("Remove admin from this account first.", "Remova o admin desta conta primeiro.") };
   revalidatePath("/admin");
   return DONE;
 }
