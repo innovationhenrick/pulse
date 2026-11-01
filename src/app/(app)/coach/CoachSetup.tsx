@@ -57,6 +57,8 @@ export function loginMessage(code: string | null): { ok: boolean; text: string }
     no_access: tr("Coach isn’t turned on for your account.", "O Coach não está ativado na sua conta."),
     no_secret: tr("This server has no BETTER_AUTH_SECRET, so it can’t store keys safely. Ask whoever runs it.", "Este servidor não tem BETTER_AUTH_SECRET, então não consegue guardar chaves com segurança. Fale com quem o administra."),
   }
+  // gemini_<http status>_<Google's error code>: Gemini was reached and refused the request.
+  if (/^gemini(_\w+)?$/.test(code) && code !== "gemini_unavailable") return { ok: false, text: tr(`Signed in, but Gemini refused the request (${code.slice(7) || "no status"}).`, `Login feito, mas o Gemini recusou a requisição (${code.slice(7) || "sem status"}).`) }
   return { ok: false, text: text[code] ?? tr("Couldn’t sign in. Try again.", "Não foi possível entrar. Tente de novo.") }
 }
 

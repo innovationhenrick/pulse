@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { SignJWT } from "jose";
 import { isFresh, LoginError, parseBundle, serializeBundle, type LoginBundle } from "./bundle";
 import { codexFetch, lastCompleted, pollChatgptLogin, refreshChatgptLogin, startChatgptLogin } from "./chatgpt";
-import { exchangeGoogleLogin, googleLoginModel, googleLoginUrl, projectOf, refreshGoogleLogin } from "./google";
+import { APICallError, RetryError } from "ai";
+import { exchangeGoogleLogin, geminiFailure, googleLoginModel, googleLoginUrl, listGeminiModels, projectOf, rankGeminiModels, refreshGoogleLogin } from "./google";
 import { consumeLoginState, createLoginState } from "./state";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -59,6 +60,34 @@ describe("google sign-in", () => {
     expect(seen?.get("authorization")).toBe("Bearer at");
     expect(seen?.get("x-goog-user-project")).toBe("123");
     expect(seen?.get("x-goog-api-key")).toBeNull();
+  });
+});
+
+describe("gemini model list", () => {
+  const m = (name: string, methods = ["generateContent"]) => ({ name: `models/${name}`, supportedGenerationMethods: methods });
+  it("ranks stable flash first, drops non-text and non-generateContent models", () => {
+    const ranked = rankGeminiModels([m("gemini-2.5-pro"), m("gemini-3-flash-preview"), m("gemini-omni-1.1-flash"), m("gemini-2.5-flash"), m("gemini-2.5-flash-image"), m("gemini-embedding-001", ["embedContent"]), m("gemini-2.5-flash-lite"), m("gemma-3-27b")]);
+    expect(ranked).toEqual(["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.5-pro", "gemini-omni-1.1-flash", "gemini-3-flash-preview"]);
+  });
+  it("lists with the bearer token and gives [] when the list can't be read", async () => {
+    let auth: string | null = null;
+    const ok = (async (_: unknown, init?: RequestInit) => ((auth = new Headers(init?.headers).get("authorization")), json({ models: [m("gemini-2.5-flash")] }))) as typeof fetch;
+    expect(await listGeminiModels(bundle, ok)).toEqual(["gemini-2.5-flash"]);
+    expect(auth).toBe("Bearer at");
+    expect(await listGeminiModels(bundle, (async () => json({}, 403)) as typeof fetch)).toEqual([]);
+  });
+});
+
+describe("gemini failure", () => {
+  const api = (statusCode: number, status: string) => new APICallError({ message: "m", url: "u", requestBodyValues: {}, statusCode, responseBody: JSON.stringify({ error: { status } }) });
+  it("reads the status and Google's code, also through a retry wrapper", () => {
+    expect(geminiFailure(api(404, "NOT_FOUND"))).toEqual({ code: "gemini_404_NOT_FOUND", status: 404 });
+    const retried = new RetryError({ message: "m", reason: "maxRetriesExceeded", errors: [api(503, "UNAVAILABLE"), api(503, "UNAVAILABLE")] });
+    expect(geminiFailure(retried)).toEqual({ code: "gemini_503_UNAVAILABLE", status: 503 });
+  });
+  it("has no status for a network error and never quotes a free-text body", () => {
+    expect(geminiFailure(new Error("socket hang up"))).toEqual({ code: "gemini", status: undefined });
+    expect(geminiFailure(new APICallError({ message: "m", url: "u", requestBodyValues: {}, statusCode: 400, responseBody: JSON.stringify({ error: { status: "secret text here" } }) })).code).toBe("gemini_400");
   });
 });
 

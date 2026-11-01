@@ -4,7 +4,7 @@
 // "Generative Language API" enabled. PKCE on top of the client secret, as the OpenBot desktop app does.
 import { createHash, randomBytes } from "node:crypto";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import type { LanguageModel } from "ai";
+import { APICallError, RetryError, type LanguageModel } from "ai";
 import { decodeJwt } from "jose";
 import { jsonBody, LoginError, oauthCode, type LoginBundle } from "./bundle";
 
@@ -93,4 +93,49 @@ export function googleLoginModel(bundle: LoginBundle, model: string, fetchImpl: 
       return fetchImpl(url, { ...init, headers });
     },
   })(model);
+}
+
+const MODELS_URL = "https://generativelanguage.googleapis.com/v1beta/models?pageSize=200";
+
+/** The Gemini text models worth trying, best first: stable before preview, flash before pro, newer before older. */
+export function rankGeminiModels(models: { name?: unknown; supportedGenerationMethods?: unknown }[]): string[] {
+  // A plain `gemini-2.5-flash` / `gemini-3-pro` name is the product line; anything else (omni, preview, dated) goes after.
+  const plain = /^gemini-\d+(\.\d+)?-(flash|pro)(-lite)?$/;
+  const score = (id: string) => (plain.test(id) ? 0 : 4) + (/preview|exp/.test(id) ? 10 : 0) + (/flash/.test(id) ? (/lite/.test(id) ? 1 : 0) : /pro/.test(id) ? 2 : 3);
+  return models
+    .filter((m) => typeof m.name === "string" && Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes("generateContent"))
+    .map((m) => (m.name as string).replace(/^models\//, ""))
+    .filter((id) => /^gemini-/.test(id) && !/image|tts|live|audio|embedding|vision|robotics|computer|learnlm/.test(id))
+    .sort((a, b) => score(a) - score(b) || b.localeCompare(a, "en", { numeric: true }));
+}
+
+/** The models this account can call, ranked; empty when the list can't be read (the caller keeps what the user typed). */
+export async function listGeminiModels(bundle: LoginBundle, fetchImpl: typeof fetch = fetch): Promise<string[]> {
+  try {
+    const res = await fetchImpl(MODELS_URL, { headers: { authorization: `Bearer ${bundle.accessToken}`, ...(bundle.project && { "x-goog-user-project": bundle.project }) }, signal: AbortSignal.timeout(TIMEOUT_MS) });
+    if (!res.ok) return [];
+    const body = await jsonBody(res);
+    return rankGeminiModels(Array.isArray(body.models) ? (body.models as { name?: unknown; supportedGenerationMethods?: unknown }[]) : []);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * What a failed Gemini call says, as `gemini_<http status>_<Google's error code>` and the bare status. The SDK wraps
+ * a retried failure in a RetryError, so the real error is its last one. Never the response body.
+ */
+export function geminiFailure(e: unknown): { code: string; status?: number } {
+  const err = RetryError.isInstance(e) ? e.lastError : e;
+  const status = APICallError.isInstance(err) ? err.statusCode : undefined;
+  let reason: string | undefined;
+  if (APICallError.isInstance(err) && err.responseBody) {
+    try {
+      const status = ((JSON.parse(err.responseBody) as { error?: { status?: unknown } }).error ?? {}).status;
+      reason = typeof status === "string" && /^[A-Za-z_]{1,64}$/.test(status) ? status : undefined;
+    } catch {
+      reason = undefined;
+    }
+  }
+  return { code: ["gemini", status, reason].filter(Boolean).join("_"), status };
 }
